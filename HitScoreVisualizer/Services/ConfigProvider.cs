@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -256,6 +256,15 @@ namespace HitScoreVisualizer.Services
 				}
 			}
 
+			if (configuration.TimeDependenceJudgments != null)
+			{
+				configuration.TimeDependenceJudgments = configuration.TimeDependenceJudgments.OrderByDescending(x => x.Threshold).ToList();
+				if (!ValidateTimeDependenceJudgmentSegment(configuration.TimeDependenceJudgments, configName))
+				{
+					return false;
+				}
+			}
+
 			return true;
 		}
 
@@ -329,6 +338,30 @@ namespace HitScoreVisualizer.Services
 			{
 				var currentJudgement = segments[i];
 				if (prevJudgementSegment.Threshold != currentJudgement.Threshold)
+				{
+					prevJudgementSegment = currentJudgement;
+					continue;
+				}
+
+				Plugin.LoggerInstance.Warn($"Duplicate entry found for threshold {currentJudgement.Threshold} in {configName}");
+				return false;
+			}
+
+			return true;
+		}
+
+		private static bool ValidateTimeDependenceJudgmentSegment(List<TimeDependenceJudgmentSegment> segments, string configName)
+		{
+			if (segments.Count <= 1)
+			{
+				return true;
+			}
+
+			var prevJudgementSegment = segments.First();
+			for (var i = 1; i < segments.Count; i++)
+			{
+				var currentJudgement = segments[i];
+				if (prevJudgementSegment.Threshold - currentJudgement.Threshold > double.Epsilon)
 				{
 					prevJudgementSegment = currentJudgement;
 					continue;

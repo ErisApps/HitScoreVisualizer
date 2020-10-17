@@ -1,5 +1,6 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using HitScoreVisualizer.Services;
+using UnityEngine;
 
 namespace HitScoreVisualizer.Harmony_Patches
 {
@@ -20,7 +21,8 @@ namespace HitScoreVisualizer.Harmony_Patches
 			{
 				ScoreModel.RawScoreWithoutMultiplier(____noteCutInfo, out var before, out var after, out var accuracy);
 				var total = before + after + accuracy;
-				JudgmentService.Judge(__instance, total, before, after, accuracy);
+				var timeDependence = Mathf.Abs(____noteCutInfo.cutNormal.z);
+				JudgmentService.Judge(__instance, total, before, after, accuracy, timeDependence);
 			}
 
 			return false;

@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using HitScoreVisualizer.Services;
 using IPA.Utilities;
 using UnityEngine;
@@ -54,7 +54,8 @@ namespace HitScoreVisualizer.Harmony_Patches
 			{
 				ScoreModel.RawScoreWithoutMultiplier(noteCutInfo, out var before, out var after, out var accuracy);
 				var total = before + after + accuracy;
-				JudgmentService.Judge(__instance, total, before, after, accuracy);
+				var timeDependence = Mathf.Abs(noteCutInfo.cutNormal.z);
+				JudgmentService.Judge(__instance, total, before, after, accuracy, timeDependence);
 
 				// If the counter is finished, remove our event from it
 				counter.didFinishEvent -= Judge;

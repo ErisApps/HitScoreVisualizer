@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -65,7 +65,8 @@ namespace HitScoreVisualizer.Settings
 		// - %b: The score contributed by the part of the swing before cutting the block.
 		// - %c: The score contributed by the accuracy of the cut.
 		// - %a: The score contributed by the part of the swing after cutting the block.
-		// - %B, %C, %A: As above, except using the appropriate judgment from that part of the swing (as configured for "beforeCutAngleJudgments", "accuracyJudgments", or "afterCutAngleJudgments").
+		// - %t: The time dependence of the swing
+		// - %B, %C, %A, %T: As above, except using the appropriate judgment from that part of the swing (as configured for "beforeCutAngleJudgments", "accuracyJudgments", "afterCutAngleJudgments", or "timeDependencyJudgments").
 		// - %s: The total score for the cut.
 		// - %p: The percent out of 115 you achieved with your swing's score
 		// - %%: A literal percent symbol.
@@ -105,6 +106,16 @@ namespace HitScoreVisualizer.Settings
 		[JsonProperty("doIntermediateUpdates")]
 		public bool DoIntermediateUpdates { get; set; }
 
+		// Number of decimal places to show time dependence to
+		[JsonProperty("timeDependencyDecimalPrecision")]
+		[DefaultValue(1)]
+		public int timeDependenceDecimalPrecision { get; set; }
+
+		// Which power of 10 to multiply the time dependence by
+		[JsonProperty("timeDependencyDecimalOffset")]
+		[DefaultValue(2)]
+		public int timeDependenceDecimalOffset { get; set; }
+
 		// Order from highest threshold to lowest; the first matching judgment will be applied
 		[JsonProperty("judgments")]
 		public List<Judgment>? Judgments { get; set; }
@@ -124,5 +135,10 @@ namespace HitScoreVisualizer.Settings
 		// Format specifier: %A
 		[JsonProperty("afterCutAngleJudgments")]
 		public List<JudgmentSegment>? AfterCutAngleJudgments { get; set; }
+
+		// Judgments for time dependence (score is from 0-1).
+		// Format specifier: %T
+		[JsonProperty("timeDependencyJudgments")]
+		public List<TimeDependenceJudgmentSegment>? TimeDependenceJudgments { get; set; }
 	}
 }

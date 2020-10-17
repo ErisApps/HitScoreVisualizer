@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text;
 using HitScoreVisualizer.Extensions;
 using HitScoreVisualizer.Settings;
@@ -12,7 +12,7 @@ namespace HitScoreVisualizer.Services
 	{
 		private static readonly FieldAccessor<FlyingScoreEffect, TextMeshPro>.Accessor FlyingScoreEffectText = FieldAccessor<FlyingScoreEffect, TextMeshPro>.GetAccessor("_text");
 
-		public static void Judge(FlyingScoreEffect scoreEffect, int score, int before, int after, int accuracy)
+		public static void Judge(FlyingScoreEffect scoreEffect, int score, int before, int after, int accuracy, float timeDependence)
 		{
 			var instance = ConfigProvider.CurrentConfig;
 			if (instance == null)
@@ -51,7 +51,7 @@ namespace HitScoreVisualizer.Services
 
 			text.text = instance.DisplayMode switch
 			{
-				"format" => DisplayModeFormat(score, before, after, accuracy, judgment, instance),
+				"format" => DisplayModeFormat(score, before, after, accuracy, timeDependence, judgment, instance),
 				"textOnly" => judgment.Text,
 				"numeric" => score.ToString(),
 				"scoreOnTop" => $"{score}\n{judgment.Text}\n",
@@ -59,7 +59,7 @@ namespace HitScoreVisualizer.Services
 			};
 		}
 
-		private static string DisplayModeFormat(int score, int before, int after, int accuracy, Judgment judgment, Configuration instance)
+		private static string DisplayModeFormat(int score, int before, int after, int accuracy, float timeDependence, Judgment judgment, Configuration instance)
 		{
 			var formattedBuilder = new StringBuilder();
 			var formatString = judgment.Text;
@@ -85,6 +85,9 @@ namespace HitScoreVisualizer.Services
 					case 'a':
 						formattedBuilder.Append(after);
 						break;
+					case 't':
+						formattedBuilder.Append(ConvertTimeDependencePrecision(timeDependence));
+						break;
 					case 'B':
 						formattedBuilder.Append(JudgeSegment(before, instance.BeforeCutAngleJudgments));
 						break;
@@ -93,6 +96,9 @@ namespace HitScoreVisualizer.Services
 						break;
 					case 'A':
 						formattedBuilder.Append(JudgeSegment(after, instance.AfterCutAngleJudgments));
+						break;
+					case 'T':
+						formattedBuilder.Append(JudgeTimeDependenceSegment(timeDependence, instance.TimeDependenceJudgments));
 						break;
 					case 's':
 						formattedBuilder.Append(score);
@@ -134,6 +140,40 @@ namespace HitScoreVisualizer.Services
 			}
 
 			return string.Empty;
+		}
+
+		private static string JudgeTimeDependenceSegment(float scoreForSegment, IList<TimeDependenceJudgmentSegment>? judgments)
+		{
+			if (judgments == null)
+			{
+				return string.Empty;
+			}
+
+			foreach (var j in judgments)
+			{
+				if (scoreForSegment >= j.Threshold)
+				{
+					return j.Text ?? string.Empty;
+				}
+			}
+
+			return string.Empty;
+		}
+
+		private static string ConvertTimeDependencePrecision(float timeDependence)
+		{
+			var instance = ConfigProvider.CurrentConfig;
+			var decimalOffset = 1;
+			var decimalPrecision = 2;
+			if (instance != null)
+			{
+				decimalOffset = instance.timeDependenceDecimalOffset;
+				decimalPrecision = instance.timeDependenceDecimalPrecision;
+
+			}
+
+			var multiplier = Mathf.Pow(10, decimalOffset);
+			return (timeDependence * multiplier).ToString($"n{decimalPrecision}");
 		}
 	}
 }
