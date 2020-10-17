@@ -232,11 +232,13 @@ namespace HitScoreVisualizer.Services
 			// 99 is the max for NumberFormatInfo.NumberDecimalDigits
 			if (configuration.TimeDependenceDecimalPrecision < 0 || configuration.TimeDependenceDecimalPrecision > 99)
 			{
+				Plugin.LoggerInstance.Warn($"timeDependencyDecimalPrecision value {configuration.TimeDependenceDecimalPrecision} is outside the range of acceptable values [0, 99]");
 				return false;
 			}
 
 			if (configuration.TimeDependenceDecimalOffset < 0 || configuration.TimeDependenceDecimalOffset > Math.Log10(float.MaxValue))
 			{
+				Plugin.LoggerInstance.Warn($"timeDependencyDecimalOffset value {configuration.TimeDependenceDecimalOffset} is outside the range of acceptable values [0, {(int) Math.Log10(float.MaxValue)}]");
 				return false;
 			}
 
