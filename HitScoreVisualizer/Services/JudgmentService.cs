@@ -86,7 +86,7 @@ namespace HitScoreVisualizer.Services
 						formattedBuilder.Append(after);
 						break;
 					case 't':
-						formattedBuilder.Append(ConvertTimeDependencePrecision(timeDependence));
+						formattedBuilder.Append(ConvertTimeDependencePrecision(timeDependence, instance.TimeDependenceDecimalOffset, instance.TimeDependenceDecimalPrecision));
 						break;
 					case 'B':
 						formattedBuilder.Append(JudgeSegment(before, instance.BeforeCutAngleJudgments));
@@ -160,18 +160,8 @@ namespace HitScoreVisualizer.Services
 			return string.Empty;
 		}
 
-		private static string ConvertTimeDependencePrecision(float timeDependence)
+		private static string ConvertTimeDependencePrecision(float timeDependence, int decimalOffset, int decimalPrecision)
 		{
-			var instance = ConfigProvider.CurrentConfig;
-			var decimalOffset = 1;
-			var decimalPrecision = 2;
-			if (instance != null)
-			{
-				decimalOffset = instance.timeDependenceDecimalOffset;
-				decimalPrecision = instance.timeDependenceDecimalPrecision;
-
-			}
-
 			var multiplier = Mathf.Pow(10, decimalOffset);
 			return (timeDependence * multiplier).ToString($"n{decimalPrecision}");
 		}

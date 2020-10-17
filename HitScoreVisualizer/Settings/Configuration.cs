@@ -16,6 +16,8 @@ namespace HitScoreVisualizer.Settings
 			DisplayMode = "format",
 			UseFixedPos = false,
 			DoIntermediateUpdates = true,
+			TimeDependenceDecimalPrecision = 1,
+			TimeDependenceDecimalOffset = 2,
 			Judgments = new List<Judgment>
 			{
 				new Judgment {Threshold = 115, Text = "%BFantastic%A%n%s", Color = new List<float> {1.0f, 1.0f, 1.0f, 1.0f}},
@@ -109,12 +111,12 @@ namespace HitScoreVisualizer.Settings
 		// Number of decimal places to show time dependence to
 		[JsonProperty("timeDependencyDecimalPrecision")]
 		[DefaultValue(1)]
-		public int timeDependenceDecimalPrecision { get; set; }
+		public int TimeDependenceDecimalPrecision { get; set; }
 
 		// Which power of 10 to multiply the time dependence by
 		[JsonProperty("timeDependencyDecimalOffset")]
 		[DefaultValue(2)]
-		public int timeDependenceDecimalOffset { get; set; }
+		public int TimeDependenceDecimalOffset { get; set; }
 
 		// Order from highest threshold to lowest; the first matching judgment will be applied
 		[JsonProperty("judgments")]

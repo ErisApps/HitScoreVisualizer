@@ -229,6 +229,17 @@ namespace HitScoreVisualizer.Services
 				return false;
 			}
 
+			// 99 is the max for NumberFormatInfo.NumberDecimalDigits
+			if (configuration.TimeDependenceDecimalPrecision < 0 || configuration.TimeDependenceDecimalPrecision > 99)
+			{
+				return false;
+			}
+
+			if (configuration.TimeDependenceDecimalOffset < 0 || configuration.TimeDependenceDecimalOffset > Math.Log10(float.MaxValue))
+			{
+				return false;
+			}
+
 			if (configuration.BeforeCutAngleJudgments != null)
 			{
 				configuration.BeforeCutAngleJudgments = configuration.BeforeCutAngleJudgments.OrderByDescending(x => x.Threshold).ToList();

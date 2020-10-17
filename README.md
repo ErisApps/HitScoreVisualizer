@@ -62,14 +62,17 @@ You can use that file as a starting point in case you want to customize it. Just
 | useFixedPos | Whether or not to display the hit scores on a fixed position. When enabled, this will also hide the previous score if a new one appears. | true or false |
 | fixedPosX<br>fixedPosY<br>fixedPosZ| The coordinate where the hit scores should be shown when `useFixedPos` is set to `true` | floats |
 | doIntermediateUpdates | When enabled, Judgments will be updated multiple times. This will make score popups more accurate during a brief period before the note's score is finalized, at some cost of performance. | true or false |
+| timeDependencyDecimalPrecision | The number of decimal places to show the time dependence to.<br> **Must be between 0 and 99, inclusive** | ints |
+| timeDependencyDecimalOffset | Which power of 10 to multiply the time dependence by (time dependence is from 0 - 1).<br> **Must be between 0 and 38, inclusive**  | ints |
 | Judgments | The list of Judgments that can be used to customize the Judgments in general.  | Uses Judgment objects.<br>More info below. |
 | beforeCutAngleJudgments | The list that can be used to customize the Judgments for the part of the swing before cutting the block (score is from 0 - 70).<br>Format token: %B<br>* Can only be used when `displayMode` is set to `"format"` | Uses JudgmentSegments objects.<br>More info below. |
 | accuracyJudgments | The list that can be used to customize the Judgments for the accuracy of the cut. How close was the cut to the center of the block? (score is from 0 - 15).<br>Format token: %C<br>* Can only be used when `displayMode` is set to `"format"` | Uses JudgmentSegments objects.<br>More info below. |
 | afterCutAngleJudgments | The list that can be used to customize the Judgments for the part of the swing after cutting the block (score is from 0 - 30).<br>Format token: %A<br>* Can only be used when `displayMode` is set to `"format"` | Uses JudgmentSegments.<br>More info below. |
+| timeDependencyJudgments | The list that can be used to customize the Judgments for the time dependence (value is from 0 - 1).<br>Format token: %T<br>* Can only be used when `displayMode` is set to `"format"` | Uses TimeDependenceJudgmentSegments.<br>More info below. |
 
 
 ### Important info
-- The `text` property of both Judgment and JudgmentSegment also has support for [TextMeshPro formatting!](http://digitalnativestudios.com/textmeshpro/docs/rich-text/).
+- The `text` property of Judgment, JudgmentSegment, and TimeDependenceJudgmentSegment all have support for [TextMeshPro formatting!](http://digitalnativestudios.com/textmeshpro/docs/rich-text/).
 - The order of Judgments and JudgmentSegments in the list doesn't matter anymore from version 3.0.0 and onwards. However, it's still advised to keep a descending order if you plan on targetting older versions of HSV as well.
 - To prevent unexpected issues down the road, the validation will also check within each list whether there are Judgments or JudgmentSegments that share a threshold. Validation will mark the config is failed if when this is detected.
 
@@ -92,6 +95,14 @@ You can use that file as a starting point in case you want to customize it. Just
 | text | The text to display.<br>Remark: Format tokens can't be used in this text... or better, they can be used, but won't be replaced with the actual value. | "+++" |
 
 
+### TimeDependenceJudgmentSegments explanation
+
+| Property name(s) | Explanation / Info | Example or possible values |
+| --- | --- | --- |
+| threshold | The threshold that defines whether this TimeDependenceJudgmentSegment will be used for a given time dependence. The TimeDependenceJudgmentSegment will be used if it is the one with the highest threshold that's either equal or smaller than the given time dependence. It can also be omitted when it's the TimeDependenceJudgmentSegment for the lowest time dependences. | floats |
+| text | The text to display.<br>Remark: Format tokens can't be used in this text... or better, they can be used, but won't be replaced with the actual value. | "+++" |
+
+
 ### Format tokens
 
 | Token | Explanation / Info |
@@ -99,7 +110,8 @@ You can use that file as a starting point in case you want to customize it. Just
 | %b | The score contributed by the swing before cutting the block. |
 | %c | The score contributed by the accuracy of the cut. |
 | %a | The score contributed by the part of the swing after cutting the block. |
-| %B, %C, %A | Uses the Judgment text that matches the threshold as specified in either `beforeCutAngleJudgments`, `accuracyJudgments` or `afterCutAngleJudgments` (depending on the used token). |
+| %t | The time dependence of the swing. This value indicates how depedent the accuracy part of the score is upon *when* you hit the block, measured from 0 - 1. A value of 0 indicates a completely time independent swing, while a value of 1 indicates that the accuracy part of the score would vary greatly if the block was hit even slightly earlier or later.
+| %B, %C, %A, %T | Uses the Judgment text that matches the threshold as specified in either `beforeCutAngleJudgments`, `accuracyJudgments`, `afterCutAngleJudgments`, or `timeDependencyJudgments` (depending on the used token). |
 | %s | The total score of the cut. |
 | %% | A literal percent symbol. |
 | %n | A newline. |
