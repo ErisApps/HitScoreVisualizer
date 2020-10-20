@@ -329,13 +329,13 @@ namespace HitScoreVisualizer.Services
 				return false;
 			}
 
-			if (judgment.Color.All(x => x >= 0f && x <= 1f))
+			if (judgment.Color.All(x => x >= 0f))
 			{
 				return true;
 			}
 
 			Plugin.LoggerInstance
-				.Warn($"Judgment for threshold {judgment.Threshold} has invalid color in {configName}! Make sure to include exactly 4 numbers between 0 and 1 for each judgment's color!");
+				.Warn($"Judgment for threshold {judgment.Threshold} has invalid color in {configName}! Make sure to include exactly 4 numbers that are greater or equal than 0 (and preferably smaller or equal than 1) for each judgment's color!");
 			return false;
 		}
 
