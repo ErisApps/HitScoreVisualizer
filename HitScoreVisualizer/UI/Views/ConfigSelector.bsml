@@ -14,10 +14,10 @@
 						 cell-size="10"
 						 pref-height="55"
 						 select-cell='config-Selected'>
-				<stack>
-					<bg bg="round-rect-panel-shadow" bg-color="#2881BD" tags='hovered'/>
-					<bg bg="round-rect-panel-shadow" bg-color="#BD2881" tags='selected'/>
-					<vertical horizontal-fit='Unconstrained' spacing="-2" child-align="MiddleLeft">
+				<stack size-delta-x="3">
+					<bg bg="panel-top-gradient" bg-color="#BD288199" tags='hovered' size-delta-x="1"/>
+					<bg bg="panel-top-gradient" bg-color="#fff" tags='selected' size-delta-x="1"/>
+					<vertical horizontal-fit='Unconstrained' spacing="-2" child-align="MiddleLeft" pad-left="3" pad-right="3">
 						<text text="~config-name" font-size="5" rich-text="true" word-wrapping="false"/>
 						<text text="~config-description" font-size="3.5"/>
 					</vertical>
