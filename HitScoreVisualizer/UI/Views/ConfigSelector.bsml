@@ -18,8 +18,8 @@
 					<bg bg="panel-top-gradient" bg-color="#BD288199" tags='hovered' size-delta-x="1"/>
 					<bg bg="panel-top-gradient" bg-color="#fff" tags='selected' size-delta-x="1"/>
 					<vertical horizontal-fit='Unconstrained' spacing="-2" child-align="MiddleLeft" pad-left="3" pad-right="3">
-						<text text="~config-name" font-size="5" rich-text="true" word-wrapping="false"/>
-						<text text="~config-description" font-size="3.5"/>
+						<text text="~config-name" font-size="5" rich-text="true" word-wrapping="false" italics="true"/>
+						<text text="~config-description" font-size="3.5" italics="true"/>
 					</vertical>
 				</stack>
 			</custom-list>
@@ -106,10 +106,10 @@
 					spacing="2"
 					active="~loading-available-configs">
 			<loading-indicator preserve-aspect='true' pref-width='4' pref-height='4' source='#LoadingIndicator'/>
-			<text text="Loading..."/>
+			<text text="Loading..." italics="true"/>
 		</horizontal>
 
-		<text text="~config-loaded-text" active="~has-loaded-available-configs"/>
+		<text text="~config-loaded-text" italics="true" active="~has-loaded-available-configs"/>
 	</stack>
 
 </bg>
