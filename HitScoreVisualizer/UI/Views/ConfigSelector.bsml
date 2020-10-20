@@ -62,6 +62,7 @@
 			<button pref-width='28'
 					word-wrapping='false'
 					text='Select'
+					hover-hint="Loads the currently selected config."
 					interactable='~is-valid-config-selected'
 					on-click='pick-config'/>
 
@@ -86,7 +87,7 @@
 						glow-color="#d1002d"
 						face-color="#d1002d"
 						text="Yeet config"
-						hover-hint="Yeet the config out of existence."
+						hover-hint="Yeets the config out of existence."
 						interactable="~is-config-yeetable"
 						on-click="yeet-config"/>
 			</vertical>
