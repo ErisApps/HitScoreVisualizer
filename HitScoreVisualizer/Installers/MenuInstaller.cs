@@ -1,5 +1,4 @@
-﻿using BeatSaberMarkupLanguage;
-using HitScoreVisualizer.UI;
+﻿using HitScoreVisualizer.UI;
 using SiraUtil;
 using Zenject;
 
@@ -11,8 +10,8 @@ namespace HitScoreVisualizer.Installers
 		{
 			Plugin.LoggerInstance.Debug($"Running {nameof(InstallBindings)} of {nameof(MenuInstaller)}");
 
-			Container.BindViewController<ConfigSelectorViewController>(BeatSaberUI.CreateViewController<ConfigSelectorViewController>());
-			Container.BindFlowCoordinator<HitScoreFlowCoordinator>(BeatSaberUI.CreateFlowCoordinator<HitScoreFlowCoordinator>());
+			Container.BindViewController<ConfigSelectorViewController>();
+			Container.BindFlowCoordinator<HitScoreFlowCoordinator>();
 
 			Plugin.LoggerInstance.Debug($"Binding {nameof(SettingsControllerManager)}");
 			Container.BindInterfacesAndSelfTo<SettingsControllerManager>().AsSingle().NonLazy();
