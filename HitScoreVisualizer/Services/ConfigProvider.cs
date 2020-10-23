@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HitScoreVisualizer.Models;
 using HitScoreVisualizer.Settings;
+using IPA.Utilities;
 using Newtonsoft.Json;
 using Zenject;
 using Version = SemVer.Version;
@@ -31,7 +32,7 @@ namespace HitScoreVisualizer.Services
 			_hsvConfig = hsvConfig;
 
 			_jsonSerializerSettings = new JsonSerializerSettings {DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate, Formatting = Formatting.Indented};
-			_hsvConfigsFolderPath = Path.Combine(IPA.Utilities.UnityGame.UserDataPath, nameof(HitScoreVisualizer));
+			_hsvConfigsFolderPath = Path.Combine(UnityGame.UserDataPath, nameof(HitScoreVisualizer));
 
 			_migrationActions = new Dictionary<Version, Func<Configuration, bool>>
 			{
@@ -48,7 +49,23 @@ namespace HitScoreVisualizer.Services
 		{
 			if (CreateHsvConfigsFolderIfYeetedByPlayer())
 			{
-				await SaveConfig(Path.Combine(_hsvConfigsFolderPath, "HitScoreVisualizerConfig-default.json"), Configuration.Default).ConfigureAwait(false);
+				await SaveConfig(Path.Combine(_hsvConfigsFolderPath, "HitScoreVisualizerConfig (default).json"), Configuration.Default).ConfigureAwait(false);
+
+				var oldHsvConfigPath = Path.Combine(UnityGame.UserDataPath, "HitScoreVisualizerConfig.json");
+				if (File.Exists(oldHsvConfigPath))
+				{
+					try
+					{
+						var destinationHsvConfigPath = Path.Combine(_hsvConfigsFolderPath, "HitScoreVisualizerConfig (imported).json");
+						File.Move(oldHsvConfigPath, destinationHsvConfigPath);
+
+						_hsvConfig.ConfigFilePath = destinationHsvConfigPath;
+					}
+					catch (Exception e)
+					{
+						Plugin.LoggerInstance.Warn(e);
+					}
+				}
 			}
 
 			if (_hsvConfig.ConfigFilePath == null)
@@ -111,6 +128,7 @@ namespace HitScoreVisualizer.Services
 			// safe-guarding just to be sure
 			if (!ConfigSelectable(configFileInfo?.State))
 			{
+				_hsvConfig.ConfigFilePath = null;
 				return;
 			}
 
