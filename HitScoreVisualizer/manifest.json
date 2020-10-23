@@ -11,6 +11,9 @@
 		"BeatSaberMarkupLanguage": "^1.4.0",
 		"SiraUtil": "^2.0.0"
 	},
+	"conflictsWith": {
+		"NalulunaFlyingScore": "*"
+	},
 	"links": {
 		"project-home": "https://github.com/ErisApps/HitScoreVisualizer"
 	}
