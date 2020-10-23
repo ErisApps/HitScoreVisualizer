@@ -7,7 +7,7 @@
 		<Nullable>enable</Nullable>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<OutDir>$(ProjectDir)bin\$(Configuration)</OutDir>
-		<ModVersion>3.0.0</ModVersion>
+		<ModVersion>3.0.1</ModVersion>
 		<AssemblyVersion>$(ModVersion)</AssemblyVersion>
 		<FileVersion>$(ModVersion)</FileVersion>
 		<InformationalVersion>$(ModVersion)</InformationalVersion>
