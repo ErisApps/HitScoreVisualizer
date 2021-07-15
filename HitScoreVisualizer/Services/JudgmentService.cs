@@ -96,7 +96,7 @@ namespace HitScoreVisualizer.Services
 						formattedBuilder.Append(JudgeSegment(after, instance.AfterCutAngleJudgments));
 						break;
 					case 'T':
-						formattedBuilder.Append(JudgeTimeDependenceSegment(timeDependence, instance.TimeDependenceJudgments));
+						formattedBuilder.Append(JudgeTimeDependenceSegment(timeDependence, instance.TimeDependenceJudgments, instance));
 						break;
 					case 's':
 						formattedBuilder.Append(score);
@@ -140,7 +140,7 @@ namespace HitScoreVisualizer.Services
 			return string.Empty;
 		}
 
-		private static string JudgeTimeDependenceSegment(float scoreForSegment, IList<TimeDependenceJudgmentSegment>? judgments)
+		private static string JudgeTimeDependenceSegment(float scoreForSegment, IList<TimeDependenceJudgmentSegment>? judgments, Configuration instance)
 		{
 			if (judgments == null)
 			{
@@ -151,11 +151,54 @@ namespace HitScoreVisualizer.Services
 			{
 				if (scoreForSegment >= j.Threshold)
 				{
-					return j.Text ?? string.Empty;
+					return FormatTimeDependenceSegment(j, scoreForSegment, instance);
 				}
 			}
 
 			return string.Empty;
+		}
+
+		private static string FormatTimeDependenceSegment(TimeDependenceJudgmentSegment? judgment, float timeDependence, Configuration instance)
+		{
+			if (judgment == null)
+			{
+				return string.Empty;
+			}
+
+			var formattedBuilder = new StringBuilder();
+			var formatString = judgment.Text ?? string.Empty;
+			var nextPercentIndex = formatString.IndexOf('%');
+			while (nextPercentIndex != -1)
+			{
+				formattedBuilder.Append(formatString.Substring(0, nextPercentIndex));
+				if (formatString.Length == nextPercentIndex + 1)
+				{
+					formatString += " ";
+				}
+
+				var specifier = formatString[nextPercentIndex + 1];
+
+				switch (specifier)
+				{
+					case 't':
+						formattedBuilder.Append(ConvertTimeDependencePrecision(timeDependence, instance.TimeDependenceDecimalOffset, instance.TimeDependenceDecimalPrecision));
+						break;
+					case '%':
+						formattedBuilder.Append("%");
+						break;
+					case 'n':
+						formattedBuilder.Append("\n");
+						break;
+					default:
+						formattedBuilder.Append("%" + specifier);
+						break;
+				}
+
+				formatString = formatString.Remove(0, nextPercentIndex + 2);
+				nextPercentIndex = formatString.IndexOf('%');
+			}
+
+			return formattedBuilder.Append(formatString).ToString();
 		}
 
 		private static string ConvertTimeDependencePrecision(float timeDependence, int decimalOffset, int decimalPrecision)
