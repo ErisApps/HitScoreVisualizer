@@ -21,19 +21,18 @@ namespace HitScoreVisualizer
 
 		private static Harmony? _harmonyInstance;
 		private static PluginMetadata? _metadata;
-		private static HSVConfig? _hsvConfig;
+		internal static HSVConfig? HSVConfig;
 
 		public static string Name => _metadata?.Name!;
 		public static Version Version => _metadata?.HVersion!;
-		public static bool BloomToggle => (bool)_hsvConfig?.HitScoreBloom!;
 
 		[Init]
 		public void Init(Logger logger, Config config, PluginMetadata pluginMetadata, Zenjector zenject)
 		{
 			_metadata = pluginMetadata;
-			_hsvConfig = config.Generated<HSVConfig>();
+			HSVConfig = config.Generated<HSVConfig>();
 
-			zenject.OnApp<HsvAppInstaller>().WithParameters(logger, _hsvConfig);
+			zenject.OnApp<HsvAppInstaller>().WithParameters(logger, HSVConfig);
 			zenject.OnMenu<HsvMenuInstaller>();
 			zenject.OnGame<HsvGameInstaller>();
 		}

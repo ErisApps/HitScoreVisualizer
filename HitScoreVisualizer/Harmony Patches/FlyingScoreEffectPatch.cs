@@ -65,7 +65,7 @@ namespace HitScoreVisualizer.Harmony_Patches
 			}
 
 			// Once the HSV stuff is done, we check our bloom toggle and enable if necessary.
-			if (Plugin.BloomToggle)
+			if (Plugin.HSVConfig!.HitScoreBloom)
 			{
 				var text = ____flyingScoreEffectPrefab.GetField<TextMeshPro, FlyingScoreEffect>("_text");
 
