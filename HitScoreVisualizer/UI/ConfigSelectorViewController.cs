@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -74,6 +74,9 @@ namespace HitScoreVisualizer.UI
 		[UIValue("is-config-yeetable")]
 		internal bool CanConfigGetYeeted => _selectedConfigFileInfo?.ConfigPath != null && _selectedConfigFileInfo.ConfigPath != _configProvider.CurrentConfigPath;
 
+		[UIValue("bloom-toggle-face-color")]
+		internal string BloomToggleFaceColor => _hsvConfig.HitScoreBloom ? "#22dd00" : "#ff0045";
+
 		[UIAction("config-Selected")]
 		internal void Select(TableView _, object @object)
 		{
@@ -125,6 +128,13 @@ namespace HitScoreVisualizer.UI
 				NotifyPropertyChanged(nameof(HasConfigCurrently));
 				NotifyPropertyChanged(nameof(LoadedConfigText));
 			}
+		}
+
+		[UIAction("toggle-bloom-effect")]
+		internal void ToggleBloomEffect()
+		{
+			_hsvConfig.HitScoreBloom = !_hsvConfig.HitScoreBloom;
+			NotifyPropertyChanged(nameof(BloomToggleFaceColor));
 		}
 
 		[UIAction("yeet-config")]

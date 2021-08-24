@@ -1,4 +1,4 @@
-﻿<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
 	xsi:noNamespaceSchemaLocation='https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
 
 	<horizontal pad-top='12'
@@ -85,6 +85,13 @@
 						interactable="~is-config-yeetable"
 						event-click="show-yeet-modal"/>
 			</vertical>
+
+			<button pref-width="28"
+					word-wrapping="false"
+					face-color="~bloom-toggle-face-color"
+					text="HitScore Bloom"
+					hover-hint="Toggles the bloom effect on HitScores."
+					on-click="toggle-bloom-effect"/>
 		</vertical>
 
 		<modal size-delta-x="50"

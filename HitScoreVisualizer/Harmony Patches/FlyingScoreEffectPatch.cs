@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -62,6 +62,21 @@ namespace HitScoreVisualizer.Harmony_Patches
 				FieldAccessor<FlyingScoreEffect, TextMeshPro>.Set(hsvFlyingScoreEffect, "_text", Accessors.TextAccessor(ref flyingScoreEffect));
 				FieldAccessor<FlyingScoreEffect, AnimationCurve>.Set(hsvFlyingScoreEffect, "_fadeAnimationCurve", Accessors.FadeAnimationCurveAccessor(ref flyingScoreEffect));
 				FieldAccessor<FlyingScoreEffect, SpriteRenderer>.Set(hsvFlyingScoreEffect, "_maxCutDistanceScoreIndicator", Accessors.SpriteRendererAccessor(ref flyingScoreEffect));
+			}
+
+			// Once the HSV stuff is done, we check our bloom toggle and enable if necessary.
+			if (Plugin.BloomToggle)
+			{
+				var text = ____flyingScoreEffectPrefab.GetField<TextMeshPro, FlyingScoreEffect>("_text");
+
+				var customFontAsset = TMP_FontAsset.CreateFontAsset(Resources.FindObjectsOfTypeAll<TMP_FontAsset>().First(
+					x => x.name.Contains("Teko-Medium SDF")).sourceFontFile);
+				customFontAsset.name = "Teko-Medium SDF Bloom";
+
+				customFontAsset.material.shader = Resources.FindObjectsOfTypeAll<Shader>().First(x => x.name.Contains(
+					"TextMeshPro/Distance Field"));
+
+				text.font = customFontAsset;
 			}
 		}
 
