@@ -40,6 +40,7 @@ namespace HitScoreVisualizer.Harmony_Patches
 		// ReSharper disable InconsistentNaming
 		{
 			var gameObject = ____flyingScoreEffectPrefab.gameObject;
+			var text = ____flyingScoreEffectPrefab.GetField<TextMeshPro, FlyingScoreEffect>("_text");
 
 			// we can't destroy original FlyingScoreEffect since it kills the reference given through [SerializeField]
 			var flyingScoreEffect = gameObject.GetComponent<FlyingScoreEffect>();
@@ -67,11 +68,9 @@ namespace HitScoreVisualizer.Harmony_Patches
 			// Once the HSV stuff is done, we check our bloom toggle and enable if necessary.
 			if (Plugin.HSVConfig!.HitScoreBloom)
 			{
-				Plugin.BloomFontAsset = Plugin.SetupBloomFont();
-
-				var text = ReflectionUtil.GetField<TextMeshPro, FlyingScoreEffect>(flyingScoreEffect, "_text");
-				text.font = Plugin.BloomFontAsset;
+				text.font = Services.BloomFontTools.BloomFont();
 			}
+			else { text.font = Services.BloomFontTools.cachedTekoFont; }
 		}
 
 		[HarmonyTranspiler]
