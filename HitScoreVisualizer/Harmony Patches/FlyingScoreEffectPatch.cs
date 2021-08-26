@@ -67,16 +67,10 @@ namespace HitScoreVisualizer.Harmony_Patches
 			// Once the HSV stuff is done, we check our bloom toggle and enable if necessary.
 			if (Plugin.HSVConfig!.HitScoreBloom)
 			{
-				var text = ____flyingScoreEffectPrefab.GetField<TextMeshPro, FlyingScoreEffect>("_text");
+				Plugin.BloomFontAsset = Plugin.SetupBloomFont();
 
-				var customFontAsset = TMP_FontAsset.CreateFontAsset(Resources.FindObjectsOfTypeAll<TMP_FontAsset>().First(
-					x => x.name.Contains("Teko-Medium SDF")).sourceFontFile);
-				customFontAsset.name = "Teko-Medium SDF Bloom";
-
-				customFontAsset.material.shader = Resources.FindObjectsOfTypeAll<Shader>().First(x => x.name.Contains(
-					"TextMeshPro/Distance Field"));
-
-				text.font = customFontAsset;
+				var text = ReflectionUtil.GetField<TextMeshPro, FlyingScoreEffect>(flyingScoreEffect, "_text");
+				text.font = Plugin.BloomFontAsset;
 			}
 		}
 

@@ -1,5 +1,6 @@
-using HarmonyLib;
+using System.Linq;
 using System.Reflection;
+using HarmonyLib;
 using HitScoreVisualizer.Installers;
 using HitScoreVisualizer.Settings;
 using Hive.Versioning;
@@ -22,6 +23,7 @@ namespace HitScoreVisualizer
 		private static Harmony? _harmonyInstance;
 		private static PluginMetadata? _metadata;
 		internal static HSVConfig? HSVConfig;
+		internal static TMPro.TMP_FontAsset? BloomFontAsset;
 
 		public static string Name => _metadata?.Name!;
 		public static Version Version => _metadata?.HVersion!;
@@ -49,6 +51,23 @@ namespace HitScoreVisualizer
 		{
 			_harmonyInstance?.UnpatchAll(HARMONY_ID);
 			_harmonyInstance = null;
+		}
+
+		internal static TMPro.TMP_FontAsset SetupBloomFont()
+		{
+			if (BloomFontAsset is null)
+			{
+				var cachedFont = UnityEngine.Resources.FindObjectsOfTypeAll<TMPro.TMP_FontAsset>().First(x =>
+				x.name.Contains("Teko-Medium SDF"));
+
+				var bloomFont = TMPro.TMP_FontAsset.CreateFontAsset(cachedFont.sourceFontFile);
+				bloomFont.name = "Teko-Medium SDF Bloom";
+				bloomFont.material.shader = UnityEngine.Resources.FindObjectsOfTypeAll<UnityEngine.Shader>().First(
+					x => x.name.Contains("TextMeshPro/Distance Field"));
+
+				BloomFontAsset = bloomFont;
+			}
+			return BloomFontAsset;
 		}
 	}
 }
