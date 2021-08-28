@@ -40,11 +40,12 @@ namespace HitScoreVisualizer.Harmony_Patches
 		// ReSharper disable InconsistentNaming
 		{
 			var gameObject = ____flyingScoreEffectPrefab.gameObject;
-			var text = ____flyingScoreEffectPrefab.GetField<TextMeshPro, FlyingScoreEffect>("_text");
 
 			// we can't destroy original FlyingScoreEffect since it kills the reference given through [SerializeField]
 			var flyingScoreEffect = gameObject.GetComponent<FlyingScoreEffect>();
 			flyingScoreEffect.enabled = false;
+
+			var text = Accessors.TextAccessor(ref ____flyingScoreEffectPrefab);
 
 			var hsvScoreEffect = gameObject.GetComponent<HsvFlyingScoreEffect>();
 
