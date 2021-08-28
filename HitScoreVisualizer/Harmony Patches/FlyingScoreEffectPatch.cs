@@ -6,7 +6,6 @@ using HarmonyLib;
 using HitScoreVisualizer.Helpers;
 using HitScoreVisualizer.Models;
 using HitScoreVisualizer.Services;
-using HitScoreVisualizer.Settings;
 using IPA.Utilities;
 using TMPro;
 using UnityEngine;
@@ -68,17 +67,8 @@ namespace HitScoreVisualizer.Harmony_Patches
 				FieldAccessor<FlyingScoreEffect, SpriteRenderer>.Set(hsvFlyingScoreEffect, "_maxCutDistanceScoreIndicator", Accessors.SpriteRendererAccessor(ref flyingScoreEffect));
 			}
 
-			// Once the HSV stuff is done, we check our bloom toggle and enable if necessary.
-			var hsvConfig = container.Resolve<HSVConfig>();
-			var bloomFontProvider = container.Resolve<BloomFontProvider>();
-			if (hsvConfig.HitScoreBloom)
-			{
-				bloomFontProvider.ConfigureBloomFont(ref text);
-			}
-			else
-			{
-				bloomFontProvider.ConfigureOriginalFont(ref text);
-			}
+			// Once the HSV stuff is done, we reconfigure the HSV prefab font.
+			container.Resolve<BloomFontProvider>().ConfigureFont(ref text);
 		}
 
 		[HarmonyTranspiler]

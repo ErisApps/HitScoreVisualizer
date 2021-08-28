@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using HitScoreVisualizer.Settings;
 using TMPro;
 using UnityEngine;
 
@@ -8,11 +9,15 @@ namespace HitScoreVisualizer.Services
 {
 	internal class BloomFontProvider : IDisposable
 	{
+		private readonly HSVConfig _hsvConfig;
+
 		private readonly Lazy<TMP_FontAsset> _cachedTekoFont;
 		private readonly Lazy<TMP_FontAsset> _bloomTekoFont;
 
-		public BloomFontProvider()
+		public BloomFontProvider(HSVConfig hsvConfig)
 		{
+			_hsvConfig = hsvConfig;
+
 			_cachedTekoFont = new Lazy<TMP_FontAsset>(() => Resources.FindObjectsOfTypeAll<TMP_FontAsset>().First(x => x.name.Contains("Teko-Medium SDF")),
 				LazyThreadSafetyMode.ExecutionAndPublication);
 
@@ -27,14 +32,9 @@ namespace HitScoreVisualizer.Services
 			}, LazyThreadSafetyMode.ExecutionAndPublication);
 		}
 
-		public void ConfigureOriginalFont(ref TextMeshPro text)
+		public void ConfigureFont(ref TextMeshPro text)
 		{
-			text.font = _cachedTekoFont.Value;
-		}
-
-		public void ConfigureBloomFont(ref TextMeshPro text)
-		{
-			text.font = _bloomTekoFont.Value;
+			text.font = _hsvConfig.HitScoreBloom ? _bloomTekoFont.Value : _cachedTekoFont.Value;
 		}
 
 		public void Dispose()
