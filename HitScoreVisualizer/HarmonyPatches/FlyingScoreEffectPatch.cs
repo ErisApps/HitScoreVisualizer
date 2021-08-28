@@ -11,7 +11,7 @@ using TMPro;
 using UnityEngine;
 using Zenject;
 
-namespace HitScoreVisualizer.Harmony_Patches
+namespace HitScoreVisualizer.HarmonyPatches
 {
 	// Roughly based on SiraLocalizer' MissedEffectSpawnerSwapper prefix patch
 	// Basically "upgrades" the existing FlyingScoreEffect with a custom one
