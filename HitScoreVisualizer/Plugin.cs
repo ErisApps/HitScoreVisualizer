@@ -21,7 +21,6 @@ namespace HitScoreVisualizer
 
 		private static Harmony? _harmonyInstance;
 		private static PluginMetadata? _metadata;
-		internal static HSVConfig? HSVConfig;
 
 		public static string Name => _metadata?.Name!;
 		public static Version Version => _metadata?.HVersion!;
@@ -30,9 +29,8 @@ namespace HitScoreVisualizer
 		public void Init(Logger logger, Config config, PluginMetadata pluginMetadata, Zenjector zenject)
 		{
 			_metadata = pluginMetadata;
-			HSVConfig = config.Generated<HSVConfig>();
 
-			zenject.OnApp<HsvAppInstaller>().WithParameters(logger, HSVConfig);
+			zenject.OnApp<HsvAppInstaller>().WithParameters(logger, config.Generated<HSVConfig>());
 			zenject.OnMenu<HsvMenuInstaller>();
 			zenject.OnGame<HsvGameInstaller>();
 		}
@@ -47,7 +45,7 @@ namespace HitScoreVisualizer
 		[OnDisable]
 		public void OnDisable()
 		{
-			_harmonyInstance?.UnpatchAll(HARMONY_ID);
+			_harmonyInstance?.UnpatchSelf();
 			_harmonyInstance = null;
 		}
 	}

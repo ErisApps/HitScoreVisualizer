@@ -5,6 +5,8 @@ using System.Reflection.Emit;
 using HarmonyLib;
 using HitScoreVisualizer.Helpers;
 using HitScoreVisualizer.Models;
+using HitScoreVisualizer.Services;
+using HitScoreVisualizer.Settings;
 using IPA.Utilities;
 using TMPro;
 using UnityEngine;
@@ -15,6 +17,8 @@ namespace HitScoreVisualizer.Harmony_Patches
 	// Roughly based on SiraLocalizer' MissedEffectSpawnerSwapper prefix patch
 	// Basically "upgrades" the existing FlyingScoreEffect with a custom one
 	// https://github.com/Auros/SiraLocalizer/blob/main/SiraLocalizer/HarmonyPatches/MissedEffectSpawnerSwapper.cs
+
+	// Will most likely be rewritten once SiraUtil 3 becomes available
 	[HarmonyPatch(typeof(EffectPoolsManualInstaller), nameof(EffectPoolsManualInstaller.ManualInstallBindings))]
 	internal class FlyingScoreEffectPatch
 	{
@@ -36,8 +40,7 @@ namespace HitScoreVisualizer.Harmony_Patches
 		// ReSharper disable once SuggestBaseTypeForParameter
 		// ReSharper disable InconsistentNaming
 		[HarmonyPrefix]
-		internal static void Prefix(FlyingScoreEffect ____flyingScoreEffectPrefab)
-		// ReSharper disable InconsistentNaming
+		internal static void Prefix(FlyingScoreEffect ____flyingScoreEffectPrefab, DiContainer container)
 		{
 			var gameObject = ____flyingScoreEffectPrefab.gameObject;
 
@@ -60,18 +63,22 @@ namespace HitScoreVisualizer.Harmony_Patches
 				FieldAccessor<FlyingObjectEffect, float>.Set(hsvFlyingScoreEffect, "_shakeStrength", Accessors.ShakeStrengthAccessor(ref flyingObjectEffect));
 				FieldAccessor<FlyingObjectEffect, AnimationCurve>.Set(hsvFlyingScoreEffect, "_shakeStrengthAnimationCurve", Accessors.ShakeStrengthAnimationCurveAccessor(ref flyingObjectEffect));
 
-
 				FieldAccessor<FlyingScoreEffect, TextMeshPro>.Set(hsvFlyingScoreEffect, "_text", Accessors.TextAccessor(ref flyingScoreEffect));
 				FieldAccessor<FlyingScoreEffect, AnimationCurve>.Set(hsvFlyingScoreEffect, "_fadeAnimationCurve", Accessors.FadeAnimationCurveAccessor(ref flyingScoreEffect));
 				FieldAccessor<FlyingScoreEffect, SpriteRenderer>.Set(hsvFlyingScoreEffect, "_maxCutDistanceScoreIndicator", Accessors.SpriteRendererAccessor(ref flyingScoreEffect));
 			}
 
 			// Once the HSV stuff is done, we check our bloom toggle and enable if necessary.
-			if (Plugin.HSVConfig!.HitScoreBloom)
+			var hsvConfig = container.Resolve<HSVConfig>();
+			var bloomFontProvider = container.Resolve<BloomFontProvider>();
+			if (hsvConfig.HitScoreBloom)
 			{
-				text.font = Services.BloomFontTools.BloomFont();
+				bloomFontProvider.ConfigureBloomFont(ref text);
 			}
-			else { text.font = Services.BloomFontTools.cachedTekoFont; }
+			else
+			{
+				bloomFontProvider.ConfigureOriginalFont(ref text);
+			}
 		}
 
 		[HarmonyTranspiler]
