@@ -1,111 +1,118 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
-using HarmonyLib;
-using HitScoreVisualizer.Helpers;
-using HitScoreVisualizer.Models;
 using HitScoreVisualizer.Services;
-using IPA.Utilities;
 using SiraUtil.Affinity;
-using TMPro;
 using UnityEngine;
-using Zenject;
 
 namespace HitScoreVisualizer.HarmonyPatches
 {
-	// Roughly based on SiraLocalizer' MissedEffectSpawnerSwapper prefix patch
-	// Basically "upgrades" the existing FlyingScoreEffect with a custom one
-	// https://github.com/Auros/SiraLocalizer/blob/main/SiraLocalizer/HarmonyPatches/MissedEffectSpawnerSwapper.cs
-
-	// Will most likely be rewritten once SiraUtil 3 becomes available
 	internal class FlyingScoreEffectPatch : IAffinity
 	{
-		private static readonly MethodInfo MemoryPoolBinderOriginal = typeof(DiContainer).GetMethods()
-			.First(x => x.Name == nameof(DiContainer.BindMemoryPool) && x.IsGenericMethod && x.GetGenericArguments().Length == 2)
-			.MakeGenericMethod(typeof(FlyingScoreEffect), typeof(FlyingScoreEffect.Pool));
+		private readonly JudgmentService _judgmentService;
+		private readonly ConfigProvider _configProvider;
 
-		private static readonly MethodInfo MemoryPoolBinderReplacement = SymbolExtensions.GetMethodInfo(() => MemoryPoolBinderStub(null!));
-
-		private static readonly MethodInfo WithInitialSizeOriginal = typeof(MemoryPoolInitialSizeMaxSizeBinder<FlyingScoreEffect>)
-			.GetMethod(nameof(MemoryPoolInitialSizeMaxSizeBinder<FlyingScoreEffect>.WithInitialSize), new[]
-			{
-				typeof(int)
-			})!;
-
-		private static readonly MethodInfo WithInitialSizeReplacement = SymbolExtensions.GetMethodInfo(() => PoolSizeDefinitionStub(null!, 0));
-
-		private readonly BloomFontProvider _bloomFontProvider;
-
-		public FlyingScoreEffectPatch(BloomFontProvider bloomFontProvider)
+		public FlyingScoreEffectPatch(JudgmentService judgmentService, ConfigProvider configProvider)
 		{
-			_bloomFontProvider = bloomFontProvider;
+			_judgmentService = judgmentService;
+			_configProvider = configProvider;
 		}
 
-		// ReSharper disable once SuggestBaseTypeForParameter
-		// ReSharper disable InconsistentNaming
 		[AffinityPrefix]
-		[AffinityPatch(typeof(EffectPoolsManualInstaller), nameof(EffectPoolsManualInstaller.ManualInstallBindings))]
-		internal void Prefix(FlyingScoreEffect ____flyingScoreEffectPrefab)
+		[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.InitAndPresent))]
+		internal bool InitAndPresent(ref FlyingScoreEffect __instance, IReadonlyCutScoreBuffer cutScoreBuffer, float duration, Vector3 targetPos, Color color)
 		{
-			var gameObject = ____flyingScoreEffectPrefab.gameObject;
+			var configuration = _configProvider.GetCurrentConfig();
+			var noteCutInfo = cutScoreBuffer.noteCutInfo;
 
-			// we can't destroy original FlyingScoreEffect since it kills the reference given through [SerializeField]
-			var flyingScoreEffect = gameObject.GetComponent<FlyingScoreEffect>();
-			flyingScoreEffect.enabled = false;
-
-			var text = Accessors.TextAccessor(ref ____flyingScoreEffectPrefab);
-
-			var hsvScoreEffect = gameObject.GetComponent<HsvFlyingScoreEffect>();
-
-			if (!hsvScoreEffect)
+			if (configuration != null)
 			{
-				var hsvFlyingScoreEffect = gameObject.AddComponent<HsvFlyingScoreEffect>();
-
-				// Serialized fields aren't filled in correctly in our own custom override, so copying over the values using FieldAccessors
-				var flyingObjectEffect = (FlyingObjectEffect) flyingScoreEffect;
-				FieldAccessor<FlyingObjectEffect, AnimationCurve>.Set(hsvFlyingScoreEffect, "_moveAnimationCurve", Accessors.MoveAnimationCurveAccessor(ref flyingObjectEffect));
-				FieldAccessor<FlyingObjectEffect, float>.Set(hsvFlyingScoreEffect, "_shakeFrequency", Accessors.ShakeFrequencyAccessor(ref flyingObjectEffect));
-				FieldAccessor<FlyingObjectEffect, float>.Set(hsvFlyingScoreEffect, "_shakeStrength", Accessors.ShakeStrengthAccessor(ref flyingObjectEffect));
-				FieldAccessor<FlyingObjectEffect, AnimationCurve>.Set(hsvFlyingScoreEffect, "_shakeStrengthAnimationCurve", Accessors.ShakeStrengthAnimationCurveAccessor(ref flyingObjectEffect));
-
-				FieldAccessor<FlyingScoreEffect, TextMeshPro>.Set(hsvFlyingScoreEffect, "_text", Accessors.TextAccessor(ref flyingScoreEffect));
-				FieldAccessor<FlyingScoreEffect, AnimationCurve>.Set(hsvFlyingScoreEffect, "_fadeAnimationCurve", Accessors.FadeAnimationCurveAccessor(ref flyingScoreEffect));
-				FieldAccessor<FlyingScoreEffect, SpriteRenderer>.Set(hsvFlyingScoreEffect, "_maxCutDistanceScoreIndicator", Accessors.SpriteRendererAccessor(ref flyingScoreEffect));
+				if (configuration.FixedPosition != null)
+				{
+					// Set current and target position to the desired fixed position
+					targetPos = configuration.FixedPosition.Value;
+					__instance.transform.position = targetPos;
+				}
+				else if (configuration.TargetPositionOffset != null)
+				{
+					targetPos += configuration.TargetPositionOffset.Value;
+				}
 			}
 
-			// Once the HSV stuff is done, we reconfigure the HSV prefab font.
-			_bloomFontProvider.ConfigureFont(ref text);
+			__instance._color = color;
+			__instance._cutScoreBuffer = cutScoreBuffer;
+			if (!cutScoreBuffer.isFinished)
+			{
+				cutScoreBuffer.RegisterDidChangeReceiver(__instance);
+				cutScoreBuffer.RegisterDidFinishReceiver(__instance);
+				__instance._registeredToCallbacks = true;
+			}
+
+			if (configuration == null || noteCutInfo.noteData.gameplayType is not NoteData.GameplayType.Normal)
+			{
+				__instance._text.text = cutScoreBuffer.cutScore.ToString();
+				__instance._maxCutDistanceScoreIndicator.enabled = cutScoreBuffer.centerDistanceCutScore == cutScoreBuffer.noteScoreDefinition.maxCenterDistanceCutScore;
+				__instance._colorAMultiplier = (double) cutScoreBuffer.cutScore > (double) cutScoreBuffer.maxPossibleCutScore * 0.9f ? 1f : 0.3f;
+			}
+			else
+			{
+				__instance._maxCutDistanceScoreIndicator.enabled = false;
+
+				// Apply judgments a total of twice - once when the effect is created, once when it finishes.
+				Judge(__instance, (CutScoreBuffer) cutScoreBuffer, 30);
+			}
+
+			__instance.InitAndPresent(duration, targetPos, noteCutInfo.worldRotation, false);
+
+			return false;
 		}
 
-		[AffinityTranspiler]
-		[AffinityPatch(typeof(EffectPoolsManualInstaller), nameof(EffectPoolsManualInstaller.ManualInstallBindings))]
-		internal IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+		[AffinityPrefix]
+		[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.ManualUpdate))]
+		internal bool ManualUpdate(FlyingScoreEffect __instance, float t)
 		{
-			return new CodeMatcher(instructions)
-				.MatchForward(false,
-					new CodeMatch(OpCodes.Ldarg_1), // push DiContainer instance (first method parameter) onto the evaluation stack
-					new CodeMatch(OpCodes.Callvirt, MemoryPoolBinderOriginal), // Call method BindMemoryPool<,>()
-					new CodeMatch(OpCodes.Ldc_I4_S), // push InitialSize parameter with value X onto the evaluation stack
-					new CodeMatch(OpCodes.Callvirt, WithInitialSizeOriginal)) // Call method WithInitialSize(size)
-				.Advance(1)
-				.SetOperandAndAdvance(MemoryPoolBinderReplacement)
-				.Advance(1)
-				.SetOperandAndAdvance(WithInitialSizeReplacement)
-				.InstructionEnumeration();
+			var color = __instance._color.ColorWithAlpha(__instance._fadeAnimationCurve.Evaluate(t));
+			__instance._text.color = color;
+			__instance._maxCutDistanceScoreIndicator.color = color;
+
+			return false;
 		}
 
-		// ReSharper disable once UnusedMethodReturnValue.Local
-		private static MemoryPoolIdInitialSizeMaxSizeBinder<HsvFlyingScoreEffect> MemoryPoolBinderStub(DiContainer contract)
+		[AffinityPrefix]
+		[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.HandleCutScoreBufferDidChange))]
+		internal bool HandleCutScoreBufferDidChange(FlyingScoreEffect __instance, CutScoreBuffer cutScoreBuffer)
 		{
-			return contract.BindMemoryPool<HsvFlyingScoreEffect, FlyingScoreEffect.Pool>();
+			var configuration = _configProvider.GetCurrentConfig();
+			if (configuration == null || cutScoreBuffer.noteCutInfo.noteData.gameplayType is not NoteData.GameplayType.Normal)
+			{
+				// Run original implementation
+				return true;
+			}
+
+			if (configuration.DoIntermediateUpdates)
+			{
+				Judge(__instance, cutScoreBuffer);
+			}
+
+			return false;
 		}
 
-		// ReSharper disable once SuggestBaseTypeForParameter
-		// ReSharper disable once UnusedMethodReturnValue.Local
-		private static MemoryPoolMaxSizeBinder<HsvFlyingScoreEffect> PoolSizeDefinitionStub(MemoryPoolIdInitialSizeMaxSizeBinder<HsvFlyingScoreEffect> contract, int initialSize)
+		[AffinityPrefix]
+		[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.HandleCutScoreBufferDidFinish))]
+		internal void HandleCutScoreBufferDidFinish(FlyingScoreEffect __instance, CutScoreBuffer cutScoreBuffer)
 		{
-			return contract.WithInitialSize(initialSize);
+			var configuration = _configProvider.GetCurrentConfig();
+			if (configuration != null && cutScoreBuffer.noteCutInfo.noteData.gameplayType is NoteData.GameplayType.Normal)
+			{
+				Judge(__instance, cutScoreBuffer);
+			}
+		}
+
+		private void Judge(FlyingScoreEffect flyingScoreEffect, CutScoreBuffer cutScoreBuffer, int? assumedAfterCutScore = null)
+		{
+			var before = cutScoreBuffer.beforeCutScore;
+			var after = assumedAfterCutScore ?? cutScoreBuffer.afterCutScore;
+			var accuracy = cutScoreBuffer.centerDistanceCutScore;
+			var total = before + after + accuracy;
+			var timeDependence = Mathf.Abs(cutScoreBuffer.noteCutInfo.cutNormal.z);
+			_judgmentService.Judge(cutScoreBuffer.noteScoreDefinition, ref flyingScoreEffect._text, ref flyingScoreEffect._color, total, before, after, accuracy, timeDependence);
 		}
 	}
 }
