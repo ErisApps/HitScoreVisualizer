@@ -9,16 +9,17 @@ namespace HitScoreVisualizer.Services
 {
 	internal class JudgmentService
 	{
-		private readonly Configuration? _config;
+		private readonly ConfigProvider _configProvider;
 
 		public JudgmentService(ConfigProvider configProvider)
 		{
-			_config = configProvider.GetCurrentConfig();
+			_configProvider = configProvider;
 		}
 
 		internal void Judge(ScoreModel.NoteScoreDefinition noteScoreDefinition, ref TextMeshPro text, ref Color color, int score, int before, int after, int accuracy, float timeDependence)
 		{
-			if (_config == null)
+			var config = _configProvider.GetCurrentConfig();
+			if (config == null)
 			{
 				return;
 			}
@@ -30,12 +31,12 @@ namespace HitScoreVisualizer.Services
 			text.overflowMode = TextOverflowModes.Overflow;
 
 			// save in case we need to fade
-			var index = _config.Judgments!.FindIndex(j => j.Threshold <= score);
-			var judgment = index >= 0 ? _config.Judgments[index] : Judgment.Default;
+			var index = config.Judgments!.FindIndex(j => j.Threshold <= score);
+			var judgment = index >= 0 ? config.Judgments[index] : Judgment.Default;
 
 			if (judgment.Fade)
 			{
-				var fadeJudgment = _config.Judgments[index - 1];
+				var fadeJudgment = config.Judgments[index - 1];
 				var baseColor = judgment.Color.ToColor();
 				var fadeColor = fadeJudgment.Color.ToColor();
 				var lerpDistance = Mathf.InverseLerp(judgment.Threshold, fadeJudgment.Threshold, score);
@@ -46,9 +47,9 @@ namespace HitScoreVisualizer.Services
 				color = judgment.Color.ToColor();
 			}
 
-			text.text = _config.DisplayMode switch
+			text.text = config.DisplayMode switch
 			{
-				"format" => DisplayModeFormat(noteScoreDefinition, score, before, after, accuracy, timeDependence, judgment, _config),
+				"format" => DisplayModeFormat(noteScoreDefinition, score, before, after, accuracy, timeDependence, judgment, config),
 				"textOnly" => judgment.Text,
 				"numeric" => score.ToString(),
 				"scoreOnTop" => $"{score}\n{judgment.Text}\n",

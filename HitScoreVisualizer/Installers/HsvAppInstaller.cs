@@ -1,4 +1,4 @@
-﻿using HitScoreVisualizer.HarmonyPatches;
+using HitScoreVisualizer.HarmonyPatches;
 using HitScoreVisualizer.Services;
 using HitScoreVisualizer.Settings;
 using Zenject;
@@ -20,7 +20,9 @@ namespace HitScoreVisualizer.Installers
 			Container.BindInterfacesAndSelfTo<ConfigProvider>().AsSingle();
 			Container.BindInterfacesAndSelfTo<BloomFontProvider>().AsSingle();
 
+			Container.Bind<JudgmentService>().AsSingle();
 			Container.BindInterfacesTo<FlyingScoreEffectPatch>().AsSingle();
+			Container.BindInterfacesTo<EffectPoolsManualInstallerPatch>().AsSingle();
 		}
 	}
 }

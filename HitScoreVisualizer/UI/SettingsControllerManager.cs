@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.MenuButtons;
 using IPA.Loader;
@@ -42,11 +42,7 @@ namespace HitScoreVisualizer.UI
 				return;
 			}
 
-			if (MenuButtons.IsSingletonAvailable && BSMLParser.IsSingletonAvailable)
-			{
-				MenuButtons.instance.UnregisterButton(_hsvButton);
-			}
-
+			MenuButtons.instance.UnregisterButton(_hsvButton);
 
 			_hsvButton = null!;
 		}
