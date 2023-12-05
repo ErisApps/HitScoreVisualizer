@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using HitScoreVisualizer.Extensions;
 using HitScoreVisualizer.Settings;
@@ -30,8 +31,8 @@ namespace HitScoreVisualizer.Services
 			text.overflowMode = TextOverflowModes.Overflow;
 
 			// save in case we need to fade
-			var index = _config.Judgments!.FindIndex(j => j.Threshold <= score);
-			var judgment = index >= 0 ? _config.Judgments[index] : Judgment.Default;
+			var index = _config!.Judgments!.FindIndex(j => j.Threshold <= total);
+			var judgment = index >= 0 ? _config.Judgments[index] : _config.Judgments.Last();
 
 			if (judgment.Fade)
 			{
