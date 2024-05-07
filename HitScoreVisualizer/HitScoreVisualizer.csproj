@@ -81,6 +81,10 @@
 			<HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Zenject-usage.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
+		<Reference Include="DataModels">
+			<HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\DataModels.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
 		<Reference Include="SiraUtil">
 			<HintPath>$(BeatSaberDir)\Plugins\SiraUtil.dll</HintPath>
 			<Private>false</Private>
