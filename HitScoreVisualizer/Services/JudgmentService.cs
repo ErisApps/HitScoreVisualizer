@@ -16,7 +16,7 @@ namespace HitScoreVisualizer.Services
 			_configProvider = configProvider;
 		}
 
-		internal void Judge(IReadonlyCutScoreBuffer cutScoreBuffer, ref TextMeshPro text, ref Color color)
+		internal void Judge(ref TextMeshPro text, ref Color color, CutScoreBuffer cutScoreBuffer)
 		{
 			var config = _configProvider.GetCurrentConfig();
 			if (config == null)

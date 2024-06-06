@@ -56,7 +56,7 @@ namespace HitScoreVisualizer.HarmonyPatches
 				__instance._maxCutDistanceScoreIndicator.enabled = false;
 
 				// Apply judgments a total of twice - once when the effect is created, once when it finishes.
-				Judge(__instance, (CutScoreBuffer) cutScoreBuffer, 30);
+				Judge(__instance, (CutScoreBuffer)cutScoreBuffer);
 			}
 
 			__instance.InitAndPresent(duration, targetPos, noteCutInfo.worldRotation, false);
@@ -105,14 +105,9 @@ namespace HitScoreVisualizer.HarmonyPatches
 			}
 		}
 
-		private void Judge(FlyingScoreEffect flyingScoreEffect, CutScoreBuffer cutScoreBuffer, int? assumedAfterCutScore = null)
+		private void Judge(FlyingScoreEffect flyingScoreEffect, CutScoreBuffer cutScoreBuffer)
 		{
-			var before = cutScoreBuffer.beforeCutScore;
-			var after = assumedAfterCutScore ?? cutScoreBuffer.afterCutScore;
-			var accuracy = cutScoreBuffer.centerDistanceCutScore;
-			var total = before + after + accuracy;
-			var timeDependence = Mathf.Abs(cutScoreBuffer.noteCutInfo.cutNormal.z);
-			_judgmentService.Judge(cutScoreBuffer.noteScoreDefinition, ref flyingScoreEffect._text, ref flyingScoreEffect._color, total, before, after, accuracy, timeDependence);
+			_judgmentService.Judge(ref flyingScoreEffect._text, ref flyingScoreEffect._color, cutScoreBuffer);
 		}
 	}
 }
