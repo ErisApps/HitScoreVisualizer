@@ -368,15 +368,15 @@ namespace HitScoreVisualizer.Services
 		private bool ValidateJudgments(Configuration configuration, string configName)
 		{
 			configuration.Judgments = configuration.Judgments!.OrderByDescending(x => x.Threshold).ToList();
-			var prevJudgement = configuration.Judgments.First();
-			if (prevJudgement.Fade)
+			var prevJudgment = configuration.Judgments.First();
+			if (prevJudgment.Fade)
 			{
-				prevJudgement.Fade = false;
+				prevJudgment.Fade = false;
 			}
 
-			if (!ValidateJudgmentColor(prevJudgement, configName))
+			if (!ValidateJudgmentColor(prevJudgment, configName))
 			{
-				_siraLog.Warn($"Judgment entry for threshold {prevJudgement.Threshold} has invalid color in {configName}");
+				_siraLog.Warn($"Judgment entry for threshold {prevJudgment.Threshold} has invalid color in {configName}");
 				return false;
 			}
 
@@ -384,20 +384,20 @@ namespace HitScoreVisualizer.Services
 			{
 				for (var i = 1; i < configuration.Judgments.Count; i++)
 				{
-					var currentJudgement = configuration.Judgments[i];
-					if (prevJudgement.Threshold != currentJudgement.Threshold)
+					var currentJudgment = configuration.Judgments[i];
+					if (prevJudgment.Threshold != currentJudgment.Threshold)
 					{
-						if (!ValidateJudgmentColor(currentJudgement, configName))
+						if (!ValidateJudgmentColor(currentJudgment, configName))
 						{
-							_siraLog.Warn($"Judgment entry for threshold {currentJudgement.Threshold} has invalid color in {configName}");
+							_siraLog.Warn($"Judgment entry for threshold {currentJudgment.Threshold} has invalid color in {configName}");
 							return false;
 						}
 
-						prevJudgement = currentJudgement;
+						prevJudgment = currentJudgment;
 						continue;
 					}
 
-					_siraLog.Warn($"Duplicate entry found for threshold {currentJudgement.Threshold} in {configName}");
+					_siraLog.Warn($"Duplicate entry found for threshold {currentJudgment.Threshold} in {configName}");
 					return false;
 				}
 			}
@@ -429,17 +429,17 @@ namespace HitScoreVisualizer.Services
 				return true;
 			}
 
-			var prevJudgementSegment = segments.First();
+			var prevJudgmentSegment = segments.First();
 			for (var i = 1; i < segments.Count; i++)
 			{
-				var currentJudgement = segments[i];
-				if (prevJudgementSegment.Threshold != currentJudgement.Threshold)
+				var currentJudgment = segments[i];
+				if (prevJudgmentSegment.Threshold != currentJudgment.Threshold)
 				{
-					prevJudgementSegment = currentJudgement;
+					prevJudgmentSegment = currentJudgment;
 					continue;
 				}
 
-				_siraLog.Warn($"Duplicate entry found for threshold {currentJudgement.Threshold} in {configName}");
+				_siraLog.Warn($"Duplicate entry found for threshold {currentJudgment.Threshold} in {configName}");
 				return false;
 			}
 
@@ -453,17 +453,17 @@ namespace HitScoreVisualizer.Services
 				return true;
 			}
 
-			var prevJudgementSegment = segments.First();
+			var prevJudgmentSegment = segments.First();
 			for (var i = 1; i < segments.Count; i++)
 			{
-				var currentJudgement = segments[i];
-				if (prevJudgementSegment.Threshold - currentJudgement.Threshold > double.Epsilon)
+				var currentJudgment = segments[i];
+				if (prevJudgmentSegment.Threshold - currentJudgment.Threshold > double.Epsilon)
 				{
-					prevJudgementSegment = currentJudgement;
+					prevJudgmentSegment = currentJudgment;
 					continue;
 				}
 
-				_siraLog.Warn($"Duplicate entry found for threshold {currentJudgement.Threshold} in {configName}");
+				_siraLog.Warn($"Duplicate entry found for threshold {currentJudgment.Threshold} in {configName}");
 				return false;
 			}
 
