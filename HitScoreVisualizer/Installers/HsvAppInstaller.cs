@@ -5,18 +5,13 @@ using Zenject;
 
 namespace HitScoreVisualizer.Installers
 {
-	internal sealed class HsvAppInstaller : Installer
+	internal sealed class HsvAppInstaller(HSVConfig hsvConfig) : Installer
 	{
-		private readonly HSVConfig _hsvConfig;
-
-		internal HsvAppInstaller(HSVConfig hsvConfig)
-		{
-			_hsvConfig = hsvConfig;
-		}
+		private readonly HSVConfig hsvConfig = hsvConfig;
 
 		public override void InstallBindings()
 		{
-			Container.BindInstance(_hsvConfig);
+			Container.BindInstance(hsvConfig);
 			Container.BindInterfacesAndSelfTo<ConfigProvider>().AsSingle();
 			Container.BindInterfacesAndSelfTo<BloomFontProvider>().AsSingle();
 

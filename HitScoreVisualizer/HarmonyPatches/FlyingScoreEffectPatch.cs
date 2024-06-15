@@ -4,22 +4,16 @@ using UnityEngine;
 
 namespace HitScoreVisualizer.HarmonyPatches
 {
-	internal class FlyingScoreEffectPatch : IAffinity
+	internal class FlyingScoreEffectPatch(JudgmentService judgmentService, ConfigProvider configProvider) : IAffinity
 	{
-		private readonly JudgmentService _judgmentService;
-		private readonly ConfigProvider _configProvider;
-
-		public FlyingScoreEffectPatch(JudgmentService judgmentService, ConfigProvider configProvider)
-		{
-			_judgmentService = judgmentService;
-			_configProvider = configProvider;
-		}
+		private readonly JudgmentService judgmentService = judgmentService;
+		private readonly ConfigProvider configProvider = configProvider;
 
 		[AffinityPrefix]
 		[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.InitAndPresent))]
 		internal bool InitAndPresent(ref FlyingScoreEffect __instance, IReadonlyCutScoreBuffer cutScoreBuffer, float duration, Vector3 targetPos, Color color)
 		{
-			var configuration = _configProvider.GetCurrentConfig();
+			var configuration = configProvider.GetCurrentConfig();
 			var noteCutInfo = cutScoreBuffer.noteCutInfo;
 
 			if (configuration != null)
@@ -79,7 +73,7 @@ namespace HitScoreVisualizer.HarmonyPatches
 		[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.HandleCutScoreBufferDidChange))]
 		internal bool HandleCutScoreBufferDidChange(FlyingScoreEffect __instance, CutScoreBuffer cutScoreBuffer)
 		{
-			var configuration = _configProvider.GetCurrentConfig();
+			var configuration = configProvider.GetCurrentConfig();
 			if (configuration == null || cutScoreBuffer.noteCutInfo.noteData.gameplayType is not NoteData.GameplayType.Normal)
 			{
 				// Run original implementation
@@ -98,7 +92,7 @@ namespace HitScoreVisualizer.HarmonyPatches
 		[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.HandleCutScoreBufferDidFinish))]
 		internal void HandleCutScoreBufferDidFinish(FlyingScoreEffect __instance, CutScoreBuffer cutScoreBuffer)
 		{
-			var configuration = _configProvider.GetCurrentConfig();
+			var configuration = configProvider.GetCurrentConfig();
 			if (configuration != null && cutScoreBuffer.noteCutInfo.noteData.gameplayType is NoteData.GameplayType.Normal)
 			{
 				Judge(__instance, cutScoreBuffer);
@@ -107,7 +101,7 @@ namespace HitScoreVisualizer.HarmonyPatches
 
 		private void Judge(FlyingScoreEffect flyingScoreEffect, CutScoreBuffer cutScoreBuffer)
 		{
-			_judgmentService.Judge(ref flyingScoreEffect._text, ref flyingScoreEffect._color, cutScoreBuffer);
+			judgmentService.Judge(ref flyingScoreEffect._text, ref flyingScoreEffect._color, cutScoreBuffer);
 		}
 	}
 }

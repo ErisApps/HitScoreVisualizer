@@ -1,4 +1,4 @@
-﻿using BeatSaberMarkupLanguage;
+using BeatSaberMarkupLanguage;
 using HMUI;
 using IPA.Loader;
 using SiraUtil.Zenject;
@@ -8,24 +8,24 @@ namespace HitScoreVisualizer.UI
 {
 	internal class HitScoreFlowCoordinator : FlowCoordinator
 	{
-		private string _pluginName = null!;
-		private ConfigSelectorViewController _configSelectorViewController = null!;
+		private string pluginName = null!;
+		private ConfigSelectorViewController configSelectorViewController = null!;
 
 		[Inject]
 		internal void Construct(UBinder<Plugin, PluginMetadata> pluginMetadata, ConfigSelectorViewController configSelectorViewController)
 		{
-			_pluginName = pluginMetadata.Value.Name;
-			_configSelectorViewController = configSelectorViewController;
+			pluginName = pluginMetadata.Value.Name;
+			this.configSelectorViewController = configSelectorViewController;
 		}
 
 		protected override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
 		{
 			if (firstActivation)
 			{
-				SetTitle(_pluginName);
+				SetTitle(pluginName);
 				showBackButton = true;
 
-				ProvideInitialViewControllers(_configSelectorViewController);
+				ProvideInitialViewControllers(configSelectorViewController);
 			}
 		}
 

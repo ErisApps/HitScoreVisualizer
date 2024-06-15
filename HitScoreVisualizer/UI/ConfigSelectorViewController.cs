@@ -19,30 +19,25 @@ namespace HitScoreVisualizer.UI
 	[ViewDefinition("HitScoreVisualizer.UI.Views.ConfigSelector.bsml")]
 	internal class ConfigSelectorViewController : BSMLAutomaticViewController
 	{
-		private SiraLog _siraLog = null!;
-		private ConfigProvider _configProvider = null!;
-		private HSVConfig _hsvConfig = null!;
+		private SiraLog siraLog = null!;
+		private ConfigProvider configProvider = null!;
+		private HSVConfig hsvConfig = null!;
 
-		private ConfigFileInfo? _selectedConfigFileInfo;
-
-		public ConfigSelectorViewController()
-		{
-			AvailableConfigs = new List<object>();
-		}
+		private ConfigFileInfo? selectedConfigFileInfo;
 
 		[Inject]
 		internal void Construct(SiraLog siraLog, HSVConfig hsvConfig, ConfigProvider configProvider)
 		{
-			_siraLog = siraLog;
-			_hsvConfig = hsvConfig;
-			_configProvider = configProvider;
+			this.siraLog = siraLog;
+			this.hsvConfig = hsvConfig;
+			this.configProvider = configProvider;
 		}
 
 		[UIComponent("configs-list")]
 		public CustomCellListTableData? customListTableData;
 
 		[UIValue("available-configs")]
-		internal List<object> AvailableConfigs { get; }
+		internal List<object> AvailableConfigs { get; } = [];
 
 		[UIValue("loading-available-configs")]
 		internal bool LoadingConfigs { get; private set; }
@@ -51,27 +46,27 @@ namespace HitScoreVisualizer.UI
 		internal bool HasLoadedConfigs => !LoadingConfigs;
 
 		[UIValue("is-valid-config-selected")]
-		internal bool CanConfigGetSelected => _selectedConfigFileInfo?.ConfigPath != _configProvider.CurrentConfigPath && ConfigProvider.ConfigSelectable(_selectedConfigFileInfo?.State);
+		internal bool CanConfigGetSelected => selectedConfigFileInfo?.ConfigPath != configProvider.CurrentConfigPath && ConfigProvider.ConfigSelectable(selectedConfigFileInfo?.State);
 
 		[UIValue("has-config-loaded")]
-		internal bool HasConfigCurrently => !string.IsNullOrWhiteSpace(_configProvider.CurrentConfigPath);
+		internal bool HasConfigCurrently => !string.IsNullOrWhiteSpace(configProvider.CurrentConfigPath);
 
 		[UIValue("config-loaded-text")]
-		internal string LoadedConfigText => $"Currently loaded config: <size=80%>{(HasConfigCurrently ? Path.GetFileNameWithoutExtension(_configProvider.CurrentConfigPath) : "None")}";
+		internal string LoadedConfigText => $"Currently loaded config: <size=80%>{(HasConfigCurrently ? Path.GetFileNameWithoutExtension(configProvider.CurrentConfigPath) : "None")}";
 
 		[UIValue("is-config-yeetable")]
-		internal bool CanConfigGetYeeted => _selectedConfigFileInfo?.ConfigPath != null && _selectedConfigFileInfo.ConfigPath != _configProvider.CurrentConfigPath;
+		internal bool CanConfigGetYeeted => selectedConfigFileInfo?.ConfigPath != null && selectedConfigFileInfo.ConfigPath != configProvider.CurrentConfigPath;
 
 		[UIValue("bloom-toggle-face-color")]
-		internal string BloomToggleFaceColor => _hsvConfig.HitScoreBloom ? "#22dd00" : "#ff0010";
+		internal string BloomToggleFaceColor => hsvConfig.HitScoreBloom ? "#22dd00" : "#ff0010";
 
 		[UIValue("italics-toggle-face-color")]
-		internal string ItalicsToggleFaceColor => _hsvConfig.EnableItalics ? "#22dd00" : "#ff0010";
+		internal string ItalicsToggleFaceColor => hsvConfig.EnableItalics ? "#22dd00" : "#ff0010";
 
 		[UIAction("config-Selected")]
 		internal void Select(TableView _, object @object)
 		{
-			_selectedConfigFileInfo = (ConfigFileInfo)@object;
+			selectedConfigFileInfo = (ConfigFileInfo)@object;
 			NotifyPropertyChanged(nameof(CanConfigGetSelected));
 			NotifyPropertyChanged(nameof(CanConfigGetYeeted));
 		}
@@ -85,9 +80,9 @@ namespace HitScoreVisualizer.UI
 		[UIAction("pick-config")]
 		internal async void PickConfig()
 		{
-			if (CanConfigGetSelected && _selectedConfigFileInfo != null)
+			if (CanConfigGetSelected && selectedConfigFileInfo != null)
 			{
-				await _configProvider.SelectUserConfig(_selectedConfigFileInfo).ConfigureAwait(false);
+				await configProvider.SelectUserConfig(selectedConfigFileInfo).ConfigureAwait(false);
 				await LoadInternal().ConfigureAwait(false);
 			}
 		}
@@ -101,14 +96,14 @@ namespace HitScoreVisualizer.UI
 				{
 					if (customListTableData == null)
 					{
-						_siraLog.Warn($"{nameof(customListTableData)} is null.");
+						siraLog.Warn($"{nameof(customListTableData)} is null.");
 						return;
 					}
 
 					customListTableData.tableView.ClearSelection();
 				});
 
-				_configProvider.UnselectUserConfig();
+				configProvider.UnselectUserConfig();
 				NotifyPropertyChanged(nameof(HasConfigCurrently));
 				NotifyPropertyChanged(nameof(LoadedConfigText));
 			}
@@ -117,14 +112,14 @@ namespace HitScoreVisualizer.UI
 		[UIAction("toggle-bloom-effect")]
 		internal void ToggleBloomEffect()
 		{
-			_hsvConfig.HitScoreBloom = !_hsvConfig.HitScoreBloom;
+			hsvConfig.HitScoreBloom = !hsvConfig.HitScoreBloom;
 			NotifyPropertyChanged(nameof(BloomToggleFaceColor));
 		}
 
 		[UIAction("toggle-italics")]
 		internal void ToggleItalics()
 		{
-			_hsvConfig.EnableItalics = !_hsvConfig.EnableItalics;
+			hsvConfig.EnableItalics = !hsvConfig.EnableItalics;
 			NotifyPropertyChanged(nameof(ItalicsToggleFaceColor));
 		}
 
@@ -136,7 +131,7 @@ namespace HitScoreVisualizer.UI
 				return;
 			}
 
-			_configProvider.YeetConfig(_selectedConfigFileInfo!.ConfigPath);
+			configProvider.YeetConfig(selectedConfigFileInfo!.ConfigPath);
 			await LoadInternal().ConfigureAwait(false);
 
 			NotifyPropertyChanged(nameof(CanConfigGetYeeted));
@@ -155,14 +150,14 @@ namespace HitScoreVisualizer.UI
 
 			AvailableConfigs.Clear();
 
-			_selectedConfigFileInfo = null;
+			selectedConfigFileInfo = null;
 		}
 
 		private async Task LoadInternal()
 		{
 			if (customListTableData == null)
 			{
-				_siraLog.Warn($"{nameof(customListTableData)} is null.");
+				siraLog.Warn($"{nameof(customListTableData)} is null.");
 				return;
 			}
 
@@ -175,13 +170,13 @@ namespace HitScoreVisualizer.UI
 			NotifyPropertyChanged(nameof(LoadingConfigs));
 			NotifyPropertyChanged(nameof(HasLoadedConfigs));
 
-			var intermediateConfigs = (await _configProvider.ListAvailableConfigs())
+			var intermediateConfigs = (await configProvider.ListAvailableConfigs())
 				.OrderByDescending(x => x.State)
 				.ThenBy(x => x.ConfigName)
 				.ToList();
 			AvailableConfigs.AddRange(intermediateConfigs);
 
-			var currentConfigIndex = intermediateConfigs.FindIndex(x => x.ConfigPath == _configProvider.CurrentConfigPath);
+			var currentConfigIndex = intermediateConfigs.FindIndex(x => x.ConfigPath == configProvider.CurrentConfigPath);
 
 			await UnityMainThreadTaskScheduler.Factory.StartNew(() =>
 			{
