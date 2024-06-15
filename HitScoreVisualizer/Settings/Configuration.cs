@@ -19,18 +19,30 @@ namespace HitScoreVisualizer.Settings
 			DoIntermediateUpdates = true,
 			TimeDependenceDecimalPrecision = 1,
 			TimeDependenceDecimalOffset = 2,
-			Judgments = new List<Judgment>
-			{
-				new Judgment(threshold: 115, text: "%BFantastic%A%n%s", color: new List<float> { 1.0f, 1.0f, 1.0f, 1.0f }),
-				new Judgment(threshold: 101, text: "<size=80%>%BExcellent%A</size>%n%s", color: new List<float> { 0.0f, 1.0f, 0.0f, 1.0f }),
-				new Judgment(threshold: 90, text: "<size=80%>%BGreat%A</size>%n%s", color: new List<float> { 1.0f, 0.980392158f, 0.0f, 1.0f }),
-				new Judgment(threshold: 80, text: "<size=80%>%BGood%A</size>%n%s", color: new List<float> { 1.0f, 0.6f, 0.0f, 1.0f }, fade: true),
-				new Judgment(threshold: 60, text: "<size=80%>%BDecent%A</size>%n%s", color: new List<float> { 1.0f, 0.0f, 0.0f, 1.0f }, fade: true),
-				new Judgment(text: "<size=80%>%BWay Off%A</size>%n%s", color: new List<float> { 0.5f, 0.0f, 0.0f, 1.0f }, fade: true)
-			},
-			BeforeCutAngleJudgments = new List<JudgmentSegment> { new JudgmentSegment { Threshold = 70, Text = "+" }, new JudgmentSegment { Text = " " } },
-			AccuracyJudgments = new List<JudgmentSegment> { new JudgmentSegment { Threshold = 15, Text = " + " }, new JudgmentSegment { Text = " " } },
-			AfterCutAngleJudgments = new List<JudgmentSegment> { new JudgmentSegment { Threshold = 30, Text = " + " }, new JudgmentSegment { Text = " " } }
+			Judgments =
+			[
+				new(115, "%BFantastic%A%n%s", [1.0f, 1.0f, 1.0f, 1.0f]),
+				new(101, "<size=80%>%BExcellent%A</size>%n%s", [0.0f, 1.0f, 0.0f, 1.0f]),
+				new(90, "<size=80%>%BGreat%A</size>%n%s", [1.0f, 0.980392158f, 0.0f, 1.0f]),
+				new(80, "<size=80%>%BGood%A</size>%n%s", [1.0f, 0.6f, 0.0f, 1.0f], true),
+				new(60, "<size=80%>%BDecent%A</size>%n%s", [1.0f, 0.0f, 0.0f, 1.0f], true),
+				new(0, "<size=80%>%BWay Off%A</size>%n%s", [0.5f, 0.0f, 0.0f, 1.0f], true)
+			],
+			BeforeCutAngleJudgments =
+			[
+				new() { Threshold = 70, Text = "+" },
+				new() { Text = " " }
+			],
+			AccuracyJudgments =
+			[
+				new() { Threshold = 15, Text = " + " },
+				new() { Text = " " }
+			],
+			AfterCutAngleJudgments =
+			[
+				new() { Threshold = 30, Text = " + " },
+				new() { Text = " " }
+			]
 		};
 
 		// If the version number (excluding patch version) of the config is higher than that of the plugin,
