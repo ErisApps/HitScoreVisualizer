@@ -63,7 +63,10 @@ namespace HitScoreVisualizer.UI
 		internal bool CanConfigGetYeeted => _selectedConfigFileInfo?.ConfigPath != null && _selectedConfigFileInfo.ConfigPath != _configProvider.CurrentConfigPath;
 
 		[UIValue("bloom-toggle-face-color")]
-		internal string BloomToggleFaceColor => _hsvConfig.HitScoreBloom ? "#22dd00" : "#ff0045";
+		internal string BloomToggleFaceColor => _hsvConfig.HitScoreBloom ? "#22dd00" : "#ff0010";
+
+		[UIValue("italics-toggle-face-color")]
+		internal string ItalicsToggleFaceColor => _hsvConfig.EnableItalics ? "#22dd00" : "#ff0010";
 
 		[UIAction("config-Selected")]
 		internal void Select(TableView _, object @object)
@@ -116,6 +119,13 @@ namespace HitScoreVisualizer.UI
 		{
 			_hsvConfig.HitScoreBloom = !_hsvConfig.HitScoreBloom;
 			NotifyPropertyChanged(nameof(BloomToggleFaceColor));
+		}
+
+		[UIAction("toggle-italics")]
+		internal void ToggleItalics()
+		{
+			_hsvConfig.EnableItalics = !_hsvConfig.EnableItalics;
+			NotifyPropertyChanged(nameof(ItalicsToggleFaceColor));
 		}
 
 		[UIAction("yeet-config")]
