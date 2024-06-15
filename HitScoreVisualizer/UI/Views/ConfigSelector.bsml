@@ -83,6 +83,13 @@
 						text="HitScore Bloom"
 						hover-hint="Toggles the bloom effect on HitScores."
 						on-click="toggle-bloom-effect"/>
+
+				<button pref-width="28"
+						word-wrapping="false"
+						face-color="~italics-toggle-face-color"
+						text="Font Italics"
+						hover-hint="Toggles the italicized text on HitScores"
+						on-click="toggle-italics"/>
 			</vertical>
 
 

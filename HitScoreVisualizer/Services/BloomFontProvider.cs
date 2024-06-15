@@ -9,15 +9,11 @@ namespace HitScoreVisualizer.Services
 {
 	internal class BloomFontProvider : IDisposable
 	{
-		private readonly HSVConfig _hsvConfig;
-
 		private readonly Lazy<TMP_FontAsset> _cachedTekoFont;
 		private readonly Lazy<TMP_FontAsset> _bloomTekoFont;
 
-		public BloomFontProvider(HSVConfig hsvConfig)
+		public BloomFontProvider()
 		{
-			_hsvConfig = hsvConfig;
-
 			var tekoFontAsset = Resources.FindObjectsOfTypeAll<TMP_FontAsset>().First(x => x.name.Contains("Teko-Medium SDF"));
 
 			_cachedTekoFont = new Lazy<TMP_FontAsset>(() => CopyFontAsset(tekoFontAsset), LazyThreadSafetyMode.ExecutionAndPublication);
@@ -31,10 +27,9 @@ namespace HitScoreVisualizer.Services
 			}, LazyThreadSafetyMode.ExecutionAndPublication);
 		}
 
-		public void ConfigureFont(ref TextMeshPro text)
-		{
-			text.font = _hsvConfig.HitScoreBloom ? _bloomTekoFont.Value : _cachedTekoFont.Value;
-		}
+		public TMP_FontAsset BloomFont => _bloomTekoFont.Value;
+
+		public TMP_FontAsset DefaultFont => _cachedTekoFont.Value;
 
 		private static TMP_FontAsset CopyFontAsset(TMP_FontAsset original, string newName = "")
 		{

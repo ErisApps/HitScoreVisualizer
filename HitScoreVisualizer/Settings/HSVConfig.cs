@@ -8,5 +8,6 @@ namespace HitScoreVisualizer.Settings
 	{
 		public virtual string? ConfigFilePath { get; set; }
 		public virtual bool HitScoreBloom { get; set; }
+		public virtual bool EnableItalics { get; set; } = true;
 	}
 }
