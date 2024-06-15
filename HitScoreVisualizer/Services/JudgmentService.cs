@@ -7,18 +7,13 @@ using UnityEngine;
 
 namespace HitScoreVisualizer.Services
 {
-	internal class JudgmentService
+	internal class JudgmentService(ConfigProvider configProvider)
 	{
-		private readonly ConfigProvider _configProvider;
-
-		public JudgmentService(ConfigProvider configProvider)
-		{
-			_configProvider = configProvider;
-		}
+		private readonly ConfigProvider configProvider = configProvider;
 
 		internal void Judge(ref TextMeshPro text, ref Color color, CutScoreBuffer cutScoreBuffer)
 		{
-			var config = _configProvider.GetCurrentConfig();
+			var config = configProvider.GetCurrentConfig();
 			if (config == null)
 			{
 				return;

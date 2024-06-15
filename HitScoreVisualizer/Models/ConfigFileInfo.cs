@@ -1,20 +1,16 @@
-﻿using System;
+using System;
 using BeatSaberMarkupLanguage.Attributes;
 using HitScoreVisualizer.Settings;
 using Version = Hive.Versioning.Version;
 
 namespace HitScoreVisualizer.Models
 {
-	internal class ConfigFileInfo
+	internal class ConfigFileInfo(string fileName, string filePath)
 	{
-		public ConfigFileInfo(string fileName, string filePath)
-		{
-			ConfigName = fileName;
-			ConfigPath = filePath;
-		}
+		public string ConfigPath { get; } = filePath;
 
 		[UIValue("config-name")]
-		public string ConfigName { get; }
+		public string ConfigName { get; } = fileName;
 
 		[UIValue("config-description")]
 		public string ConfigDescription => State switch
@@ -27,8 +23,6 @@ namespace HitScoreVisualizer.Models
 			ConfigState.Broken => "<color=\"red\">Invalid config. Not selectable...",
 			_ => throw new NotImplementedException()
 		};
-
-		public string ConfigPath { get; }
 
 		public Configuration? Configuration { get; set; }
 		public ConfigState State { get; set; }

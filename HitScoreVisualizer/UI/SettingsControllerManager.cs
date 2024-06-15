@@ -7,44 +7,39 @@ using Zenject;
 
 namespace HitScoreVisualizer.UI
 {
-	internal class SettingsControllerManager : IInitializable, IDisposable
+	internal class SettingsControllerManager(UBinder<Plugin, PluginMetadata> pluginMetadata, HitScoreFlowCoordinator hitScoreFlowCoordinator) : IInitializable, IDisposable
 	{
-		private readonly HitScoreFlowCoordinator _hitScoreFlowCoordinator;
+		private readonly HitScoreFlowCoordinator hitScoreFlowCoordinator = hitScoreFlowCoordinator;
+		private readonly PluginMetadata pluginMetadata = pluginMetadata.Value;
 
-		private MenuButton? _hsvButton;
-
-		public SettingsControllerManager(UBinder<Plugin, PluginMetadata> pluginMetadata, HitScoreFlowCoordinator hitScoreFlowCoordinator)
-		{
-			_hitScoreFlowCoordinator = hitScoreFlowCoordinator;
-
-			_hsvButton = new MenuButton($"<size=89.5%>{pluginMetadata.Value.Name}", "Select the config you want.", OnClick);
-		}
+		private MenuButton hsvButton = null!;
 
 		public void Initialize()
 		{
-			MenuButtons.instance.RegisterButton(_hsvButton);
+			hsvButton = new MenuButton($"<size=89.5%>{pluginMetadata.Name}", "Select the config you want.", OnClick);
+			MenuButtons.instance.RegisterButton(hsvButton);
 		}
 
 		private void OnClick()
 		{
-			if (_hitScoreFlowCoordinator == null)
+			if (hitScoreFlowCoordinator == null)
 			{
 				return;
 			}
 
-			BeatSaberUI.MainFlowCoordinator.PresentFlowCoordinator(_hitScoreFlowCoordinator);
+			BeatSaberUI.MainFlowCoordinator.PresentFlowCoordinator(hitScoreFlowCoordinator);
 		}
 
 		public void Dispose()
 		{
-			if (_hsvButton == null)
+			if (hsvButton == null)
 			{
 				return;
 			}
 
-			MenuButtons.instance.UnregisterButton(_hsvButton);
+			MenuButtons.instance.UnregisterButton(hsvButton);
 
-			_hsvButton = null!;
+			hsvButton = null!;
 		}
 	}
 }

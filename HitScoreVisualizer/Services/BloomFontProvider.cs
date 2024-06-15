@@ -9,15 +9,15 @@ namespace HitScoreVisualizer.Services
 {
 	internal class BloomFontProvider : IDisposable
 	{
-		private readonly Lazy<TMP_FontAsset> _cachedTekoFont;
-		private readonly Lazy<TMP_FontAsset> _bloomTekoFont;
+		private readonly Lazy<TMP_FontAsset> cachedTekoFont;
+		private readonly Lazy<TMP_FontAsset> bloomTekoFont;
 
 		public BloomFontProvider()
 		{
 			var tekoFontAsset = Resources.FindObjectsOfTypeAll<TMP_FontAsset>().First(x => x.name.Contains("Teko-Medium SDF"));
 
-			_cachedTekoFont = new Lazy<TMP_FontAsset>(() => CopyFontAsset(tekoFontAsset), LazyThreadSafetyMode.ExecutionAndPublication);
-			_bloomTekoFont = new Lazy<TMP_FontAsset>(() =>
+			cachedTekoFont = new Lazy<TMP_FontAsset>(() => CopyFontAsset(tekoFontAsset), LazyThreadSafetyMode.ExecutionAndPublication);
+			bloomTekoFont = new Lazy<TMP_FontAsset>(() =>
 			{
 				var distanceFieldShader = Resources.FindObjectsOfTypeAll<Shader>().First(x => x.name.Contains("TextMeshPro/Distance Field"));
 				var bloomTekoFont = CopyFontAsset(tekoFontAsset, "Teko-Medium SDF (Bloom)");
@@ -27,9 +27,9 @@ namespace HitScoreVisualizer.Services
 			}, LazyThreadSafetyMode.ExecutionAndPublication);
 		}
 
-		public TMP_FontAsset BloomFont => _bloomTekoFont.Value;
+		public TMP_FontAsset BloomFont => bloomTekoFont.Value;
 
-		public TMP_FontAsset DefaultFont => _cachedTekoFont.Value;
+		public TMP_FontAsset DefaultFont => cachedTekoFont.Value;
 
 		private static TMP_FontAsset CopyFontAsset(TMP_FontAsset original, string newName = "")
 		{
@@ -58,9 +58,9 @@ namespace HitScoreVisualizer.Services
 
 		public void Dispose()
 		{
-			if (_bloomTekoFont.IsValueCreated)
+			if (bloomTekoFont.IsValueCreated)
 			{
-				UnityEngine.Object.Destroy(_bloomTekoFont.Value);
+				UnityEngine.Object.Destroy(bloomTekoFont.Value);
 			}
 		}
 	}
