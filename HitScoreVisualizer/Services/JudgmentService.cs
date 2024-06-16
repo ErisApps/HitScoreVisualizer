@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Text;
 using HitScoreVisualizer.Extensions;
 using HitScoreVisualizer.Settings;
-using TMPro;
 using UnityEngine;
 
 namespace HitScoreVisualizer.Services
@@ -11,20 +10,30 @@ namespace HitScoreVisualizer.Services
 	{
 		private readonly ConfigProvider configProvider = configProvider;
 
-		internal void Judge(ref TextMeshPro text, ref Color color, CutScoreBuffer cutScoreBuffer)
+
+		private Configuration Config => configProvider.CurrentConfig ?? Configuration.Default;
+
+		internal (string hitScoreText, Color hitScoreColor) Judge(IReadonlyCutScoreBuffer cutScoreBuffer)
 		{
-			var config = configProvider.GetCurrentConfig();
-			if (config == null)
+			return cutScoreBuffer.noteCutInfo.noteData.gameplayType switch
 			{
-				return;
-			}
+				NoteData.GameplayType.Normal => JudgeNormal(cutScoreBuffer, Config),
+				NoteData.GameplayType.BurstSliderHead => JudgeChainHead(cutScoreBuffer, Config),
+				NoteData.GameplayType.BurstSliderElement => ChainSegmentDisplay(Config),
+				_ => (string.Empty, Color.white),
+			};
+		}
 
+		private static (string, Color) ChainSegmentDisplay(Configuration config)
+		{
+			var color = config.ChainLinkDisplay?.Color.ToColor() ?? ChainLinkDisplay.Default.Color.ToColor();
+			var text = config.ChainLinkDisplay?.Text ?? string.Empty;
+			return (text, color);
+		}
+
+		private (string, Color) JudgeNormal(IReadonlyCutScoreBuffer cutScoreBuffer, Configuration config)
+		{
 			config.NormalJudgments ??= [];
-
-			text.richText = true;
-			text.enableWordWrapping = false;
-			text.overflowMode = TextOverflowModes.Overflow;
-
 			NormalJudgment? judgment = null;
 			NormalJudgment? fadeJudgment = null;
 
@@ -36,11 +45,13 @@ namespace HitScoreVisualizer.Services
 					fadeJudgment = i > 0
 						? config.NormalJudgments[i - 1]
 						: NormalJudgment.Default;
+					break;
 				}
 			}
 
 			judgment ??= NormalJudgment.Default;
 
+			Color color;
 			if (judgment.Fade)
 			{
 				fadeJudgment ??= NormalJudgment.Default;
@@ -52,28 +63,63 @@ namespace HitScoreVisualizer.Services
 				color = judgment.Color.ToColor();
 			}
 
-			text.text = config.DisplayMode switch
+			var text = config.DisplayMode switch
 			{
-				"format" => DisplayModeFormat(cutScoreBuffer, judgment, config),
+				"format" => NormalNoteFormat(cutScoreBuffer, judgment, config),
 				"textOnly" => judgment.Text,
 				"numeric" => cutScoreBuffer.cutScore.ToString(),
 				"scoreOnTop" => $"{cutScoreBuffer.cutScore}\n{judgment.Text}\n",
 				_ => $"{judgment.Text}\n{cutScoreBuffer.cutScore}\n"
 			};
+
+			return (text, color);
 		}
 
-		// ReSharper disable once CognitiveComplexity
-		private static string DisplayModeFormat(IReadonlyCutScoreBuffer cutScoreBuffer, NormalJudgment judgment, Configuration instance)
+		private static (string, Color) JudgeChainHead(IReadonlyCutScoreBuffer cutScoreBuffer, Configuration config)
 		{
-			return cutScoreBuffer.noteCutInfo.noteData.gameplayType switch
+			config.ChainHeadJudgments ??= [];
+			ChainHeadJudgment? judgment = null;
+			ChainHeadJudgment? fadeJudgment = null;
+
+			for (var i = 0; i < config.ChainHeadJudgments.Count; i++)
 			{
-				NoteData.GameplayType.Normal => NormalNoteJudgment(cutScoreBuffer, judgment, instance),
-				NoteData.GameplayType.BurstSliderElement => string.Empty,
-				_ => cutScoreBuffer.cutScore.ToString(),
+				if (config.ChainHeadJudgments[i].Threshold <= cutScoreBuffer.cutScore)
+				{
+					judgment = config.ChainHeadJudgments[i];
+					fadeJudgment = i > 0
+						? config.ChainHeadJudgments[i - 1]
+						: ChainHeadJudgment.Default;
+					break;
+				}
+			}
+
+			judgment ??= ChainHeadJudgment.Default;
+
+			Color color;
+			if (judgment.Fade)
+			{
+				fadeJudgment ??= ChainHeadJudgment.Default;
+				var lerpDistance = Mathf.InverseLerp(judgment.Threshold, fadeJudgment.Threshold, cutScoreBuffer.cutScore);
+				color = Color.Lerp(judgment.Color.ToColor(), fadeJudgment.Color.ToColor(), lerpDistance);
+			}
+			else
+			{
+				color = judgment.Color.ToColor();
+			}
+
+			var text = config.DisplayMode switch
+			{
+				"format" => ChainHeadFormat(cutScoreBuffer, judgment, config),
+				"textOnly" => judgment.Text,
+				"numeric" => cutScoreBuffer.cutScore.ToString(),
+				"scoreOnTop" => $"{cutScoreBuffer.cutScore}\n{judgment.Text}\n",
+				_ => $"{judgment.Text}\n{cutScoreBuffer.cutScore}\n"
 			};
+
+			return (text, color);
 		}
 
-		private static string NormalNoteJudgment(IReadonlyCutScoreBuffer cutScoreBuffer, NormalJudgment judgment, Configuration instance)
+		private static string NormalNoteFormat(IReadonlyCutScoreBuffer cutScoreBuffer, NormalJudgment judgment, Configuration instance)
 		{
 			var formattedBuilder = new StringBuilder();
 			var formatString = judgment.Text;
@@ -113,6 +159,68 @@ namespace HitScoreVisualizer.Services
 						break;
 					case 'A':
 						formattedBuilder.Append(JudgeSegment(cutScoreBuffer.afterCutScore, instance.AfterCutAngleJudgments));
+						break;
+					case 'T':
+						formattedBuilder.Append(JudgeTimeDependenceSegment(timeDependence, instance.TimeDependenceJudgments, instance));
+						break;
+					case 's':
+						formattedBuilder.Append(cutScoreBuffer.cutScore);
+						break;
+					case 'p':
+						formattedBuilder.Append($"{(double) cutScoreBuffer.cutScore / cutScoreBuffer.noteScoreDefinition.maxCutScore * 100:0}");
+						break;
+					case '%':
+						formattedBuilder.Append("%");
+						break;
+					case 'n':
+						formattedBuilder.Append("\n");
+						break;
+					default:
+						formattedBuilder.Append("%" + specifier);
+						break;
+				}
+
+				formatString = formatString.Remove(0, nextPercentIndex + 2);
+				nextPercentIndex = formatString.IndexOf('%');
+			}
+
+			return formattedBuilder.Append(formatString).ToString();
+		}
+
+		private static string ChainHeadFormat(IReadonlyCutScoreBuffer cutScoreBuffer, ChainHeadJudgment judgment, Configuration instance)
+		{
+			var formattedBuilder = new StringBuilder();
+			var formatString = judgment.Text;
+			var nextPercentIndex = formatString.IndexOf('%');
+
+			var timeDependence = Mathf.Abs(cutScoreBuffer.noteCutInfo.cutNormal.z);
+
+			while (nextPercentIndex != -1)
+			{
+				formattedBuilder.Append(formatString.Substring(0, nextPercentIndex));
+				if (formatString.Length == nextPercentIndex + 1)
+				{
+					formatString += " ";
+				}
+
+				var specifier = formatString[nextPercentIndex + 1];
+
+				switch (specifier)
+				{
+					case 'b':
+						formattedBuilder.Append(cutScoreBuffer.beforeCutScore);
+						break;
+					case 'c':
+						formattedBuilder.Append(cutScoreBuffer.centerDistanceCutScore);
+						break;
+					case 't':
+						formattedBuilder.Append(ConvertTimeDependencePrecision(timeDependence, instance.TimeDependenceDecimalOffset, instance.TimeDependenceDecimalPrecision));
+						break;
+					case 'B':
+						formattedBuilder.Append(JudgeSegment(cutScoreBuffer.beforeCutScore, instance.BeforeCutAngleJudgments));
+						break;
+					case 'C':
+						formattedBuilder.Append(JudgeSegment(cutScoreBuffer.centerDistanceCutScore, instance.AccuracyJudgments));
 						break;
 					case 'T':
 						formattedBuilder.Append(JudgeTimeDependenceSegment(timeDependence, instance.TimeDependenceJudgments, instance));
