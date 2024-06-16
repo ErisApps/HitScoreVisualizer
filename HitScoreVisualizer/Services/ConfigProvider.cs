@@ -301,7 +301,7 @@ namespace HitScoreVisualizer.Services
 		// ReSharper disable once CognitiveComplexity
 		private bool Validate(Configuration configuration, string configName)
 		{
-			if (!configuration.Judgments?.Any() ?? true)
+			if (!configuration.NormalJudgments?.Any() ?? true)
 			{
 				siraLog.Warn($"No judgments found for {configName}");
 				return false;
@@ -367,8 +367,8 @@ namespace HitScoreVisualizer.Services
 		// ReSharper disable once CognitiveComplexity
 		private bool ValidateJudgments(Configuration configuration, string configName)
 		{
-			configuration.Judgments = configuration.Judgments!.OrderByDescending(x => x.Threshold).ToList();
-			var prevJudgment = configuration.Judgments.First();
+			configuration.NormalJudgments = configuration.NormalJudgments!.OrderByDescending(x => x.Threshold).ToList();
+			var prevJudgment = configuration.NormalJudgments.First();
 			if (prevJudgment.Fade)
 			{
 				prevJudgment.Fade = false;
@@ -380,11 +380,11 @@ namespace HitScoreVisualizer.Services
 				return false;
 			}
 
-			if (configuration.Judgments.Count > 1)
+			if (configuration.NormalJudgments.Count > 1)
 			{
-				for (var i = 1; i < configuration.Judgments.Count; i++)
+				for (var i = 1; i < configuration.NormalJudgments.Count; i++)
 				{
-					var currentJudgment = configuration.Judgments[i];
+					var currentJudgment = configuration.NormalJudgments[i];
 					if (prevJudgment.Threshold != currentJudgment.Threshold)
 					{
 						if (!ValidateJudgmentColor(currentJudgment, configName))
@@ -405,7 +405,7 @@ namespace HitScoreVisualizer.Services
 			return true;
 		}
 
-		private bool ValidateJudgmentColor(Judgment judgment, string configName)
+		private bool ValidateJudgmentColor(NormalJudgment judgment, string configName)
 		{
 			if (judgment.Color.Count != 4)
 			{
@@ -492,9 +492,9 @@ namespace HitScoreVisualizer.Services
 
 		private static bool RunMigration2_1_0(Configuration configuration)
 		{
-			if (configuration.Judgments != null)
+			if (configuration.NormalJudgments != null)
 			{
-				foreach (var j in configuration.Judgments.Where(j => j.Threshold == 110))
+				foreach (var j in configuration.NormalJudgments.Where(j => j.Threshold == 110))
 				{
 					j.Threshold = 115;
 				}

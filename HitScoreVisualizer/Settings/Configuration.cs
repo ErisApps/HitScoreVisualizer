@@ -19,7 +19,7 @@ namespace HitScoreVisualizer.Settings
 			DoIntermediateUpdates = true,
 			TimeDependenceDecimalPrecision = 1,
 			TimeDependenceDecimalOffset = 2,
-			Judgments =
+			NormalJudgments =
 			[
 				new(115, "%BFantastic%A%n%s", [1.0f, 1.0f, 1.0f, 1.0f]),
 				new(101, "<size=80%>%BExcellent%A</size>%n%s", [0.0f, 1.0f, 0.0f, 1.0f]),
@@ -27,6 +27,15 @@ namespace HitScoreVisualizer.Settings
 				new(80, "<size=80%>%BGood%A</size>%n%s", [1.0f, 0.6f, 0.0f, 1.0f], true),
 				new(60, "<size=80%>%BDecent%A</size>%n%s", [1.0f, 0.0f, 0.0f, 1.0f], true),
 				new(0, "<size=80%>%BWay Off%A</size>%n%s", [0.5f, 0.0f, 0.0f, 1.0f], true)
+			],
+			ChainHeadJudgments =
+			[
+				new(115, "%BFantastic%n%s", [1.0f, 1.0f, 1.0f, 1.0f]),
+				new(101, "<size=80%>%BExcellent</size>%n%s", [0.0f, 1.0f, 0.0f, 1.0f]),
+				new(90, "<size=80%>%BGreat</size>%n%s", [1.0f, 0.980392158f, 0.0f, 1.0f]),
+				new(80, "<size=80%>%BGood</size>%n%s", [1.0f, 0.6f, 0.0f, 1.0f], true),
+				new(60, "<size=80%>%BDecent</size>%n%s", [1.0f, 0.0f, 0.0f, 1.0f], true),
+				new(0, "<size=80%>%BWay Off</size>%n%s", [0.5f, 0.0f, 0.0f, 1.0f], true)
 			],
 			BeforeCutAngleJudgments =
 			[
@@ -61,7 +70,7 @@ namespace HitScoreVisualizer.Settings
 		[JsonIgnore]
 		internal Version Version
 		{
-			get => new Version(MajorVersion, MinorVersion, PatchVersion);
+			get => new(MajorVersion, MinorVersion, PatchVersion);
 			set
 			{
 				MajorVersion = value.Major;
@@ -145,7 +154,15 @@ namespace HitScoreVisualizer.Settings
 
 		// Order from highest threshold to lowest; the first matching judgment will be applied
 		[JsonProperty("judgments")]
-		public List<Judgment>? Judgments { get; internal set; }
+		public List<NormalJudgment>? NormalJudgments { get; internal set; }
+
+		// Same as normal judgments but for burst sliders aka. chain notes
+		[JsonProperty("chainHeadJudgments")]
+		public List<ChainHeadJudgment>? ChainHeadJudgments { get; internal set; }
+
+		// Text displayed for burst slider segments
+		[JsonProperty("chainLinkDisplay")]
+		public ChainLinkDisplay? ChainLinkDisplay { get; internal set; }
 
 		// Judgments for the part of the swing before cutting the block (score is from 0-70).
 		// Format specifier: %B

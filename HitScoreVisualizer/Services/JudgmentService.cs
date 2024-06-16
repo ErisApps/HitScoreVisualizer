@@ -28,12 +28,12 @@ namespace HitScoreVisualizer.Services
 			text.overflowMode = TextOverflowModes.Overflow;
 
 			// save in case we need to fade
-			var index = config.Judgments!.FindIndex(j => j.Threshold <= cutScoreBuffer.cutScore);
-			var judgment = index >= 0 ? config.Judgments[index] : Judgment.Default;
+			var index = config.NormalJudgments!.FindIndex(j => j.Threshold <= cutScoreBuffer.cutScore);
+			var judgment = index >= 0 ? config.NormalJudgments[index] : NormalJudgment.Default;
 
 			if (judgment.Fade)
 			{
-				var fadeJudgment = config.Judgments[index - 1];
+				var fadeJudgment = config.NormalJudgments[index - 1];
 				var baseColor = judgment.Color.ToColor();
 				var fadeColor = fadeJudgment.Color.ToColor();
 				var lerpDistance = Mathf.InverseLerp(judgment.Threshold, fadeJudgment.Threshold, cutScoreBuffer.cutScore);
@@ -55,7 +55,7 @@ namespace HitScoreVisualizer.Services
 		}
 
 		// ReSharper disable once CognitiveComplexity
-		private static string DisplayModeFormat(IReadonlyCutScoreBuffer cutScoreBuffer, Judgment judgment, Configuration instance)
+		private static string DisplayModeFormat(IReadonlyCutScoreBuffer cutScoreBuffer, NormalJudgment judgment, Configuration instance)
 		{
 			return cutScoreBuffer.noteCutInfo.noteData.gameplayType switch
 			{
@@ -65,7 +65,7 @@ namespace HitScoreVisualizer.Services
 			};
 		}
 
-		private static string NormalNoteJudgment(IReadonlyCutScoreBuffer cutScoreBuffer, Judgment judgment, Configuration instance)
+		private static string NormalNoteJudgment(IReadonlyCutScoreBuffer cutScoreBuffer, NormalJudgment judgment, Configuration instance)
 		{
 			var formattedBuilder = new StringBuilder();
 			var formatString = judgment.Text;
