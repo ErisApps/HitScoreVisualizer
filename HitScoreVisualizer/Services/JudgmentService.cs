@@ -19,25 +19,33 @@ namespace HitScoreVisualizer.Services
 				return;
 			}
 
-			var timeDependence = Mathf.Abs(cutScoreBuffer.noteCutInfo.cutNormal.z);
+			config.NormalJudgments ??= [];
 
-			// enable rich text
 			text.richText = true;
-			// disable word wrap, make sure full text displays
 			text.enableWordWrapping = false;
 			text.overflowMode = TextOverflowModes.Overflow;
 
-			// save in case we need to fade
-			var index = config.NormalJudgments!.FindIndex(j => j.Threshold <= cutScoreBuffer.cutScore);
-			var judgment = index >= 0 ? config.NormalJudgments[index] : NormalJudgment.Default;
+			NormalJudgment? judgment = null;
+			NormalJudgment? fadeJudgment = null;
+
+			for (var i = 0; i < config.NormalJudgments.Count; i++)
+			{
+				if (config.NormalJudgments[i].Threshold <= cutScoreBuffer.cutScore)
+				{
+					judgment = config.NormalJudgments[i];
+					fadeJudgment = i > 0
+						? config.NormalJudgments[i - 1]
+						: NormalJudgment.Default;
+				}
+			}
+
+			judgment ??= NormalJudgment.Default;
 
 			if (judgment.Fade)
 			{
-				var fadeJudgment = config.NormalJudgments[index - 1];
-				var baseColor = judgment.Color.ToColor();
-				var fadeColor = fadeJudgment.Color.ToColor();
+				fadeJudgment ??= NormalJudgment.Default;
 				var lerpDistance = Mathf.InverseLerp(judgment.Threshold, fadeJudgment.Threshold, cutScoreBuffer.cutScore);
-				color = Color.Lerp(baseColor, fadeColor, lerpDistance);
+				color = Color.Lerp(judgment.Color.ToColor(), fadeJudgment.Color.ToColor(), lerpDistance);
 			}
 			else
 			{
