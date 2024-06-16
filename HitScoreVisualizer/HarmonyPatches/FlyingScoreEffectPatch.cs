@@ -13,7 +13,7 @@ namespace HitScoreVisualizer.HarmonyPatches
 		[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.InitAndPresent))]
 		internal bool InitAndPresent(ref FlyingScoreEffect __instance, IReadonlyCutScoreBuffer cutScoreBuffer, float duration, Vector3 targetPos, Color color)
 		{
-			var configuration = configProvider.GetCurrentConfig();
+			var configuration = configProvider.CurrentConfig;
 			var noteCutInfo = cutScoreBuffer.noteCutInfo;
 
 			if (configuration != null)
@@ -39,7 +39,7 @@ namespace HitScoreVisualizer.HarmonyPatches
 				__instance._registeredToCallbacks = true;
 			}
 
-			if (configuration == null || noteCutInfo.noteData.gameplayType is not NoteData.GameplayType.Normal)
+			if (configuration == null)
 			{
 				__instance._text.text = cutScoreBuffer.cutScore.ToString();
 				__instance._maxCutDistanceScoreIndicator.enabled = cutScoreBuffer.centerDistanceCutScore == cutScoreBuffer.noteScoreDefinition.maxCenterDistanceCutScore;
@@ -73,8 +73,8 @@ namespace HitScoreVisualizer.HarmonyPatches
 		[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.HandleCutScoreBufferDidChange))]
 		internal bool HandleCutScoreBufferDidChange(FlyingScoreEffect __instance, CutScoreBuffer cutScoreBuffer)
 		{
-			var configuration = configProvider.GetCurrentConfig();
-			if (configuration == null || cutScoreBuffer.noteCutInfo.noteData.gameplayType is not NoteData.GameplayType.Normal)
+			var configuration = configProvider.CurrentConfig;
+			if (configuration == null)
 			{
 				// Run original implementation
 				return true;
@@ -92,16 +92,15 @@ namespace HitScoreVisualizer.HarmonyPatches
 		[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.HandleCutScoreBufferDidFinish))]
 		internal void HandleCutScoreBufferDidFinish(FlyingScoreEffect __instance, CutScoreBuffer cutScoreBuffer)
 		{
-			var configuration = configProvider.GetCurrentConfig();
-			if (configuration != null && cutScoreBuffer.noteCutInfo.noteData.gameplayType is NoteData.GameplayType.Normal)
+			if (configProvider.CurrentConfig != null)
 			{
 				Judge(__instance, cutScoreBuffer);
 			}
 		}
 
-		private void Judge(FlyingScoreEffect flyingScoreEffect, CutScoreBuffer cutScoreBuffer)
+		private void Judge(FlyingScoreEffect flyingScoreEffect, IReadonlyCutScoreBuffer cutScoreBuffer)
 		{
-			judgmentService.Judge(ref flyingScoreEffect._text, ref flyingScoreEffect._color, cutScoreBuffer);
+			(flyingScoreEffect._text.text, flyingScoreEffect._color) = judgmentService.Judge(cutScoreBuffer);
 		}
 	}
 }
