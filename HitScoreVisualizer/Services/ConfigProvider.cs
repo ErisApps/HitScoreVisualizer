@@ -32,9 +32,9 @@ namespace HitScoreVisualizer.Services
 		private readonly Version minimumMigratableVersion;
 		private readonly Version maximumMigrationNeededVersion;
 
-		private Configuration? currentConfig;
-
 		internal string? CurrentConfigPath => hsvConfig.ConfigFilePath;
+
+		public Configuration? CurrentConfig { get; private set; }
 
 		internal ConfigProvider(SiraLog siraLog, HSVConfig hsvConfig, UBinder<Plugin, PluginMetadata> pluginMetadata)
 		{
@@ -116,11 +116,6 @@ namespace HitScoreVisualizer.Services
 			await SelectUserConfig(configFileInfo).ConfigureAwait(false);
 		}
 
-		public Configuration? GetCurrentConfig()
-		{
-			return currentConfig;
-		}
-
 		internal async Task<IEnumerable<ConfigFileInfo>> ListAvailableConfigs()
 		{
 			var configFileInfoList = Directory
@@ -198,14 +193,14 @@ namespace HitScoreVisualizer.Services
 
 			if (Validate(configFileInfo.Configuration!, configFileInfo.ConfigName))
 			{
-				currentConfig = configFileInfo.Configuration;
+				CurrentConfig = configFileInfo.Configuration;
 				hsvConfig.ConfigFilePath = configFileInfo.ConfigPath;
 			}
 		}
 
 		internal void UnselectUserConfig()
 		{
-			currentConfig = null;
+			CurrentConfig = null;
 			hsvConfig.ConfigFilePath = null;
 		}
 
