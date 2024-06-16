@@ -4,12 +4,12 @@ using Newtonsoft.Json;
 namespace HitScoreVisualizer.Settings
 {
 	[method: JsonConstructor]
-	public class Judgment(int threshold = 0, string? text = null, List<float>? color = null, bool fade = false)
+	public class NormalJudgment(int threshold = 0, string? text = null, List<float>? color = null, bool fade = false)
 	{
 		[JsonIgnore]
-		internal static Judgment Default { get; } = new();
+		internal static NormalJudgment Default { get; } = new();
 
-		// This judgment will be applied only to notes hit with score >= this number.
+		// This judgment will be applied only to normal notes hit with score >= this number.
 		// Note that if no judgment can be applied to a note, the text will appear as in the unmodded
 		// game.
 		[JsonProperty("threshold")]
@@ -22,7 +22,7 @@ namespace HitScoreVisualizer.Settings
 		// 4 floats, 0-1; red, green, blue, glow (not transparency!)
 		// leaving this out should look obviously wrong
 		[JsonProperty("color")]
-		public List<float> Color { get; internal set; } = color ?? [1f, 1f, 1f, 1f];
+		public List<float> Color { get; internal set; } = color ?? [];
 
 		// If true, the text color will be interpolated between this judgment's color and the previous
 		// based on how close to the next threshold it is.
