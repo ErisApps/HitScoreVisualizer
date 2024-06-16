@@ -14,11 +14,16 @@ namespace HitScoreVisualizer.HarmonyPatches
 		[AffinityPatch(typeof(EffectPoolsManualInstaller), nameof(EffectPoolsManualInstaller.ManualInstallBindings))]
 		internal void ManualInstallBindingsPrefix(FlyingScoreEffect ____flyingScoreEffectPrefab)
 		{
+			var text = ____flyingScoreEffectPrefab._text;
+			text.richText = true;
+			text.enableWordWrapping = false;
+			text.overflowMode = TextOverflowModes.Overflow;
+
 			// Configure font shader and italics
-			____flyingScoreEffectPrefab._text.font = hsvConfig.HitScoreBloom
+			text.font = hsvConfig.HitScoreBloom
 				? bloomFontProvider.BloomFont
 				: bloomFontProvider.DefaultFont;
-			____flyingScoreEffectPrefab._text.fontStyle = hsvConfig.EnableItalics
+			text.fontStyle = hsvConfig.EnableItalics
 				? FontStyles.Italic
 				: FontStyles.Normal;
 		}
