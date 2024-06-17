@@ -363,10 +363,10 @@ namespace HitScoreVisualizer.Services
 		private bool ValidateJudgments(Configuration configuration, string configName)
 		{
 			configuration.NormalJudgments = configuration.NormalJudgments!.OrderByDescending(x => x.Threshold).ToList();
-			var prevJudgment = configuration.NormalJudgments.First();
+			var prevJudgment = configuration.NormalJudgments[0];
 			if (prevJudgment.Fade)
 			{
-				prevJudgment.Fade = false;
+				prevJudgment = new(prevJudgment.Threshold, prevJudgment.Text, prevJudgment.Color, false);
 			}
 
 			if (!ValidateJudgmentColor(prevJudgment, configName))
@@ -489,18 +489,26 @@ namespace HitScoreVisualizer.Services
 		{
 			if (configuration.NormalJudgments != null)
 			{
+				List<NormalJudgment> migratedJudgments = [];
+
 				foreach (var j in configuration.NormalJudgments.Where(j => j.Threshold == 110))
 				{
-					j.Threshold = 115;
+					migratedJudgments.Add(new(115, j.Text, j.Color, j.Fade));
 				}
+
+				configuration.NormalJudgments = migratedJudgments;
 			}
 
 			if (configuration.AccuracyJudgments != null)
 			{
-				foreach (var aj in configuration.AccuracyJudgments.Where(aj => aj.Threshold == 10))
+				List<JudgmentSegment> migratedSegments = [];
+
+				foreach (var s in configuration.AccuracyJudgments.Where(aj => aj.Threshold == 10))
 				{
-					aj.Threshold = 15;
+					migratedSegments.Add(new(15, s.Text));
 				}
+
+				configuration.AccuracyJudgments = migratedSegments;
 			}
 
 			return true;
