@@ -1,13 +1,15 @@
 using System.Text;
 using HitScoreVisualizer.Extensions;
 using HitScoreVisualizer.Settings;
+using SiraUtil.Logging;
 using UnityEngine;
 
 namespace HitScoreVisualizer.Services
 {
-	internal class JudgmentService(ConfigProvider configProvider)
+	internal class JudgmentService(ConfigProvider configProvider, SiraLog log)
 	{
 		private readonly ConfigProvider configProvider = configProvider;
+		private readonly SiraLog log = log;
 
 		private Configuration Config => configProvider.CurrentConfig ?? Configuration.Default;
 
@@ -16,7 +18,7 @@ namespace HitScoreVisualizer.Services
 			return cutScoreBuffer.noteCutInfo.noteData.gameplayType switch
 			{
 				NoteData.GameplayType.Normal => JudgeNormal(cutScoreBuffer, Config),
-				NoteData.GameplayType.BurstSliderHead => JudgeChainHead(cutScoreBuffer, Config),
+				NoteData.GameplayType.BurstSliderHead => JudgeChainHead(cutScoreBuffer),
 				NoteData.GameplayType.BurstSliderElement => ChainSegmentDisplay(Config),
 				_ => (string.Empty, Color.white),
 			};
@@ -24,35 +26,29 @@ namespace HitScoreVisualizer.Services
 
 		private static (string, Color) JudgeNormal(IReadonlyCutScoreBuffer cutScoreBuffer, Configuration config)
 		{
-			config.NormalJudgments ??= [];
-			NormalJudgment? judgment = null;
-			NormalJudgment? fadeJudgment = null;
+			var judgment = NormalJudgment.Default;
+			var fadeJudgment = NormalJudgment.Default;
+			config.NormalJudgments ??= [judgment];
 
 			for (var i = 0; i < config.NormalJudgments.Count; i++)
 			{
 				if (config.NormalJudgments[i].Threshold <= cutScoreBuffer.cutScore)
 				{
 					judgment = config.NormalJudgments[i];
-					fadeJudgment = i > 0
-						? config.NormalJudgments[i - 1]
-						: NormalJudgment.Default;
+					if (i > 0)
+					{
+						fadeJudgment = config.NormalJudgments[i - 1];
+					}
 					break;
 				}
 			}
 
-			judgment ??= NormalJudgment.Default;
-
-			Color color;
-			if (judgment.Fade)
-			{
-				fadeJudgment ??= NormalJudgment.Default;
-				var lerpDistance = Mathf.InverseLerp(judgment.Threshold, fadeJudgment.Threshold, cutScoreBuffer.cutScore);
-				color = Color.Lerp(judgment.Color.ToColor(), fadeJudgment.Color.ToColor(), lerpDistance);
-			}
-			else
-			{
-				color = judgment.Color.ToColor();
-			}
+			var color = judgment.Fade
+				? Color.Lerp(
+					judgment.Color.ToColor(),
+					fadeJudgment.Color.ToColor(),
+					Mathf.InverseLerp(judgment.Threshold, fadeJudgment.Threshold, cutScoreBuffer.cutScore))
+				: judgment.Color.ToColor();
 
 			var text = config.DisplayMode switch
 			{
@@ -66,49 +62,49 @@ namespace HitScoreVisualizer.Services
 			return (text, color);
 		}
 
-		private static (string, Color) JudgeChainHead(IReadonlyCutScoreBuffer cutScoreBuffer, Configuration config)
+		private (string, Color) JudgeChainHead(IReadonlyCutScoreBuffer cutScoreBuffer)
 		{
-			config.ChainHeadJudgments ??= [];
-			ChainHeadJudgment? judgment = null;
-			ChainHeadJudgment? fadeJudgment = null;
+			var judgment = ChainHeadJudgment.Default;
+			var fadeJudgment = ChainHeadJudgment.Default;
+			Config.ChainHeadJudgments ??= [judgment];
 
-			for (var i = 0; i < config.ChainHeadJudgments.Count; i++)
+			for (var i = 0; i < Config.ChainHeadJudgments.Count; i++)
 			{
-				if (config.ChainHeadJudgments[i].Threshold <= cutScoreBuffer.cutScore)
+				if (Config.ChainHeadJudgments[i].Threshold <= cutScoreBuffer.cutScore)
 				{
-					judgment = config.ChainHeadJudgments[i];
-					fadeJudgment = i > 0
-						? config.ChainHeadJudgments[i - 1]
-						: ChainHeadJudgment.Default;
+					judgment = Config.ChainHeadJudgments[i];
+					if (i > 0)
+					{
+						fadeJudgment = Config.ChainHeadJudgments[i - 1];
+					}
 					break;
 				}
 			}
 
-			judgment ??= ChainHeadJudgment.Default;
+			var color = judgment.Fade
+				? Color.Lerp(
+					judgment.Color!.ToColor(),
+					fadeJudgment.Color.ToColor(),
+					Mathf.InverseLerp(judgment.Threshold, fadeJudgment.Threshold, cutScoreBuffer.cutScore))
+				: judgment.Color?.ToColor();
 
-			Color color;
-			if (judgment.Fade)
+			var text = Config.DisplayMode switch
 			{
-				fadeJudgment ??= ChainHeadJudgment.Default;
-				var lerpDistance = Mathf.InverseLerp(judgment.Threshold, fadeJudgment.Threshold, cutScoreBuffer.cutScore);
-				color = Color.Lerp(judgment.Color.ToColor(), fadeJudgment.Color.ToColor(), lerpDistance);
-			}
-			else
-			{
-				color = judgment.Color.ToColor();
-			}
-
-			var text = config.DisplayMode switch
-			{
-				"format" => ChainHeadFormat(judgment.Text, cutScoreBuffer, config),
+				"format" => ChainHeadFormat(judgment.Text, cutScoreBuffer, Config),
 				"textOnly" => judgment.Text,
 				"numeric" => cutScoreBuffer.cutScore.ToString(),
 				"scoreOnTop" => $"{cutScoreBuffer.cutScore}\n{judgment.Text}\n",
 				_ => $"{judgment.Text}\n{cutScoreBuffer.cutScore}\n"
 			};
 
-			return (text, color);
+			return (text, color ?? Color.white);
 		}
+
+		private (string, Color) ChainSegmentDisplay(Configuration config) =>
+		(
+			config.ChainLinkDisplay?.Text ?? ChainLinkDisplay.Default.Text,
+			(config.ChainLinkDisplay?.Color ?? ChainLinkDisplay.Default.Color).ToColor()
+		);
 
 		private static string NormalNoteFormat(string unformattedText, IReadonlyCutScoreBuffer cutScoreBuffer, Configuration config)
 		{
@@ -237,12 +233,6 @@ namespace HitScoreVisualizer.Services
 
 			return builder.Append(unformattedText).ToString();
 		}
-
-		private static (string, Color) ChainSegmentDisplay(Configuration config) =>
-		(
-			config.ChainLinkDisplay?.Text ?? string.Empty,
-			(config.ChainLinkDisplay?.Color ?? ChainLinkDisplay.Default.Color).ToColor()
-		);
 
 		private static string ConvertTimeDependencePrecision(float timeDependence, int decimalOffset, int decimalPrecision)
 		{

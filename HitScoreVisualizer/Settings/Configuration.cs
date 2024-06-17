@@ -39,18 +39,18 @@ namespace HitScoreVisualizer.Settings
 			],
 			BeforeCutAngleJudgments =
 			[
-				new() { Threshold = 70, Text = "+" },
-				new() { Text = " " }
+				new(70, " + "),
+				new(0, " ")
 			],
 			AccuracyJudgments =
 			[
-				new() { Threshold = 15, Text = " + " },
-				new() { Text = " " }
+				new(15, " + "),
+				new(0, " ")
 			],
 			AfterCutAngleJudgments =
 			[
-				new() { Threshold = 30, Text = " + " },
-				new() { Text = " " }
+				new(30, " + "),
+				new(0, " ")
 			]
 		};
 
