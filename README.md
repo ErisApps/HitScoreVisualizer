@@ -3,15 +3,11 @@
 A fairly simple mod that allows you to heavily customize the appearance of hit scores.
 
 
-## Installation
+## Manual Installation
 
-This mod requires a few other mods in order to work.
+This mod requires BSIPA, BeatSaberMarkupLanguage, and SiraUtil already installed for it to load. You should install them for your game version using your mod installer.
 
-- BSIPA v4.2.2 or higher
-- BeatSaberMarkupLanguage v1.6.3 or higher
-- SiraUtil v3.0.5 or higher
-
-The installation is fairly simple.
+The installation is fairly simple:
 
 1. Grab the latest plugin release from BeatMods/ModAssistant (once it's available) or from the [releases page](https://github.com/ErisApps/HitScoreVisualizer/releases) (once there is actually a
    release)
@@ -69,7 +65,9 @@ You can use that file as a starting point in case you want to customize it. Just
 | doIntermediateUpdates | When enabled, Judgments will be updated multiple times. This will make score popups more accurate during a brief period before the note's score is finalized, at some cost of performance. | true or false |
 | timeDependencyDecimalPrecision | The number of decimal places to show the time dependence to.<br> **Must be between 0 and 99, inclusive** | ints |
 | timeDependencyDecimalOffset | Which power of 10 to multiply the time dependence by (time dependence is from 0 - 1).<br> **Must be between 0 and 38, inclusive**  | ints |
-| Judgments | The list of Judgments that can be used to customize the Judgments in general.  | Uses Judgment objects.<br>More info below. |
+| judgments | The list of Judgments that can be used to customize the Judgments in general.  | Uses judgment objects.<br>More info below. |
+| chainHeadJudgments | Same as judgments, but for chain notes  | Identical to judgments |
+| chainLinkDisplay | Allows you to customize the text which is shown when you hit a segment of a chain. Text works the same as judgments. | { <br> "text": "%s", <br> "color": [0.6, 0.9, 0.6, 1] <br> } |
 | beforeCutAngleJudgments | The list that can be used to customize the Judgments for the part of the swing before cutting the block (score is from 0 - 70).<br>Format token: %B<br>* Can only be used when `displayMode` is set to `"format"` | Uses JudgmentSegments objects.<br>More info below. |
 | accuracyJudgments | The list that can be used to customize the Judgments for the accuracy of the cut. How close was the cut to the center of the block? (score is from 0 - 15).<br>Format token: %C<br>* Can only be used when `displayMode` is set to `"format"` | Uses JudgmentSegments objects.<br>More info below. |
 | afterCutAngleJudgments | The list that can be used to customize the Judgments for the part of the swing after cutting the block (score is from 0 - 30).<br>Format token: %A<br>* Can only be used when `displayMode` is set to `"format"` | Uses JudgmentSegments.<br>More info below. |
@@ -118,6 +116,7 @@ You can use that file as a starting point in case you want to customize it. Just
 | %t | The time dependence of the swing. This value indicates how depedent the accuracy part of the score is upon *when* you hit the block, measured from 0 - 1. A value of 0 indicates a completely time independent swing, while a value of 1 indicates that the accuracy part of the score would vary greatly if the block was hit even slightly earlier or later.
 | %B, %C, %A, %T | Uses the Judgment text that matches the threshold as specified in either `beforeCutAngleJudgments`, `accuracyJudgments`, `afterCutAngleJudgments`, or `timeDependencyJudgments` (depending on the used token). |
 | %s | The total score of the cut. |
+| %p | A number representing the percentage of the maximum total score. |
 | %% | A literal percent symbol. |
 | %n | A newline. |
 
