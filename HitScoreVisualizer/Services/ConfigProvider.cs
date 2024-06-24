@@ -47,7 +47,7 @@ namespace HitScoreVisualizer.Services
 				DefaultValueHandling = DefaultValueHandling.Include,
 				NullValueHandling = NullValueHandling.Ignore,
 				Formatting = Formatting.Indented,
-				Converters = new List<JsonConverter> { new Vector3Converter() },
+				Converters = [ new Vector3Converter() ],
 				ContractResolver = ShouldNotSerializeContractResolver.Instance
 			};
 			hsvConfigsFolderPath = Path.Combine(UnityGame.UserDataPath, nameof(HitScoreVisualizer));
@@ -119,7 +119,7 @@ namespace HitScoreVisualizer.Services
 		internal async Task<IEnumerable<ConfigFileInfo>> ListAvailableConfigs()
 		{
 			var configFileInfoList = Directory
-				.EnumerateFiles(hsvConfigsFolderPath, "*", SearchOption.AllDirectories)
+				.EnumerateFiles(hsvConfigsFolderPath, "*.json", SearchOption.AllDirectories)
 				.Where(path => !path.StartsWith(hsvConfigsBackupFolderPath))
 				.Select(x => new ConfigFileInfo(Path.GetFileNameWithoutExtension(x), x.Substring(hsvConfigsFolderPath.Length + 1)))
 				.ToList();
@@ -225,7 +225,7 @@ namespace HitScoreVisualizer.Services
 			}
 			catch (Exception ex)
 			{
-				siraLog.Warn(ex);
+				siraLog.Warn($"Problem encountered when trying to load a config;\nFile path: {relativePath}\n{ex}");
 				// Expected behaviour when file isn't an actual hsv config file...
 				return null;
 			}
@@ -478,9 +478,9 @@ namespace HitScoreVisualizer.Services
 
 		private static bool RunMigration2_0_0(Configuration configuration)
 		{
-			configuration.BeforeCutAngleJudgments = new List<JudgmentSegment> { JudgmentSegment.Default };
-			configuration.AccuracyJudgments = new List<JudgmentSegment> { JudgmentSegment.Default };
-			configuration.AfterCutAngleJudgments = new List<JudgmentSegment> { JudgmentSegment.Default };
+			configuration.BeforeCutAngleJudgments = [JudgmentSegment.Default];
+			configuration.AccuracyJudgments = [JudgmentSegment.Default];
+			configuration.AfterCutAngleJudgments = [JudgmentSegment.Default];
 
 			return true;
 		}
