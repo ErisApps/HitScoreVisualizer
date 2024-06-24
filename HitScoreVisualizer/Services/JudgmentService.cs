@@ -6,10 +6,9 @@ using UnityEngine;
 
 namespace HitScoreVisualizer.Services
 {
-	internal class JudgmentService(ConfigProvider configProvider, SiraLog log)
+	internal class JudgmentService(ConfigProvider configProvider)
 	{
 		private readonly ConfigProvider configProvider = configProvider;
-		private readonly SiraLog log = log;
 
 		private Configuration Config => configProvider.CurrentConfig ?? Configuration.Default;
 
