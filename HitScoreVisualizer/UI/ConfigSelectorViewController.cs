@@ -100,7 +100,7 @@ namespace HitScoreVisualizer.UI
 						return;
 					}
 
-					customListTableData.tableView.ClearSelection();
+					customListTableData.TableView.ClearSelection();
 				});
 
 				configProvider.UnselectUserConfig();
@@ -180,11 +180,11 @@ namespace HitScoreVisualizer.UI
 
 			await UnityMainThreadTaskScheduler.Factory.StartNew(() =>
 			{
-				customListTableData.tableView.ReloadData();
-				customListTableData.tableView.ScrollToCellWithIdx(0, TableView.ScrollPositionType.Beginning, false);
+				customListTableData.TableView.ReloadData();
+				customListTableData.TableView.ScrollToCellWithIdx(0, TableView.ScrollPositionType.Beginning, false);
 				if (currentConfigIndex >= 0)
 				{
-					customListTableData.tableView.SelectCellWithIdx(currentConfigIndex, true);
+					customListTableData.TableView.SelectCellWithIdx(currentConfigIndex, true);
 				}
 
 				LoadingConfigs = false;
