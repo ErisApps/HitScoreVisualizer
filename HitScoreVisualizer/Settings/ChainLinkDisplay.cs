@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 namespace HitScoreVisualizer.Settings
 {
 	[method: JsonConstructor]
-	public readonly struct ChainLinkDisplay(string? text = null, List<float>? color = null)
+	public class ChainLinkDisplay(string? text = null, List<float>? color = null)
 	{
 		[JsonIgnore]
 		internal static ChainLinkDisplay Default { get; } = new("<u>20", [1, 1, 1, 1]);
