@@ -25,7 +25,10 @@ namespace HitScoreVisualizer.HarmonyPatches
 				return true;
 			}
 
-			var (text, color) = judgmentService.Judge(cutScoreBuffer, cutScoreBuffer.noteScoreDefinition.maxAfterCutScore);
+			// Decide whether to override the initial post-swing score or not
+			var (text, color) = configuration.ShowMaxPostswingFirst
+				? judgmentService.Judge(cutScoreBuffer, cutScoreBuffer.noteScoreDefinition.maxAfterCutScore)
+				: judgmentService.Judge(cutScoreBuffer);
 			__instance._text.text = text;
 			__instance._color = color;
 			__instance._cutScoreBuffer = cutScoreBuffer;
