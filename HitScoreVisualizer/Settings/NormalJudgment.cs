@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 namespace HitScoreVisualizer.Settings
 {
 	[method: JsonConstructor]
-	public readonly struct NormalJudgment(int threshold = 0, string? text = null, List<float>? color = null, bool fade = false)
+	public class NormalJudgment(int threshold = 0, string? text = null, List<float>? color = null, bool fade = false)
 	{
 		[JsonIgnore]
 		internal static NormalJudgment Default { get; } = new(0, "%s", [1, 1, 1, 1], false);
