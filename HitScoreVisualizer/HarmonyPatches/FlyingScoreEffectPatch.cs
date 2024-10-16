@@ -25,7 +25,7 @@ namespace HitScoreVisualizer.HarmonyPatches
 				return true;
 			}
 
-			var (text, color) = judgmentService.Judge(cutScoreBuffer);
+			var (text, color) = judgmentService.Judge(cutScoreBuffer, cutScoreBuffer.noteScoreDefinition.maxAfterCutScore);
 			__instance._text.text = text;
 			__instance._color = color;
 			__instance._cutScoreBuffer = cutScoreBuffer;
