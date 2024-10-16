@@ -9,29 +9,29 @@ namespace HitScoreVisualizer.HarmonyPatches
 		private readonly JudgmentService judgmentService = judgmentService;
 		private readonly ConfigProvider configProvider = configProvider;
 
+		// When the flying score effect spawns, InitAndPresent is called
+		// When the post swing score changes - as the saber moves - HandleCutScoreBufferDidChange is called
+		// When the post swing score stops changing - HandleCutScoreBufferDidFinish is called
+
 		[AffinityPrefix]
 		[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.InitAndPresent))]
-		internal bool InitAndPresent(ref FlyingScoreEffect __instance, IReadonlyCutScoreBuffer cutScoreBuffer, float duration, Vector3 targetPos, Color color)
+		internal bool InitAndPresent(ref FlyingScoreEffect __instance, IReadonlyCutScoreBuffer cutScoreBuffer, float duration, Vector3 targetPos)
 		{
 			var configuration = configProvider.CurrentConfig;
-			var noteCutInfo = cutScoreBuffer.noteCutInfo;
 
-			if (configuration != null)
+			if (configuration == null)
 			{
-				if (configuration.FixedPosition != null)
-				{
-					// Set current and target position to the desired fixed position
-					targetPos = configuration.FixedPosition.Value;
-					__instance.transform.position = targetPos;
-				}
-				else if (configuration.TargetPositionOffset != null)
-				{
-					targetPos += configuration.TargetPositionOffset.Value;
-				}
+				// Run original implementation
+				return true;
 			}
 
+			var (text, color) = judgmentService.Judge(cutScoreBuffer);
+			__instance._text.text = text;
 			__instance._color = color;
 			__instance._cutScoreBuffer = cutScoreBuffer;
+			__instance._maxCutDistanceScoreIndicator.enabled = false;
+			__instance._colorAMultiplier = 1f;
+
 			if (!cutScoreBuffer.isFinished)
 			{
 				cutScoreBuffer.RegisterDidChangeReceiver(__instance);
@@ -39,32 +39,18 @@ namespace HitScoreVisualizer.HarmonyPatches
 				__instance._registeredToCallbacks = true;
 			}
 
-			if (configuration == null)
+			if (configuration.FixedPosition != null)
 			{
-				__instance._text.text = cutScoreBuffer.cutScore.ToString();
-				__instance._maxCutDistanceScoreIndicator.enabled = cutScoreBuffer.centerDistanceCutScore == cutScoreBuffer.noteScoreDefinition.maxCenterDistanceCutScore;
-				__instance._colorAMultiplier = (double) cutScoreBuffer.cutScore > (double) cutScoreBuffer.maxPossibleCutScore * 0.9f ? 1f : 0.3f;
+				// Set current and target position to the desired fixed position
+				targetPos = configuration.FixedPosition.Value;
+				__instance.transform.position = targetPos;
 			}
-			else
+			else if (configuration.TargetPositionOffset != null)
 			{
-				__instance._maxCutDistanceScoreIndicator.enabled = false;
-
-				// Apply judgments a total of twice - once when the effect is created, once when it finishes.
-				Judge(__instance, (CutScoreBuffer)cutScoreBuffer);
+				targetPos += configuration.TargetPositionOffset.Value;
 			}
 
-			__instance.InitAndPresent(duration, targetPos, noteCutInfo.worldRotation, false);
-
-			return false;
-		}
-
-		[AffinityPrefix]
-		[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.ManualUpdate))]
-		internal bool ManualUpdate(FlyingScoreEffect __instance, float t)
-		{
-			var color = __instance._color.ColorWithAlpha(__instance._fadeAnimationCurve.Evaluate(t));
-			__instance._text.color = color;
-			__instance._maxCutDistanceScoreIndicator.color = color;
+			__instance.InitAndPresent(duration, targetPos, cutScoreBuffer.noteCutInfo.worldRotation, false);
 
 			return false;
 		}
@@ -82,7 +68,9 @@ namespace HitScoreVisualizer.HarmonyPatches
 
 			if (configuration.DoIntermediateUpdates)
 			{
-				Judge(__instance, cutScoreBuffer);
+				var (text, color) = judgmentService.Judge(cutScoreBuffer);
+				__instance._text.text = text;
+				__instance._color = color;
 			}
 
 			return false;
@@ -94,13 +82,10 @@ namespace HitScoreVisualizer.HarmonyPatches
 		{
 			if (configProvider.CurrentConfig != null)
 			{
-				Judge(__instance, cutScoreBuffer);
+				var (text, color) = judgmentService.Judge(cutScoreBuffer);
+				__instance._text.text = text;
+				__instance._color = color;
 			}
-		}
-
-		private void Judge(FlyingScoreEffect flyingScoreEffect, IReadonlyCutScoreBuffer cutScoreBuffer)
-		{
-			(flyingScoreEffect._text.text, flyingScoreEffect._color) = judgmentService.Judge(cutScoreBuffer);
 		}
 	}
 }
