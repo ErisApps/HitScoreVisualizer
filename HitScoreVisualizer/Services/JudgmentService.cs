@@ -12,18 +12,19 @@ namespace HitScoreVisualizer.Services
 
 		private Configuration Config => configProvider.CurrentConfig ?? Configuration.Default;
 
-		public (string hitScoreText, Color hitScoreColor) Judge(IReadonlyCutScoreBuffer cutScoreBuffer)
+		public (string hitScoreText, Color hitScoreColor) Judge(IReadonlyCutScoreBuffer cutScoreBuffer, int? afterCutOverride = null)
 		{
+			afterCutOverride ??= cutScoreBuffer.afterCutScore;
 			return cutScoreBuffer.noteCutInfo.noteData.gameplayType switch
 			{
-				NoteData.GameplayType.Normal => GetNormalDispaly(cutScoreBuffer),
-				NoteData.GameplayType.BurstSliderHead => GetChainHeadDisplay(cutScoreBuffer),
-				NoteData.GameplayType.BurstSliderElement => GetChainSegmentDisplay(cutScoreBuffer),
+				NoteData.GameplayType.Normal => GetNormalDispaly(cutScoreBuffer, afterCutOverride.Value),
+				NoteData.GameplayType.BurstSliderHead => GetChainHeadDisplay(cutScoreBuffer, afterCutOverride.Value),
+				NoteData.GameplayType.BurstSliderElement => GetChainSegmentDisplay(cutScoreBuffer, afterCutOverride.Value),
 				_ => (string.Empty, Color.white),
 			};
 		}
 
-		private (string, Color) GetNormalDispaly(IReadonlyCutScoreBuffer cutScoreBuffer)
+		private (string, Color) GetNormalDispaly(IReadonlyCutScoreBuffer cutScoreBuffer, int afterCutScore)
 		{
 			var judgment = NormalJudgment.Default;
 			var fadeJudgment = NormalJudgment.Default;
@@ -49,12 +50,12 @@ namespace HitScoreVisualizer.Services
 					Mathf.InverseLerp(judgment.Threshold, fadeJudgment.Threshold, cutScoreBuffer.cutScore))
 				: judgment.Color.ToColor();
 
-			var text = FormatJudgmentTextByMode(judgment.Text, cutScoreBuffer);
+			var text = FormatJudgmentTextByMode(judgment.Text, cutScoreBuffer, afterCutScore);
 
 			return (text, color);
 		}
 
-		private (string, Color) GetChainHeadDisplay(IReadonlyCutScoreBuffer cutScoreBuffer)
+		private (string, Color) GetChainHeadDisplay(IReadonlyCutScoreBuffer cutScoreBuffer, int afterCutScore)
 		{
 			var judgment = ChainHeadJudgment.Default;
 			var fadeJudgment = ChainHeadJudgment.Default;
@@ -80,23 +81,24 @@ namespace HitScoreVisualizer.Services
 					Mathf.InverseLerp(judgment.Threshold, fadeJudgment.Threshold, cutScoreBuffer.cutScore))
 				: judgment.Color?.ToColor();
 
-			var text = FormatJudgmentTextByMode(judgment.Text, cutScoreBuffer);
+			var text = FormatJudgmentTextByMode(judgment.Text, cutScoreBuffer, afterCutScore);
 
 			return (text, color ?? Color.white);
 		}
 
-		private (string, Color) GetChainSegmentDisplay(IReadonlyCutScoreBuffer cutScoreBuffer) =>
-		(
-			Config.ChainLinkDisplay != null ? FormatJudgmentTextByMode(Config.ChainLinkDisplay.Value.Text, cutScoreBuffer)
-				: ChainLinkDisplay.Default.Text,
-			(Config.ChainLinkDisplay?.Color ?? ChainLinkDisplay.Default.Color).ToColor()
-		);
+		private (string, Color) GetChainSegmentDisplay(IReadonlyCutScoreBuffer cutScoreBuffer, int afterCutScore)
+		{
+			var text = Config.ChainLinkDisplay == null ? ChainLinkDisplay.Default.Text
+				: FormatJudgmentTextByMode(Config.ChainLinkDisplay.Text, cutScoreBuffer, afterCutScore);
+			var color = (Config.ChainLinkDisplay?.Color ?? ChainLinkDisplay.Default.Color).ToColor();
+			return (text, color);
+		}
 
-		private string FormatJudgmentTextByMode(string unformattedText, IReadonlyCutScoreBuffer cutScoreBuffer)
+		private string FormatJudgmentTextByMode(string unformattedText, IReadonlyCutScoreBuffer cutScoreBuffer, int afterCutScore)
 		{
 			return Config.DisplayMode switch
 			{
-				"format" => FormatJudgmentText(unformattedText, cutScoreBuffer),
+				"format" => FormatJudgmentText(unformattedText, cutScoreBuffer, afterCutScore),
 				"textOnly" => unformattedText,
 				"numeric" => cutScoreBuffer.cutScore.ToString(),
 				"scoreOnTop" => $"{cutScoreBuffer.cutScore}\n{unformattedText}\n",
@@ -104,7 +106,7 @@ namespace HitScoreVisualizer.Services
 			};
 		}
 
-		private string FormatJudgmentText(string unformattedText, IReadonlyCutScoreBuffer cutScoreBuffer)
+		private string FormatJudgmentText(string unformattedText, IReadonlyCutScoreBuffer cutScoreBuffer, int afterCutScore)
 		{
 			var formattedBuilder = new StringBuilder();
 			var nextPercentIndex = unformattedText.IndexOf('%');
@@ -130,7 +132,7 @@ namespace HitScoreVisualizer.Services
 						formattedBuilder.Append(cutScoreBuffer.centerDistanceCutScore);
 						break;
 					case 'a':
-						formattedBuilder.Append(cutScoreBuffer.afterCutScore);
+						formattedBuilder.Append(afterCutScore);
 						break;
 					case 't':
 						formattedBuilder.Append((timeDependence * Mathf.Pow(10, Config.TimeDependenceDecimalOffset)).ToString($"n{Config.TimeDependenceDecimalPrecision}"));
@@ -142,7 +144,7 @@ namespace HitScoreVisualizer.Services
 						formattedBuilder.Append(Config.AccuracyJudgments.JudgeSegment(cutScoreBuffer.centerDistanceCutScore));
 						break;
 					case 'A':
-						formattedBuilder.Append(Config.AfterCutAngleJudgments.JudgeSegment(cutScoreBuffer.afterCutScore));
+						formattedBuilder.Append(Config.AfterCutAngleJudgments.JudgeSegment(afterCutScore));
 						break;
 					case 'T':
 						formattedBuilder.Append(Config.TimeDependenceJudgments.JudgeTimeDependenceSegment(timeDependence, Config.TimeDependenceDecimalOffset, Config.TimeDependenceDecimalPrecision));
