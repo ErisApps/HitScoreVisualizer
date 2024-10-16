@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 namespace HitScoreVisualizer.Settings
 {
 	[method: JsonConstructor]
-	public readonly struct JudgmentSegment(int threshold = 0, string? text = null)
+	public class JudgmentSegment(int threshold = 0, string? text = null)
 	{
 		[JsonIgnore]
 		internal static JudgmentSegment Default { get; } = new(0, string.Empty);
