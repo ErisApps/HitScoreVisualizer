@@ -4,10 +4,16 @@ using UnityEngine;
 
 namespace HitScoreVisualizer.HarmonyPatches
 {
-	internal class FlyingScoreEffectPatch(JudgmentService judgmentService, ConfigProvider configProvider) : IAffinity
+	internal class FlyingScoreEffectPatch : IAffinity
 	{
-		private readonly JudgmentService judgmentService = judgmentService;
-		private readonly ConfigProvider configProvider = configProvider;
+		private readonly JudgmentService judgmentService;
+		private readonly ConfigProvider configProvider;
+
+		private FlyingScoreEffectPatch(JudgmentService judgmentService, ConfigProvider configProvider)
+		{
+			this.judgmentService = judgmentService;
+			this.configProvider = configProvider;
+		}
 
 		// When the flying score effect spawns, InitAndPresent is called
 		// When the post swing score changes - as the saber moves - HandleCutScoreBufferDidChange is called

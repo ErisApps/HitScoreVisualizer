@@ -2,13 +2,20 @@ using HitScoreVisualizer.Services;
 using HitScoreVisualizer.Settings;
 using SiraUtil.Affinity;
 using TMPro;
+// ReSharper disable InconsistentNaming
 
 namespace HitScoreVisualizer.HarmonyPatches
 {
-	internal class EffectPoolsManualInstallerPatch(BloomFontProvider bloomFontProvider, HSVConfig hsvConfig) : IAffinity
+	internal class EffectPoolsManualInstallerPatch : IAffinity
 	{
-		private readonly BloomFontProvider bloomFontProvider = bloomFontProvider;
-		private readonly HSVConfig hsvConfig = hsvConfig;
+		private readonly BloomFontProvider bloomFontProvider;
+		private readonly HSVConfig hsvConfig;
+
+		private EffectPoolsManualInstallerPatch(BloomFontProvider bloomFontProvider, HSVConfig hsvConfig)
+		{
+			this.bloomFontProvider = bloomFontProvider;
+			this.hsvConfig = hsvConfig;
+		}
 
 		[AffinityPrefix]
 		[AffinityPatch(typeof(EffectPoolsManualInstaller), nameof(EffectPoolsManualInstaller.ManualInstallBindings))]

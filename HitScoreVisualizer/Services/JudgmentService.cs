@@ -1,14 +1,21 @@
 using System.Text;
 using HitScoreVisualizer.Extensions;
 using HitScoreVisualizer.Settings;
+using JetBrains.Annotations;
 using SiraUtil.Logging;
 using UnityEngine;
 
 namespace HitScoreVisualizer.Services
 {
-	internal class JudgmentService(ConfigProvider configProvider)
+	[UsedImplicitly]
+	internal class JudgmentService
 	{
-		private readonly ConfigProvider configProvider = configProvider;
+		private readonly ConfigProvider configProvider;
+
+		private JudgmentService(ConfigProvider configProvider)
+		{
+			this.configProvider = configProvider;
+		}
 
 		private Configuration Config => configProvider.CurrentConfig ?? Configuration.Default;
 

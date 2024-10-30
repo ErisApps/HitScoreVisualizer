@@ -1,13 +1,20 @@
 using HitScoreVisualizer.HarmonyPatches;
 using HitScoreVisualizer.Services;
 using HitScoreVisualizer.Settings;
+using JetBrains.Annotations;
 using Zenject;
 
 namespace HitScoreVisualizer.Installers
 {
-	internal sealed class HsvAppInstaller(HSVConfig hsvConfig) : Installer
+	[UsedImplicitly]
+	internal sealed class HsvAppInstaller : Installer
 	{
-		private readonly HSVConfig hsvConfig = hsvConfig;
+		private readonly HSVConfig hsvConfig;
+
+		private HsvAppInstaller(HSVConfig hsvConfig)
+		{
+			this.hsvConfig = hsvConfig;
+		}
 
 		public override void InstallBindings()
 		{
