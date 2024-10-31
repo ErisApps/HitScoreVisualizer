@@ -29,14 +29,14 @@ namespace HitScoreVisualizer.Services
 
 			return cutScoreBuffer.noteCutInfo.noteData.gameplayType switch
 			{
-				NoteData.GameplayType.Normal => GetNormalDispaly(cutScoreBuffer, afterCutScore),
+				NoteData.GameplayType.Normal => GetNormalDisplay(cutScoreBuffer, afterCutScore),
 				NoteData.GameplayType.BurstSliderHead => GetChainHeadDisplay(cutScoreBuffer, afterCutScore),
 				NoteData.GameplayType.BurstSliderElement => GetChainSegmentDisplay(cutScoreBuffer, afterCutScore),
 				_ => (string.Empty, Color.white),
 			};
 		}
 
-		private (string, Color) GetNormalDisplay(IReadonlyCutScoreBuffer cutScoreBuffer)
+		private (string, Color) GetNormalDisplay(IReadonlyCutScoreBuffer cutScoreBuffer, int afterCutScore)
 		{
 			var judgment = NormalJudgment.Default;
 			var fadeJudgment = NormalJudgment.Default;
@@ -98,10 +98,10 @@ namespace HitScoreVisualizer.Services
 			return (text, color ?? Color.white);
 		}
 
-		private (string, Color) GetChainSegmentDisplay(IReadonlyCutScoreBuffer cutScoreBuffer)
+		private (string, Color) GetChainSegmentDisplay(IReadonlyCutScoreBuffer cutScoreBuffer, int afterCutScore)
 		{
 			var chainLinkDisplay = Config.ChainLinkDisplay ?? ChainLinkDisplay.Default;
-			return (chainLinkDisplay.Text, chainLinkDisplay.Color.ToColor());
+			return (FormatJudgmentTextByMode(chainLinkDisplay.Text, cutScoreBuffer, afterCutScore), chainLinkDisplay.Color.ToColor());
 		}
 
 		private string FormatJudgmentTextByMode(string unformattedText, IReadonlyCutScoreBuffer cutScoreBuffer, int afterCutScore)
