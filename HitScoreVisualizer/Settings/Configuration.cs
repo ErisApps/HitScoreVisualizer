@@ -17,7 +17,7 @@ namespace HitScoreVisualizer.Settings
 			IsDefaultConfig = true,
 			DisplayMode = "format",
 			DoIntermediateUpdates = true,
-			ShowMaxPostswingFirst = false,
+			AssumeMaxPostSwing = false,
 			TimeDependenceDecimalPrecision = 1,
 			TimeDependenceDecimalOffset = 2,
 			NormalJudgments =
@@ -116,8 +116,8 @@ namespace HitScoreVisualizer.Settings
 		[JsonProperty("doIntermediateUpdates")]
 		public bool DoIntermediateUpdates { get; internal set; }
 
-		[JsonProperty("showMaxPostswingFirst")]
-		public bool ShowMaxPostswingFirst { get; internal set; }
+		[JsonProperty("assumeMaxPostSwing")]
+		public bool AssumeMaxPostSwing { get; internal set; }
 
 		[JsonProperty("timeDependencyDecimalPrecision")]
 		[DefaultValue(1)]

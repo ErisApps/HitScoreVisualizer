@@ -31,10 +31,7 @@ namespace HitScoreVisualizer.HarmonyPatches
 				return true;
 			}
 
-			// Decide whether to override the initial post-swing score or not
-			var (text, color) = configuration.ShowMaxPostswingFirst
-				? judgmentService.Judge(cutScoreBuffer, cutScoreBuffer.noteScoreDefinition.maxAfterCutScore)
-				: judgmentService.Judge(cutScoreBuffer);
+			var (text, color) = judgmentService.Judge(cutScoreBuffer, configuration.AssumeMaxPostSwing);
 			__instance._text.text = text;
 			__instance._color = color;
 			__instance._cutScoreBuffer = cutScoreBuffer;
@@ -75,12 +72,14 @@ namespace HitScoreVisualizer.HarmonyPatches
 				return true;
 			}
 
-			if (configuration.DoIntermediateUpdates)
+			if (!configuration.DoIntermediateUpdates)
 			{
-				var (text, color) = judgmentService.Judge(cutScoreBuffer);
-				__instance._text.text = text;
-				__instance._color = color;
+				return false;
 			}
+
+			var (text, color) = judgmentService.Judge(cutScoreBuffer, false);
+			__instance._text.text = text;
+			__instance._color = color;
 
 			return false;
 		}
@@ -89,12 +88,14 @@ namespace HitScoreVisualizer.HarmonyPatches
 		[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.HandleCutScoreBufferDidFinish))]
 		internal void HandleCutScoreBufferDidFinish(FlyingScoreEffect __instance, CutScoreBuffer cutScoreBuffer)
 		{
-			if (configProvider.CurrentConfig != null)
+			if (configProvider.CurrentConfig == null)
 			{
-				var (text, color) = judgmentService.Judge(cutScoreBuffer);
-				__instance._text.text = text;
-				__instance._color = color;
+				return;
 			}
+
+			var (text, color) = judgmentService.Judge(cutScoreBuffer, false);
+			__instance._text.text = text;
+			__instance._color = color;
 		}
 	}
 }
