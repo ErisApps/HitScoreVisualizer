@@ -1,8 +1,12 @@
+using System;
+using System.Collections.Generic;
 using System.Text;
 using HitScoreVisualizer.Extensions;
+using HitScoreVisualizer.Models;
 using HitScoreVisualizer.Settings;
 using JetBrains.Annotations;
 using SiraUtil.Logging;
+using IPA.Utilities;
 using UnityEngine;
 
 namespace HitScoreVisualizer.Services
@@ -32,7 +36,7 @@ namespace HitScoreVisualizer.Services
 			};
 		}
 
-		private (string, Color) GetNormalDispaly(IReadonlyCutScoreBuffer cutScoreBuffer, int afterCutScore)
+		private (string, Color) GetNormalDisplay(IReadonlyCutScoreBuffer cutScoreBuffer)
 		{
 			var judgment = NormalJudgment.Default;
 			var fadeJudgment = NormalJudgment.Default;
@@ -94,12 +98,10 @@ namespace HitScoreVisualizer.Services
 			return (text, color ?? Color.white);
 		}
 
-		private (string, Color) GetChainSegmentDisplay(IReadonlyCutScoreBuffer cutScoreBuffer, int afterCutScore)
+		private (string, Color) GetChainSegmentDisplay(IReadonlyCutScoreBuffer cutScoreBuffer)
 		{
-			var text = Config.ChainLinkDisplay == null ? ChainLinkDisplay.Default.Text
-				: FormatJudgmentTextByMode(Config.ChainLinkDisplay.Text, cutScoreBuffer, afterCutScore);
-			var color = (Config.ChainLinkDisplay?.Color ?? ChainLinkDisplay.Default.Color).ToColor();
-			return (text, color);
+			var chainLinkDisplay = Config.ChainLinkDisplay ?? ChainLinkDisplay.Default;
+			return (chainLinkDisplay.Text, chainLinkDisplay.Color.ToColor());
 		}
 
 		private string FormatJudgmentTextByMode(string unformattedText, IReadonlyCutScoreBuffer cutScoreBuffer, int afterCutScore)
@@ -110,6 +112,7 @@ namespace HitScoreVisualizer.Services
 				"textOnly" => unformattedText,
 				"numeric" => cutScoreBuffer.cutScore.ToString(),
 				"scoreOnTop" => $"{cutScoreBuffer.cutScore}\n{unformattedText}\n",
+				"directions" => $"{unformattedText}\n{CalculateOffDirection(cutScoreBuffer.noteCutInfo).ToFormattedDirection()}\n",
 				_ => $"{unformattedText}\n{cutScoreBuffer.cutScore}\n"
 			};
 		}
@@ -157,6 +160,9 @@ namespace HitScoreVisualizer.Services
 					case 'T':
 						formattedBuilder.Append(Config.TimeDependenceJudgments.JudgeTimeDependenceSegment(timeDependence, Config.TimeDependenceDecimalOffset, Config.TimeDependenceDecimalPrecision));
 						break;
+					case 'd':
+						formattedBuilder.Append(CalculateOffDirection(cutScoreBuffer.noteCutInfo).ToFormattedDirection());
+						break;
 					case 's':
 						formattedBuilder.Append(cutScoreBuffer.cutScore);
 						break;
@@ -179,6 +185,45 @@ namespace HitScoreVisualizer.Services
 			}
 
 			return formattedBuilder.Append(unformattedText).ToString();
+		}
+
+		private static readonly float Angle = Mathf.Sqrt(2) / 2;
+		private static readonly Dictionary<Direction, Vector3> NormalsMap = new()
+		{
+			{ Direction.Down, new Vector3(0, -1, 0) },
+			{ Direction.DownLeft, new Vector3(-Angle, -Angle, 0) },
+			{ Direction.Left, new Vector3(-1, 0, 0) },
+			{ Direction.UpLeft, new Vector3(-Angle, Angle, 0)}
+		};
+
+		private static Direction CalculateOffDirection(NoteCutInfo noteCutInfo)
+		{
+			var direction = GetClosestOffDirection(noteCutInfo.cutNormal);
+			var directionAsInt = (int)direction;
+			return
+				direction == Direction.None ? direction
+				: Vector3.Dot(NormalsMap[direction], noteCutInfo.notePosition - noteCutInfo.cutPoint) > 0 ? direction
+				: directionAsInt < 4 ? (Direction)(directionAsInt + 4)
+				: (Direction)(directionAsInt - 4);
+		}
+
+		private static Direction GetClosestOffDirection(Vector3 cutNormal)
+		{
+			var closestDot = Mathf.NegativeInfinity;
+			var result = Direction.None;
+			foreach (var (direction, normal) in NormalsMap)
+			{
+				var dot = Vector3.Dot(cutNormal, normal);
+				var dotValue = Math.Abs(dot);
+				if (!(dotValue > closestDot))
+				{
+					continue;
+				}
+				closestDot = dot;
+				result = direction;
+			}
+
+			return result;
 		}
 	}
 }
