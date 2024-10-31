@@ -19,14 +19,15 @@ namespace HitScoreVisualizer.Services
 
 		private Configuration Config => configProvider.CurrentConfig ?? Configuration.Default;
 
-		public (string hitScoreText, Color hitScoreColor) Judge(IReadonlyCutScoreBuffer cutScoreBuffer, int? afterCutOverride = null)
+		public (string hitScoreText, Color hitScoreColor) Judge(IReadonlyCutScoreBuffer cutScoreBuffer, bool assumeMaxPostSwing)
 		{
-			afterCutOverride ??= cutScoreBuffer.afterCutScore;
+			var afterCutScore = assumeMaxPostSwing ? cutScoreBuffer.noteScoreDefinition.maxAfterCutScore : cutScoreBuffer.afterCutScore;
+
 			return cutScoreBuffer.noteCutInfo.noteData.gameplayType switch
 			{
-				NoteData.GameplayType.Normal => GetNormalDispaly(cutScoreBuffer, afterCutOverride.Value),
-				NoteData.GameplayType.BurstSliderHead => GetChainHeadDisplay(cutScoreBuffer, afterCutOverride.Value),
-				NoteData.GameplayType.BurstSliderElement => GetChainSegmentDisplay(cutScoreBuffer, afterCutOverride.Value),
+				NoteData.GameplayType.Normal => GetNormalDispaly(cutScoreBuffer, afterCutScore),
+				NoteData.GameplayType.BurstSliderHead => GetChainHeadDisplay(cutScoreBuffer, afterCutScore),
+				NoteData.GameplayType.BurstSliderElement => GetChainSegmentDisplay(cutScoreBuffer, afterCutScore),
 				_ => (string.Empty, Color.white),
 			};
 		}
