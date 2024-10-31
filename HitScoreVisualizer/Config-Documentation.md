@@ -41,7 +41,7 @@ Which power of 10 to multiply the time dependence by
 ### "doIntermediateUpdates"
 Disabling this only updates the score number once the note is cut and once the post swing score is done calculating; this slightly improves performance
 
-### "showMaxPostswingFirst"
+### "assumeMaxPostSwing"
 When the note is first cut, should the post swing score show the max rating before it finishes calculating
 
 ### "judgments"
@@ -79,7 +79,7 @@ Judgments for time dependence (score is from 0-1)
   "timeDependencyDecimalPrecision": 1,
   "timeDependencyDecimalOffset": 2,
   "doIntermediateUpdates": true,
-  "showMaxPostswingFirst": false,
+  "assumeMaxPostSwing": false,
   "judgments": [
     { "threshold": 115, "text": "<size=250%><b>•", "color": [1, 1, 1, 1] },
     { "threshold": 108, "text": "<size=120%>%B%c%A", "color": [1, 1, 1, 1] },
