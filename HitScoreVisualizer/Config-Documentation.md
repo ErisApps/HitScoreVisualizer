@@ -9,18 +9,22 @@ If the version number (excluding patch version) of the config is higher than tha
 If this is true, the config will be overwritten with the plugin' default settings after an update rather than being converted
 
 ### "displayMode"
-If set to "format", displays the judgment text, with the following format specifiers allowed:
-- %b: The score contributed by the part of the swing before cutting the block
-- %c: The score contributed by the accuracy of the cut
-- %a: The score contributed by the part of the swing after cutting the block
-- %t: The time dependence of the swing
-- %B, %C, %A, %T: As above, except using the appropriate judgment from that part of the swing (as configured for "beforeCutAngleJudgments", "accuracyJudgments", "afterCutAngleJudgments", or "timeDependencyJudgments")
-- %s: The total score for the cut
-- %p: The percent out of 115 you achieved with your swing's score
-- %%: A literal percent symbol
-- %n: A newline
-
-If set to "numeric", displays only the note score. If set to "textOnly", displays only the judgment text. If set to "scoreOnTop", displays both (numeric score above judgment text). Otherwise, displays both (judgment text above numeric score)
+- If not set, by default, it will display judgment text above score.
+- If set to "scoreOnTop", it is like default but with score above.
+- If set to "format", displays the judgment text, with the following format specifiers allowed:
+  - %b: The score contributed by the part of the swing before cutting the block
+  - %c: The score contributed by the accuracy of the cut
+  - %a: The score contributed by the part of the swing after cutting the block
+  - %t: The time dependence of the swing
+  - %B, %C, %A, %T: As above, except using the appropriate judgment from that part of the swing (as configured for "beforeCutAngleJudgments", "accuracyJudgments", "afterCutAngleJudgments", or "timeDependencyJudgments")
+  - %d: An arrow that points towards the center line of the note relative to the cut line
+  - %s: The total score for the cut
+  - %p: The percent out of 115 you achieved with your swing's score
+  - %%: A literal percent symbol[README.md](../README.md)
+  - %n: A newline
+- If set to "textOnly", displays only the judgment text.
+- If set to "numeric", displays only the note score.
+- If set to "directions", displays judgement text and off-direction arrow.
 
 ### "fixedPosition"
 If not null, judgments will appear and stay at rather than moving as normal, this will take priority over TargetPositionOffset. Additionally, the previous judgment will disappear when a new one is created (so there won't be overlap)
