@@ -4,8 +4,8 @@
 	"name": "HitScoreVisualizer",
 	"description": "Visualizes the scores of your hits! Overly complex config options! Numbers? All the pros use it, except the ones who don't. (But they should.)",
 	"author": "Eris",
-	"gameVersion": "1.37.5",
-	"version": "3.4.3",
+	"gameVersion": "1.38.0",
+	"version": "3.5.0",
 	"dependsOn": {
 		"BSIPA": "^4.3.5",
 		"BeatSaberMarkupLanguage": "^1.12.0",
