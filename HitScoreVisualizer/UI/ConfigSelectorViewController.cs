@@ -61,7 +61,7 @@ namespace HitScoreVisualizer.UI
 		internal string BloomToggleFaceColor => hsvConfig.HitScoreBloom ? "#22dd00" : "#ff0010";
 
 		[UIValue("italics-toggle-face-color")]
-		internal string ItalicsToggleFaceColor => hsvConfig.EnableItalics ? "#22dd00" : "#ff0010";
+		internal string ItalicsToggleFaceColor => hsvConfig.DisableItalics ? "#22dd00" : "#ff0010";
 
 		[UIAction("config-Selected")]
 		internal void Select(TableView _, object @object)
@@ -119,7 +119,7 @@ namespace HitScoreVisualizer.UI
 		[UIAction("toggle-italics")]
 		internal void ToggleItalics()
 		{
-			hsvConfig.EnableItalics = !hsvConfig.EnableItalics;
+			hsvConfig.DisableItalics = !hsvConfig.DisableItalics;
 			NotifyPropertyChanged(nameof(ItalicsToggleFaceColor));
 		}
 
