@@ -13,7 +13,7 @@ namespace HitScoreVisualizer.Settings
 		[JsonIgnore]
 		internal static Configuration Default { get; } = new Configuration
 		{
-			Version = Plugin.Version,
+			Version = Plugin.Metadata.HVersion,
 			IsDefaultConfig = true,
 			DisplayMode = "format",
 			DoIntermediateUpdates = true,
@@ -56,13 +56,13 @@ namespace HitScoreVisualizer.Settings
 		};
 
 		[JsonProperty("majorVersion", DefaultValueHandling = DefaultValueHandling.Include)]
-		public ulong MajorVersion { get; private set; } = Plugin.Version.Major;
+		public ulong MajorVersion { get; private set; } = Plugin.Metadata.HVersion.Major;
 
 		[JsonProperty("minorVersion", DefaultValueHandling = DefaultValueHandling.Include)]
-		public ulong MinorVersion { get; private set; } = Plugin.Version.Minor;
+		public ulong MinorVersion { get; private set; } = Plugin.Metadata.HVersion.Minor;
 
 		[JsonProperty("patchVersion", DefaultValueHandling = DefaultValueHandling.Include)]
-		public ulong PatchVersion { get; private set; } = Plugin.Version.Patch;
+		public ulong PatchVersion { get; private set; } = Plugin.Metadata.HVersion.Patch;
 
 		[JsonIgnore]
 		internal Version Version
