@@ -1,12 +1,7 @@
-using System;
-using System.Collections.Generic;
 using System.Text;
 using HitScoreVisualizer.Extensions;
-using HitScoreVisualizer.Models;
 using HitScoreVisualizer.Settings;
 using JetBrains.Annotations;
-using SiraUtil.Logging;
-using IPA.Utilities;
 using UnityEngine;
 
 namespace HitScoreVisualizer.Services
@@ -25,18 +20,24 @@ namespace HitScoreVisualizer.Services
 
 		public (string hitScoreText, Color hitScoreColor) Judge(IReadonlyCutScoreBuffer cutScoreBuffer, bool assumeMaxPostSwing)
 		{
+			var beforeCutScore = cutScoreBuffer.beforeCutScore;
+			var centerCutScore = cutScoreBuffer.centerDistanceCutScore;
 			var afterCutScore = assumeMaxPostSwing ? cutScoreBuffer.noteScoreDefinition.maxAfterCutScore : cutScoreBuffer.afterCutScore;
+			var totalCutScore = beforeCutScore + centerCutScore + afterCutScore;
+			var maxPossibleScore = cutScoreBuffer.noteScoreDefinition.maxCutScore;
+			var noteCutInfo = cutScoreBuffer.noteCutInfo;
 
 			return cutScoreBuffer.noteCutInfo.noteData.gameplayType switch
 			{
-				NoteData.GameplayType.Normal => GetNormalDisplay(cutScoreBuffer, afterCutScore),
-				NoteData.GameplayType.BurstSliderHead => GetChainHeadDisplay(cutScoreBuffer, afterCutScore),
-				NoteData.GameplayType.BurstSliderElement => GetChainSegmentDisplay(cutScoreBuffer, afterCutScore),
+				NoteData.GameplayType.Normal => GetNormalDisplay(totalCutScore, beforeCutScore, centerCutScore, afterCutScore, maxPossibleScore, noteCutInfo),
+				NoteData.GameplayType.BurstSliderHead => GetChainHeadDisplay(totalCutScore, beforeCutScore, centerCutScore, afterCutScore, maxPossibleScore, noteCutInfo),
+				NoteData.GameplayType.BurstSliderElement => GetChainSegmentDisplay(totalCutScore, beforeCutScore, centerCutScore, afterCutScore, maxPossibleScore, noteCutInfo),
 				_ => (string.Empty, Color.white),
 			};
 		}
 
-		private (string, Color) GetNormalDisplay(IReadonlyCutScoreBuffer cutScoreBuffer, int afterCutScore)
+		private (string, Color) GetNormalDisplay(int totalCutScore, int beforeCutScore,
+			int centerCutScore, int afterCutScore, int maxPossibleScore, NoteCutInfo noteCutInfo)
 		{
 			var judgment = NormalJudgment.Default;
 			var fadeJudgment = NormalJudgment.Default;
@@ -44,30 +45,33 @@ namespace HitScoreVisualizer.Services
 
 			for (var i = 0; i < Config.NormalJudgments.Count; i++)
 			{
-				if (Config.NormalJudgments[i].Threshold <= cutScoreBuffer.cutScore)
+				if (Config.NormalJudgments[i].Threshold > totalCutScore)
 				{
-					judgment = Config.NormalJudgments[i];
-					if (i > 0)
-					{
-						fadeJudgment = Config.NormalJudgments[i - 1];
-					}
-					break;
+					continue;
 				}
+
+				judgment = Config.NormalJudgments[i];
+				if (i > 0)
+				{
+					fadeJudgment = Config.NormalJudgments[i - 1];
+				}
+				break;
 			}
 
 			var color = judgment.Fade
 				? Color.Lerp(
 					judgment.Color.ToColor(),
 					fadeJudgment.Color.ToColor(),
-					Mathf.InverseLerp(judgment.Threshold, fadeJudgment.Threshold, cutScoreBuffer.cutScore))
+					Mathf.InverseLerp(judgment.Threshold, fadeJudgment.Threshold, totalCutScore))
 				: judgment.Color.ToColor();
 
-			var text = FormatJudgmentTextByMode(judgment.Text, cutScoreBuffer, afterCutScore);
+			var text = FormatJudgmentTextByMode(judgment.Text, totalCutScore, beforeCutScore, centerCutScore, afterCutScore, maxPossibleScore, noteCutInfo);
 
 			return (text, color);
 		}
 
-		private (string, Color) GetChainHeadDisplay(IReadonlyCutScoreBuffer cutScoreBuffer, int afterCutScore)
+		private (string, Color) GetChainHeadDisplay(int totalCutScore, int beforeCutScore,
+			int centerCutScore, int afterCutScore, int maxPossibleScore, NoteCutInfo noteCutInfo)
 		{
 			var judgment = ChainHeadJudgment.Default;
 			var fadeJudgment = ChainHeadJudgment.Default;
@@ -75,54 +79,57 @@ namespace HitScoreVisualizer.Services
 
 			for (var i = 0; i < Config.ChainHeadJudgments.Count; i++)
 			{
-				if (Config.ChainHeadJudgments[i].Threshold <= cutScoreBuffer.cutScore)
+				if (Config.ChainHeadJudgments[i].Threshold > totalCutScore)
 				{
-					judgment = Config.ChainHeadJudgments[i];
-					if (i > 0)
-					{
-						fadeJudgment = Config.ChainHeadJudgments[i - 1];
-					}
-					break;
+					continue;
 				}
+
+				judgment = Config.ChainHeadJudgments[i];
+				if (i > 0)
+				{
+					fadeJudgment = Config.ChainHeadJudgments[i - 1];
+				}
+				break;
 			}
 
-			var color = judgment.Fade
-				? Color.Lerp(
-					judgment.Color!.ToColor(),
-					fadeJudgment.Color.ToColor(),
-					Mathf.InverseLerp(judgment.Threshold, fadeJudgment.Threshold, cutScoreBuffer.cutScore))
-				: judgment.Color?.ToColor();
+			var color = !judgment.Fade ? judgment.Color.ToColor()
+				: Color.Lerp(judgment.Color.ToColor(), fadeJudgment.Color.ToColor(),
+					Mathf.InverseLerp(judgment.Threshold, fadeJudgment.Threshold, totalCutScore));
 
-			var text = FormatJudgmentTextByMode(judgment.Text, cutScoreBuffer, afterCutScore);
+			var text = FormatJudgmentTextByMode(judgment.Text, totalCutScore, beforeCutScore, centerCutScore, afterCutScore, maxPossibleScore, noteCutInfo);
 
-			return (text, color ?? Color.white);
+			return (text, color);
 		}
 
-		private (string, Color) GetChainSegmentDisplay(IReadonlyCutScoreBuffer cutScoreBuffer, int afterCutScore)
+		private (string, Color) GetChainSegmentDisplay(int totalCutScore, int beforeCutScore,
+			int centerCutScore, int afterCutScore, int maxPossibleScore, NoteCutInfo noteCutInfo)
 		{
 			var chainLinkDisplay = Config.ChainLinkDisplay ?? ChainLinkDisplay.Default;
-			return (FormatJudgmentTextByMode(chainLinkDisplay.Text, cutScoreBuffer, afterCutScore), chainLinkDisplay.Color.ToColor());
+			var text = FormatJudgmentTextByMode(chainLinkDisplay.Text, totalCutScore, beforeCutScore, centerCutScore, afterCutScore, maxPossibleScore, noteCutInfo);
+			return (text, chainLinkDisplay.Color.ToColor());
 		}
 
-		private string FormatJudgmentTextByMode(string unformattedText, IReadonlyCutScoreBuffer cutScoreBuffer, int afterCutScore)
+		private string FormatJudgmentTextByMode(string unformattedText, int totalCutScore, int beforeCutScore,
+			int centerCutScore, int afterCutScore, int maxPossibleScore, NoteCutInfo noteCutInfo)
 		{
 			return Config.DisplayMode switch
 			{
-				"format" => FormatJudgmentText(unformattedText, cutScoreBuffer, afterCutScore),
+				"format" => FormatJudgmentText(unformattedText, totalCutScore, beforeCutScore, centerCutScore, afterCutScore, maxPossibleScore, noteCutInfo),
 				"textOnly" => unformattedText,
-				"numeric" => cutScoreBuffer.cutScore.ToString(),
-				"scoreOnTop" => $"{cutScoreBuffer.cutScore}\n{unformattedText}\n",
-				"directions" => $"{unformattedText}\n{CalculateOffDirection(cutScoreBuffer.noteCutInfo).ToFormattedDirection()}\n",
-				_ => $"{unformattedText}\n{cutScoreBuffer.cutScore}\n"
+				"numeric" => totalCutScore.ToString(),
+				"scoreOnTop" => $"{totalCutScore}\n{unformattedText}\n",
+				"directions" => $"{unformattedText}\n{noteCutInfo.CalculateOffDirection().ToFormattedDirection()}\n",
+				_ => $"{unformattedText}\n{totalCutScore}\n"
 			};
 		}
 
-		private string FormatJudgmentText(string unformattedText, IReadonlyCutScoreBuffer cutScoreBuffer, int afterCutScore)
+		private string FormatJudgmentText(string unformattedText, int totalCutScore, int beforeCutScore,
+			int centerCutScore, int afterCutScore, int maxPossibleScore, NoteCutInfo noteCutInfo)
 		{
 			var formattedBuilder = new StringBuilder();
 			var nextPercentIndex = unformattedText.IndexOf('%');
 
-			var timeDependence = Mathf.Abs(cutScoreBuffer.noteCutInfo.cutNormal.z);
+			var timeDependence = Mathf.Abs(noteCutInfo.cutNormal.z);
 
 			while (nextPercentIndex != -1)
 			{
@@ -134,96 +141,29 @@ namespace HitScoreVisualizer.Services
 
 				var specifier = unformattedText[nextPercentIndex + 1];
 
-				switch (specifier)
+				formattedBuilder.Append(specifier switch
 				{
-					case 'b':
-						formattedBuilder.Append(cutScoreBuffer.beforeCutScore);
-						break;
-					case 'c':
-						formattedBuilder.Append(cutScoreBuffer.centerDistanceCutScore);
-						break;
-					case 'a':
-						formattedBuilder.Append(afterCutScore);
-						break;
-					case 't':
-						formattedBuilder.Append((timeDependence * Mathf.Pow(10, Config.TimeDependenceDecimalOffset)).ToString($"n{Config.TimeDependenceDecimalPrecision}"));
-						break;
-					case 'B':
-						formattedBuilder.Append(Config.BeforeCutAngleJudgments.JudgeSegment(cutScoreBuffer.beforeCutScore));
-						break;
-					case 'C':
-						formattedBuilder.Append(Config.AccuracyJudgments.JudgeSegment(cutScoreBuffer.centerDistanceCutScore));
-						break;
-					case 'A':
-						formattedBuilder.Append(Config.AfterCutAngleJudgments.JudgeSegment(afterCutScore));
-						break;
-					case 'T':
-						formattedBuilder.Append(Config.TimeDependenceJudgments.JudgeTimeDependenceSegment(timeDependence, Config.TimeDependenceDecimalOffset, Config.TimeDependenceDecimalPrecision));
-						break;
-					case 'd':
-						formattedBuilder.Append(CalculateOffDirection(cutScoreBuffer.noteCutInfo).ToFormattedDirection());
-						break;
-					case 's':
-						formattedBuilder.Append(cutScoreBuffer.cutScore);
-						break;
-					case 'p':
-						formattedBuilder.Append($"{(double) cutScoreBuffer.cutScore / cutScoreBuffer.noteScoreDefinition.maxCutScore * 100:0}");
-						break;
-					case '%':
-						formattedBuilder.Append("%");
-						break;
-					case 'n':
-						formattedBuilder.Append("\n");
-						break;
-					default:
-						formattedBuilder.Append("%" + specifier);
-						break;
-				}
+					'b' => beforeCutScore,
+					'c' => centerCutScore,
+					'a' => afterCutScore,
+					't' => (timeDependence * Mathf.Pow(10, Config.TimeDependenceDecimalOffset)).ToString($"n{Config.TimeDependenceDecimalPrecision}"),
+					'B' => Config.BeforeCutAngleJudgments.JudgeSegment(beforeCutScore),
+					'C' => Config.AccuracyJudgments.JudgeSegment(centerCutScore),
+					'A' => Config.AfterCutAngleJudgments.JudgeSegment(afterCutScore),
+					'T' => Config.TimeDependenceJudgments.JudgeTimeDependenceSegment(timeDependence, Config.TimeDependenceDecimalOffset, Config.TimeDependenceDecimalPrecision),
+					'd' => noteCutInfo.CalculateOffDirection().ToFormattedDirection(),
+					's' => totalCutScore,
+					'p' => $"{(double) totalCutScore / maxPossibleScore * 100:0}",
+					'%' => "%",
+					'n' => "\n",
+					_ => $"%{specifier}"
+				});
 
 				unformattedText = unformattedText.Remove(0, nextPercentIndex + 2);
 				nextPercentIndex = unformattedText.IndexOf('%');
 			}
 
 			return formattedBuilder.Append(unformattedText).ToString();
-		}
-
-		private static readonly float Angle = Mathf.Sqrt(2) / 2;
-		private static readonly Dictionary<Direction, Vector3> NormalsMap = new()
-		{
-			{ Direction.Down, new Vector3(0, -1, 0) },
-			{ Direction.DownLeft, new Vector3(-Angle, -Angle, 0) },
-			{ Direction.Left, new Vector3(-1, 0, 0) },
-			{ Direction.UpLeft, new Vector3(-Angle, Angle, 0)}
-		};
-
-		private static Direction CalculateOffDirection(NoteCutInfo noteCutInfo)
-		{
-			var direction = GetClosestOffDirection(noteCutInfo.cutNormal);
-			var directionAsInt = (int)direction;
-			return
-				direction == Direction.None ? direction
-				: Vector3.Dot(NormalsMap[direction], noteCutInfo.notePosition - noteCutInfo.cutPoint) > 0 ? direction
-				: directionAsInt < 4 ? (Direction)(directionAsInt + 4)
-				: (Direction)(directionAsInt - 4);
-		}
-
-		private static Direction GetClosestOffDirection(Vector3 cutNormal)
-		{
-			var closestDot = Mathf.NegativeInfinity;
-			var result = Direction.None;
-			foreach (var (direction, normal) in NormalsMap)
-			{
-				var dot = Vector3.Dot(cutNormal, normal);
-				var dotValue = Math.Abs(dot);
-				if (!(dotValue > closestDot))
-				{
-					continue;
-				}
-				closestDot = dot;
-				result = direction;
-			}
-
-			return result;
 		}
 	}
 }
