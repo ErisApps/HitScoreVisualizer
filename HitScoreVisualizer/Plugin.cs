@@ -13,17 +13,21 @@ namespace HitScoreVisualizer
 	[Plugin(RuntimeOptions.DynamicInit), NoEnableDisable]
 	public class Plugin
 	{
-		internal static Version Version { get; private set; } = null!;
+		internal static PluginMetadata Metadata { get; private set; } = null!;
+		internal static Logger Log { get; private set; } = null!;
+		internal static HSVConfig Config { get; private set; } = null!;
 
 		[Init]
-		public void Init(Logger logger, Config config, PluginMetadata pluginMetadata, Zenjector zenject)
+		public Plugin(Logger logger, Config config, PluginMetadata pluginMetadata, Zenjector zenject)
 		{
-			Version = pluginMetadata.HVersion;
+			Metadata = pluginMetadata;
+			Log = logger;
+			Config = config.Generated<HSVConfig>();
 
 			zenject.UseLogger(logger);
 			zenject.UseMetadataBinder<Plugin>();
 
-			zenject.Install<HsvAppInstaller>(Location.App, config.Generated<HSVConfig>());
+			zenject.Install<HsvAppInstaller>(Location.App, Config);
 			zenject.Install<HsvMenuInstaller>(Location.Menu);
 		}
 	}
