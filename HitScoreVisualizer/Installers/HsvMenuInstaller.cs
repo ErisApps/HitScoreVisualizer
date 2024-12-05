@@ -9,7 +9,7 @@ namespace HitScoreVisualizer.Installers
 		{
 			Container.Bind<ConfigSelectorViewController>().FromNewComponentAsViewController().AsSingle();
 			Container.Bind<HitScoreFlowCoordinator>().FromNewComponentOnNewGameObject().AsSingle();
-			Container.BindInterfacesTo<SettingsControllerManager>().AsSingle();
+			Container.BindInterfacesTo<MenuButtonManager>().AsSingle();
 		}
 	}
 }
