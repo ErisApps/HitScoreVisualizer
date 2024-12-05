@@ -1,0 +1,9 @@
+<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='https://monkeymanboy.github.io/BSML-Docs/BSMLSchema.xsd'>
+
+	<vertical child-expand-height="false" child-align="MiddleCenter">
+		<toggle-setting text="Enable Score Bloom" value="hit-score-bloom"/>
+		<toggle-setting text="Disable Score Italics" value="disable-italics"/>
+		<toggle-setting text="Override No Texts And Huds" value="override-no-texts-and-huds"/>
+	</vertical>
+
+</bg>
