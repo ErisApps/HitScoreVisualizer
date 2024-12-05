@@ -39,21 +39,21 @@
 					  child-expand-height='true'
 					  child-control-height='false'>
 
-				<button pref-width='28'
+				<button pref-width='28' pref-height="12"
 						word-wrapping='false'
 						child-align='MiddleCenter'
 						text='Refresh'
 						hover-hint="Refreshes the list"
 						on-click='reload-list'/>
 
-				<button pref-width='28'
+				<button pref-width='28' pref-height="12"
 						word-wrapping='false'
 						text='Select'
 						hover-hint="Loads the currently selected config."
 						interactable='~is-valid-config-selected'
 						on-click='pick-config'/>
 
-				<button pref-width='28'
+				<button pref-width='28' pref-height="12"
 						word-wrapping='false'
 						face-color="#BD2881"
 						text='Reset to none'
@@ -61,7 +61,7 @@
 						interactable='~has-config-loaded'
 						on-click='unpick-config'/>
 
-				<button pref-width='28'
+				<button pref-width='28' pref-height="12"
 						word-wrapping='false'
 						outline-color="#d1002d"
 						face-color="#d1002d"
@@ -73,38 +73,6 @@
 			</vertical>
 
 		</vertical>
-
-		<modal size-delta-x="50"
-			   size-delta-y="40"
-			   clickerino-offerino-closerino="false"
-			   move-to-center="true"
-			   show-event="show-yeet-modal"
-			   hide-event="hide-yeet-modal">
-			<vertical
-				preferred-width="50"
-				preferred-height="40"
-				pad="2"
-				child-align="MiddleCenter"
-				child-control-height="true"
-				child-expand-height="true">
-				<text text="Are you really sure that you want to delete the selected config? This can not be undone."
-					  align="Center"
-					  word-wrapping="true"
-					  bold="true"
-					  italics="true"/>
-				<horizontal vertical-fit="MinSize">
-					<button word-wrapping='false'
-							text="No"
-							event-click="hide-yeet-modal"/>
-					<button word-wrapping='false'
-							outline-color="#d1002d"
-							face-color="#d1002d"
-							text="Yes"
-							event-click="hide-yeet-modal"
-							on-click="yeet-config"/>
-				</horizontal>
-			</vertical>
-		</modal>
 	</horizontal>
 
 	<stack pad-left="4"
@@ -121,7 +89,50 @@
 			<text text="Loading..." italics="true"/>
 		</horizontal>
 
-		<text text="~config-loaded-text" italics="true" active="~has-loaded-available-configs"/>
+		<horizontal>
+			<vertical horizontal-fit="Unconstrained" pref-width="110">
+				<text text="~config-loaded-text"
+					  italics="true"
+					  size-delta-x="100"
+					  active="~has-loaded-available-configs"
+					  overflow-mode="Ellipsis"/>
+			</vertical>
+			<text text="Found an issue? Message qqrz"
+				  align="Right"
+				  color="grey"
+				  font-size="3"/>
+		</horizontal>
 	</stack>
 
+	<modal size-delta-x="50"
+		   size-delta-y="40"
+		   clickerino-offerino-closerino="false"
+		   move-to-center="true"
+		   show-event="show-yeet-modal"
+		   hide-event="hide-yeet-modal">
+		<vertical
+			preferred-width="50"
+			preferred-height="40"
+			pad="2"
+			child-align="MiddleCenter"
+			child-control-height="true"
+			child-expand-height="true">
+			<text text="Are you really sure that you want to delete the selected config? This can not be undone."
+				  align="Center"
+				  word-wrapping="true"
+				  bold="true"
+				  italics="true"/>
+			<horizontal vertical-fit="MinSize">
+				<button word-wrapping='false'
+						text="No"
+						event-click="hide-yeet-modal"/>
+				<button word-wrapping='false'
+						outline-color="#d1002d"
+						face-color="#d1002d"
+						text="Yes"
+						event-click="hide-yeet-modal"
+						on-click="yeet-config"/>
+			</horizontal>
+		</vertical>
+	</modal>
 </bg>

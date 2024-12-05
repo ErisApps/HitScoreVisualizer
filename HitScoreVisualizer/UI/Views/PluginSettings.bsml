@@ -1,9 +1,19 @@
 <bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='https://monkeymanboy.github.io/BSML-Docs/BSMLSchema.xsd'>
 
-	<vertical child-expand-height="false" child-align="MiddleCenter">
-		<toggle-setting text="Enable Score Bloom" value="hit-score-bloom"/>
-		<toggle-setting text="Disable Score Italics" value="disable-italics"/>
-		<toggle-setting text="Override No Texts And Huds" value="override-no-texts-and-huds"/>
+	<vertical>
+
+		<horizontal horizontal-fit='PreferredSize' background='panel-top' preferred-width='25' preferred-height='7'>
+			<text text='Settings' align='Capline' font-size='6' id='settings-title'/>
+		</horizontal>
+
+		<vertical child-expand-height="false">
+			<toggle-setting text="Enable Score Bloom" value="hit-score-bloom"/>
+			<toggle-setting text="Disable Score Italics" value="disable-italics"/>
+			<toggle-setting text="Override No Texts And Huds"
+							value="override-no-texts-and-huds"
+							hover-hint="Allows you to see hit scores while 'No Texts And Huds' is enabled"/>
+		</vertical>
+
 	</vertical>
 
 </bg>
