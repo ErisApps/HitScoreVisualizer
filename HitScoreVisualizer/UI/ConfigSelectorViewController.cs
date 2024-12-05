@@ -7,7 +7,6 @@ using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HitScoreVisualizer.Models;
 using HitScoreVisualizer.Services;
-using HitScoreVisualizer.Settings;
 using HMUI;
 using IPA.Utilities.Async;
 using SiraUtil.Logging;
@@ -21,15 +20,13 @@ namespace HitScoreVisualizer.UI
 	{
 		private SiraLog siraLog = null!;
 		private ConfigProvider configProvider = null!;
-		private HSVConfig hsvConfig = null!;
 
 		private ConfigFileInfo? selectedConfigFileInfo;
 
 		[Inject]
-		internal void Construct(SiraLog siraLog, HSVConfig hsvConfig, ConfigProvider configProvider)
+		internal void Construct(SiraLog siraLog, ConfigProvider configProvider)
 		{
 			this.siraLog = siraLog;
-			this.hsvConfig = hsvConfig;
 			this.configProvider = configProvider;
 		}
 
@@ -56,12 +53,6 @@ namespace HitScoreVisualizer.UI
 
 		[UIValue("is-config-yeetable")]
 		internal bool CanConfigGetYeeted => selectedConfigFileInfo?.ConfigPath != null && selectedConfigFileInfo.ConfigPath != configProvider.CurrentConfigPath;
-
-		[UIValue("bloom-toggle-face-color")]
-		internal string BloomToggleFaceColor => hsvConfig.HitScoreBloom ? "#22dd00" : "#ff0010";
-
-		[UIValue("italics-toggle-face-color")]
-		internal string ItalicsToggleFaceColor => hsvConfig.DisableItalics ? "#22dd00" : "#ff0010";
 
 		[UIAction("config-Selected")]
 		internal void Select(TableView _, object @object)
@@ -107,20 +98,6 @@ namespace HitScoreVisualizer.UI
 				NotifyPropertyChanged(nameof(HasConfigCurrently));
 				NotifyPropertyChanged(nameof(LoadedConfigText));
 			}
-		}
-
-		[UIAction("toggle-bloom-effect")]
-		internal void ToggleBloomEffect()
-		{
-			hsvConfig.HitScoreBloom = !hsvConfig.HitScoreBloom;
-			NotifyPropertyChanged(nameof(BloomToggleFaceColor));
-		}
-
-		[UIAction("toggle-italics")]
-		internal void ToggleItalics()
-		{
-			hsvConfig.DisableItalics = !hsvConfig.DisableItalics;
-			NotifyPropertyChanged(nameof(ItalicsToggleFaceColor));
 		}
 
 		[UIAction("yeet-config")]

@@ -7,9 +7,10 @@ namespace HitScoreVisualizer.Installers
 	{
 		public override void InstallBindings()
 		{
-			Container.Bind<ConfigSelectorViewController>().FromNewComponentAsViewController().AsSingle();
-			Container.Bind<HitScoreFlowCoordinator>().FromNewComponentOnNewGameObject().AsSingle();
 			Container.BindInterfacesTo<MenuButtonManager>().AsSingle();
+			Container.Bind<HitScoreFlowCoordinator>().FromNewComponentOnNewGameObject().AsSingle();
+			Container.Bind<ConfigSelectorViewController>().FromNewComponentAsViewController().AsSingle();
+			Container.Bind<PluginSettingsViewController>().FromNewComponentAsViewController().AsSingle();
 		}
 	}
 }
