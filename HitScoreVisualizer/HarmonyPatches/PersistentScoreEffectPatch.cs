@@ -24,7 +24,7 @@ internal class PersistentScoreEffectPatch
 	 * setting in HitScoreVisualizer is enabled
 	 */
 
-	public IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) => new CodeMatcher(instructions)
+	public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) => new CodeMatcher(instructions)
 		.MatchStartForward(
 			new CodeMatch(OpCodes.Ldloc_S),
 			new CodeMatch(OpCodes.Callvirt, GetNoTextsAndHuds),
