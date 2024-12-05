@@ -7,10 +7,15 @@
 		</horizontal>
 
 		<vertical child-expand-height="false">
-			<toggle-setting text="Enable Score Bloom" value="hit-score-bloom"/>
-			<toggle-setting text="Disable Score Italics" value="disable-italics"/>
+			<toggle-setting text="Enable Score Bloom"
+							value="hit-score-bloom"
+							apply-on-change="true"/>
+			<toggle-setting text="Disable Score Italics"
+							value="disable-italics"
+							apply-on-change="true"/>
 			<toggle-setting text="Override No Texts And Huds"
 							value="override-no-texts-and-huds"
+							apply-on-change="true"
 							hover-hint="Allows you to see hit scores while 'No Texts And Huds' is enabled"/>
 		</vertical>
 
