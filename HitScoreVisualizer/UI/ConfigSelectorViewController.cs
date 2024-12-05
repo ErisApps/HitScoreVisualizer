@@ -49,7 +49,7 @@ namespace HitScoreVisualizer.UI
 		internal bool HasConfigCurrently => !string.IsNullOrWhiteSpace(configProvider.CurrentConfigPath);
 
 		[UIValue("config-loaded-text")]
-		internal string LoadedConfigText => $"Currently loaded config: <size=80%>{(HasConfigCurrently ? Path.GetFileNameWithoutExtension(configProvider.CurrentConfigPath) : "None")}";
+		internal string LoadedConfigText => $"Currently Loaded Config<size=90%> : {(HasConfigCurrently ? Path.GetFileNameWithoutExtension(configProvider.CurrentConfigPath) : "None")}";
 
 		[UIValue("is-config-yeetable")]
 		internal bool CanConfigGetYeeted => selectedConfigFileInfo?.ConfigPath != null && selectedConfigFileInfo.ConfigPath != configProvider.CurrentConfigPath;
