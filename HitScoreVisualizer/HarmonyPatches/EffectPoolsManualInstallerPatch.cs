@@ -27,12 +27,8 @@ namespace HitScoreVisualizer.HarmonyPatches
 			text.overflowMode = TextOverflowModes.Overflow;
 
 			// Configure font shader and italics
-			text.font = hsvConfig.HitScoreBloom
-				? bloomFontProvider.BloomFont
-				: bloomFontProvider.DefaultFont;
-			text.fontStyle = hsvConfig.EnableItalics
-				? FontStyles.Italic
-				: FontStyles.Normal;
+			text.font = hsvConfig.HitScoreBloom ? bloomFontProvider.BloomFont : bloomFontProvider.DefaultFont;
+			text.fontStyle = hsvConfig.DisableItalics ? FontStyles.Normal : FontStyles.Italic;
 		}
 	}
 }
