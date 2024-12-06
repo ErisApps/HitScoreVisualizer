@@ -4,7 +4,7 @@ using HitScoreVisualizer.Models;
 using IPA.Utilities;
 using UnityEngine;
 
-namespace HitScoreVisualizer.Extensions;
+namespace HitScoreVisualizer.Utilities.Extensions;
 
 internal static class DirectionConversion
 {

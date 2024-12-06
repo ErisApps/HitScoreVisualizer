@@ -1,6 +1,6 @@
 using System.Text;
-using HitScoreVisualizer.Extensions;
 using HitScoreVisualizer.Settings;
+using HitScoreVisualizer.Utilities.Extensions;
 using JetBrains.Annotations;
 using UnityEngine;
 

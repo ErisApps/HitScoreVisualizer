@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace HitScoreVisualizer.Extensions
+namespace HitScoreVisualizer.Utilities.Extensions
 {
 	public static class ColorExtensions
 	{

@@ -1,9 +1,9 @@
-using HitScoreVisualizer.Settings;
 using System.Collections.Generic;
 using System.Text;
+using HitScoreVisualizer.Settings;
 using UnityEngine;
 
-namespace HitScoreVisualizer.Extensions
+namespace HitScoreVisualizer.Utilities.Extensions
 {
 	internal static class JudgmentExtensions
 	{
