@@ -1,9 +1,10 @@
 using System;
 using System.Linq;
 using System.Threading;
-using HitScoreVisualizer.Settings;
+using HitScoreVisualizer.Utilities;
 using TMPro;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace HitScoreVisualizer.Services
 {
@@ -16,12 +17,11 @@ namespace HitScoreVisualizer.Services
 		{
 			var tekoFontAsset = Resources.FindObjectsOfTypeAll<TMP_FontAsset>().First(x => x.name.Contains("Teko-Medium SDF"));
 
-			cachedTekoFont = new Lazy<TMP_FontAsset>(() => CopyFontAsset(tekoFontAsset), LazyThreadSafetyMode.ExecutionAndPublication);
-			bloomTekoFont = new Lazy<TMP_FontAsset>(() =>
+			cachedTekoFont = new(() => CopyFontAsset(tekoFontAsset), LazyThreadSafetyMode.ExecutionAndPublication);
+			bloomTekoFont = new(() =>
 			{
-				var distanceFieldShader = Resources.FindObjectsOfTypeAll<Shader>().First(x => x.name.Contains("TextMeshPro/Distance Field"));
 				var bloomTekoFont = CopyFontAsset(tekoFontAsset, "Teko-Medium SDF (Bloom)");
-				bloomTekoFont.material.shader = distanceFieldShader;
+				bloomTekoFont.material.shader = Resources.FindObjectsOfTypeAll<Shader>().First(x => x.name == "TextMeshPro/Distance Field ZFix");
 
 				return bloomTekoFont;
 			}, LazyThreadSafetyMode.ExecutionAndPublication);
@@ -38,7 +38,7 @@ namespace HitScoreVisualizer.Services
 				newName = original.name;
 			}
 
-			var newFontAsset = GameObject.Instantiate(original);
+			var newFontAsset = Object.Instantiate(original);
 
 			var texture = original.atlasTexture;
 
@@ -46,11 +46,11 @@ namespace HitScoreVisualizer.Services
 			Graphics.CopyTexture(texture, newTexture);
 
 			var material = new Material(original.material) { name = $"{newName} Atlas Material" };
-			material.SetTexture("_MainTex", newTexture);
+			material.SetTexture(MaterialProperties.MainTex, newTexture);
 
 			newFontAsset.m_AtlasTexture = newTexture;
 			newFontAsset.name = newName;
-			newFontAsset.atlasTextures = new[] { newTexture };
+			newFontAsset.atlasTextures = [newTexture];
 			newFontAsset.material = material;
 
 			return newFontAsset;
@@ -60,7 +60,7 @@ namespace HitScoreVisualizer.Services
 		{
 			if (bloomTekoFont.IsValueCreated)
 			{
-				UnityEngine.Object.Destroy(bloomTekoFont.Value);
+				Object.Destroy(bloomTekoFont.Value);
 			}
 		}
 	}
