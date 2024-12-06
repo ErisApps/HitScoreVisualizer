@@ -1,5 +1,5 @@
-using HitScoreVisualizer.Services;
 using HitScoreVisualizer.Settings;
+using HitScoreVisualizer.Utilities.Services;
 using SiraUtil.Affinity;
 using TMPro;
 // ReSharper disable InconsistentNaming

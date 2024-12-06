@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using HitScoreVisualizer.Helpers.Json;
 using HitScoreVisualizer.Models;
 using HitScoreVisualizer.Settings;
+using HitScoreVisualizer.Utilities.Json;
 using IPA.Loader;
 using IPA.Utilities;
 using Newtonsoft.Json;
@@ -15,7 +15,7 @@ using UnityEngine;
 using Zenject;
 using Version = Hive.Versioning.Version;
 
-namespace HitScoreVisualizer.Services
+namespace HitScoreVisualizer.Utilities.Services
 {
 	public class ConfigProvider : IInitializable
 	{

@@ -1,12 +1,11 @@
 using System;
 using System.Linq;
 using System.Threading;
-using HitScoreVisualizer.Utilities;
 using TMPro;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace HitScoreVisualizer.Services
+namespace HitScoreVisualizer.Utilities.Services
 {
 	internal class BloomFontProvider : IDisposable
 	{

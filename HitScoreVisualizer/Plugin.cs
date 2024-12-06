@@ -1,6 +1,5 @@
 using HitScoreVisualizer.Installers;
 using HitScoreVisualizer.Settings;
-using Hive.Versioning;
 using IPA;
 using IPA.Config;
 using IPA.Config.Stores;

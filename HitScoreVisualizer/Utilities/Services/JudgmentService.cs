@@ -4,7 +4,7 @@ using HitScoreVisualizer.Utilities.Extensions;
 using JetBrains.Annotations;
 using UnityEngine;
 
-namespace HitScoreVisualizer.Services
+namespace HitScoreVisualizer.Utilities.Services
 {
 	[UsedImplicitly]
 	internal class JudgmentService

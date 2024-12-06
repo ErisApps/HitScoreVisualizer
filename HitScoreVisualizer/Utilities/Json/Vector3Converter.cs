@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using UnityEngine;
 
-namespace HitScoreVisualizer.Helpers.Json
+namespace HitScoreVisualizer.Utilities.Json
 {
 	internal class Vector3Converter : JsonConverter
 	{

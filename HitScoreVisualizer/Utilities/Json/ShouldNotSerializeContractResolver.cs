@@ -3,7 +3,7 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace HitScoreVisualizer.Helpers.Json
+namespace HitScoreVisualizer.Utilities.Json
 {
 	internal class ShouldNotSerializeContractResolver : DefaultContractResolver
 	{
