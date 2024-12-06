@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using HitScoreVisualizer.Helpers.Json;
+using HitScoreVisualizer.Utilities.Json;
 using Newtonsoft.Json;
 using UnityEngine;
 using Version = Hive.Versioning.Version;

@@ -6,7 +6,7 @@ using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HitScoreVisualizer.Models;
-using HitScoreVisualizer.Services;
+using HitScoreVisualizer.Utilities.Services;
 using HMUI;
 using IPA.Utilities.Async;
 using SiraUtil.Logging;
