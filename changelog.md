@@ -1,7 +1,13 @@
 ## Changelog
 
+### 3.5.1
+- Added a setting to allow hit score text to be shown while "No Texts and Huds" is enabled
+- Fixed bloom font showing over notes and environment objects
+- Fixed "assumeMaxPostSwing" not adding the full post swing score to the total score, which was causing lower judgment thresholds to be used
+- Moved settings to the left screen and tweaked some interface elements' scale
+
 ### 3.5.0
-- Added a toggle in configs that will decide, when the note is first cut, if the score display will show the max possible after cut score
+- Added a toggle in configs that will decide, when the note is first cut, if the score display will show the max possible after c~~~~ut score
 ```json
 "assumeMaxPostSwing": true
 ```
