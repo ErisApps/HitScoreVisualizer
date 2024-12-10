@@ -1,8 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- This file contains project properties used by the build. -->
 <Project>
+
+	<!-- Plugin Metadata -->
 	<PropertyGroup>
-		<ImportBSMTTargets>True</ImportBSMTTargets>
-		<BSMTProjectType>BSIPA</BSMTProjectType>
+		<PluginId>HitScoreVisualizer</PluginId>
+		<PluginName>HitScoreVisualizer</PluginName>
+		<Authors>Eris</Authors>
+		<Version>3.5.1</Version>
+		<GameVersion>1.38.0</GameVersion>
+		<Description>
+			Visualizes the scores of your hits! Overly complex config options! Numbers?
+			All the pros use it, except the ones who don't. (But they should.)
+		</Description>
+		<ProjectSource>https://github.com/ErisApps/HitScoreVisualizer</ProjectSource>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<ConflictsWith Include="NalulunaFlyingScore" Version="*" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<DependsOn Include="BSIPA" Version="^4.3.5" />
+		<DependsOn Include="SiraUtil" Version="^3.1.14" />
+		<DependsOn Include="BeatSaberMarkupLanguage" Version="^1.12.4" />
+	</ItemGroup>
+
+	<PropertyGroup>
+		<BSMTProjectType>BSIPA</BSMTProjectType>
+		<GenerateManifest>true</GenerateManifest>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)' != 'Release'">
+		<DisableZipRelease>true</DisableZipRelease>
+	</PropertyGroup>
+
 </Project>
