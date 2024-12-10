@@ -1,6 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HitScoreVisualizer.Settings;
+using HitScoreVisualizer.Utilities.Services;
 using Zenject;
 
 namespace HitScoreVisualizer.UI;
@@ -17,11 +21,12 @@ internal class PluginSettingsViewController : BSMLAutomaticViewController
 		this.config = config;
 	}
 
-	[UIValue("hit-score-bloom")]
-	public bool HitScoreBloom
+	[UIValue("font-type-choices")] private List<object> trailTypeChoices = Enum.GetNames(typeof(HsvFontType)).ToList<object>();
+	[UIValue("font-type")]
+	public string FontType
 	{
-		get => config.HitScoreBloom;
-		set => config.HitScoreBloom = value;
+		get => config.FontType.ToString();
+		set => config.FontType = Enum.TryParse(value, out HsvFontType t) ? t : HsvFontType.Default;
 	}
 
 	[UIValue("disable-italics")]

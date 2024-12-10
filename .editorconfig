@@ -75,30 +75,6 @@ dotnet_style_null_propagation = true:suggestion
 dotnet_code_quality_unused_parameters = non_public:suggestion
 
 ###############################
-# Naming Conventions          #
-###############################
-
-# Style Definitions
-dotnet_naming_style.pascal_case_style.capitalization = pascal_case
-dotnet_naming_style.uppercase_style.capitalization = all_upper
-
-# Use upper case for constant fields
-dotnet_naming_rule.constant_fields_should_be_upper_case.severity = warning
-dotnet_naming_rule.constant_fields_should_be_upper_case.symbols = constant_fields
-dotnet_naming_rule.constant_fields_should_be_upper_case.style = uppercase_style
-dotnet_naming_symbols.constant_fields.applicable_kinds = field
-dotnet_naming_symbols.constant_fields.applicable_accessibilities = *
-dotnet_naming_symbols.constant_fields.required_modifiers = const
-
-# Use upper case for constant fields
-dotnet_naming_rule.static_readonly_fields_should_be_upper_case.severity = warning
-dotnet_naming_rule.static_readonly_fields_should_be_upper_case.symbols = static_readonly_fields
-dotnet_naming_rule.static_readonly_fields_should_be_upper_case.style = uppercase_style
-dotnet_naming_symbols.static_readonly_fields.applicable_kinds = field
-dotnet_naming_symbols.static_readonly_fields.applicable_accessibilities = public
-dotnet_naming_symbols.static_readonly_fields.required_modifiers = static, readonly
-
-###############################
 # C# Code Style Rules         #
 ###############################
 

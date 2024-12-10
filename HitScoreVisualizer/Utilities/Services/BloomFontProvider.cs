@@ -1,63 +1,62 @@
 using System;
 using System.Linq;
 using System.Threading;
+using HitScoreVisualizer.Utilities.Extensions;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
 
 namespace HitScoreVisualizer.Utilities.Services
 {
 	internal class BloomFontProvider : IDisposable
 	{
+
+
 		private readonly Lazy<TMP_FontAsset> cachedTekoFont;
 		private readonly Lazy<TMP_FontAsset> bloomTekoFont;
 
 		public BloomFontProvider()
 		{
-			var tekoFontAsset = Resources.FindObjectsOfTypeAll<TMP_FontAsset>().First(x => x.name.Contains("Teko-Medium SDF"));
+			var tekoFontAsset = Resources.FindObjectsOfTypeAll<TMP_FontAsset>().FirstOrDefault(x => x.name == "Teko-Medium SDF");
+			var bloomFontShader = Resources.FindObjectsOfTypeAll<Shader>().FirstOrDefault(x => x.name == "TextMeshPro/Distance Field");
 
-			cachedTekoFont = new(() => CopyFontAsset(tekoFontAsset), LazyThreadSafetyMode.ExecutionAndPublication);
+			if (tekoFontAsset == null)
+			{
+				throw new("Teko-Medium SDF not found, unable to create HSV fonts. This is likely because of a game update.");
+			}
+			if (bloomFontShader == null)
+			{
+				throw new("Bloom font shader not found, unable to create HSV fonts. This is likely because of a game update.");
+			}
+
+			cachedTekoFont = new(() => tekoFontAsset.CopyFontAsset(), LazyThreadSafetyMode.ExecutionAndPublication);
 			bloomTekoFont = new(() =>
 			{
-				var bloomTekoFont = CopyFontAsset(tekoFontAsset, "Teko-Medium SDF (Bloom)");
-				bloomTekoFont.material.shader = Resources.FindObjectsOfTypeAll<Shader>().First(x => x.name == "TextMeshPro/Distance Field ZFix");
-
+				var bloomTekoFont = tekoFontAsset.CopyFontAsset("Teko-Medium SDF (Bloom)");
+				bloomTekoFont.material.shader = bloomFontShader;
 				return bloomTekoFont;
 			}, LazyThreadSafetyMode.ExecutionAndPublication);
 		}
 
-		public TMP_FontAsset BloomFont => bloomTekoFont.Value;
-
-		public TMP_FontAsset DefaultFont => cachedTekoFont.Value;
-
-		private static TMP_FontAsset CopyFontAsset(TMP_FontAsset original, string newName = "")
+		public TMP_FontAsset GetFontForType(HsvFontType hsvFontType)
 		{
-			if (string.IsNullOrEmpty(newName))
+			return hsvFontType switch
 			{
-				newName = original.name;
-			}
-
-			var newFontAsset = Object.Instantiate(original);
-
-			var texture = original.atlasTexture;
-
-			var newTexture = new Texture2D(texture.width, texture.height, texture.format, texture.mipmapCount, true) { name = $"{newName} Atlas" };
-			Graphics.CopyTexture(texture, newTexture);
-
-			var material = new Material(original.material) { name = $"{newName} Atlas Material" };
-			material.SetTexture(MaterialProperties.MainTex, newTexture);
-
-			newFontAsset.m_AtlasTexture = newTexture;
-			newFontAsset.name = newName;
-			newFontAsset.atlasTextures = [newTexture];
-			newFontAsset.material = material;
-
-			return newFontAsset;
+				HsvFontType.Default => cachedTekoFont.Value,
+				HsvFontType.Bloom => bloomTekoFont.Value,
+				_ => throw new ArgumentOutOfRangeException(nameof(hsvFontType))
+			};
 		}
 
 		public void Dispose()
 		{
-			if (bloomTekoFont.IsValueCreated)
+			if (cachedTekoFont.IsValueCreated && cachedTekoFont.Value != null)
+			{
+				Object.Destroy(cachedTekoFont.Value);
+			}
+
+			if (bloomTekoFont.IsValueCreated && bloomTekoFont.Value != null)
 			{
 				Object.Destroy(bloomTekoFont.Value);
 			}

@@ -7,9 +7,10 @@
 		</horizontal>
 
 		<vertical child-expand-height="false">
-			<toggle-setting text="Enable Score Bloom"
-							value="hit-score-bloom"
-							apply-on-change="true"/>
+			<list-setting text="Font Type"
+						  value="font-type"
+						  choices="font-type-choices"
+						  apply-on-change="true"/>
 			<toggle-setting text="Disable Score Italics"
 							value="disable-italics"
 							apply-on-change="true"/>
