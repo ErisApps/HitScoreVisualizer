@@ -2,36 +2,35 @@ using System;
 using BeatSaberMarkupLanguage.MenuButtons;
 using Zenject;
 
-namespace HitScoreVisualizer.UI
+namespace HitScoreVisualizer.UI;
+
+internal class MenuButtonManager : IInitializable, IDisposable
 {
-	internal class MenuButtonManager : IInitializable, IDisposable
+	private readonly HitScoreFlowCoordinator hitScoreFlowCoordinator;
+	private readonly MainFlowCoordinator mainFlowCoordinator;
+
+	private readonly MenuButton hsvButton;
+
+	public MenuButtonManager(HitScoreFlowCoordinator hitScoreFlowCoordinator, MainFlowCoordinator mainFlowCoordinator)
 	{
-		private readonly HitScoreFlowCoordinator hitScoreFlowCoordinator;
-		private readonly MainFlowCoordinator mainFlowCoordinator;
+		this.hitScoreFlowCoordinator = hitScoreFlowCoordinator;
+		this.mainFlowCoordinator = mainFlowCoordinator;
 
-		private readonly MenuButton hsvButton;
+		hsvButton = new($"<size=89.5%>{Plugin.Metadata.Name}", "Select the config you want.", OnClick);
+	}
 
-		public MenuButtonManager(HitScoreFlowCoordinator hitScoreFlowCoordinator, MainFlowCoordinator mainFlowCoordinator)
-		{
-			this.hitScoreFlowCoordinator = hitScoreFlowCoordinator;
-			this.mainFlowCoordinator = mainFlowCoordinator;
+	public void Initialize()
+	{
+		MenuButtons.Instance.RegisterButton(hsvButton);
+	}
 
-			hsvButton = new($"<size=89.5%>{Plugin.Metadata.Name}", "Select the config you want.", OnClick);
-		}
+	public void Dispose()
+	{
+		MenuButtons.Instance.UnregisterButton(hsvButton);
+	}
 
-		public void Initialize()
-		{
-			MenuButtons.Instance.RegisterButton(hsvButton);
-		}
-
-		public void Dispose()
-		{
-			MenuButtons.Instance.UnregisterButton(hsvButton);
-		}
-
-		private void OnClick()
-		{
-			mainFlowCoordinator.PresentFlowCoordinator(hitScoreFlowCoordinator);
-		}
+	private void OnClick()
+	{
+		mainFlowCoordinator.PresentFlowCoordinator(hitScoreFlowCoordinator);
 	}
 }

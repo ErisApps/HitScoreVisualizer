@@ -2,35 +2,34 @@ using BeatSaberMarkupLanguage;
 using HMUI;
 using Zenject;
 
-namespace HitScoreVisualizer.UI
+namespace HitScoreVisualizer.UI;
+
+internal class HitScoreFlowCoordinator : FlowCoordinator
 {
-	internal class HitScoreFlowCoordinator : FlowCoordinator
+	private ConfigSelectorViewController configSelectorViewController = null!;
+	private PluginSettingsViewController pluginSettingsViewController = null!;
+
+	[Inject]
+	internal void Construct(ConfigSelectorViewController configSelectorViewController, PluginSettingsViewController pluginSettingsViewController)
 	{
-		private ConfigSelectorViewController configSelectorViewController = null!;
-		private PluginSettingsViewController pluginSettingsViewController = null!;
+		this.configSelectorViewController = configSelectorViewController;
+		this.pluginSettingsViewController = pluginSettingsViewController;
+	}
 
-		[Inject]
-		internal void Construct(ConfigSelectorViewController configSelectorViewController, PluginSettingsViewController pluginSettingsViewController)
+	protected override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
+	{
+		if (firstActivation)
 		{
-			this.configSelectorViewController = configSelectorViewController;
-			this.pluginSettingsViewController = pluginSettingsViewController;
-		}
+			SetTitle(Plugin.Metadata.Name);
+			showBackButton = true;
 
-		protected override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
-		{
-			if (firstActivation)
-			{
-				SetTitle(Plugin.Metadata.Name);
-				showBackButton = true;
-
-				ProvideInitialViewControllers(configSelectorViewController, pluginSettingsViewController);
-			}
+			ProvideInitialViewControllers(configSelectorViewController, pluginSettingsViewController);
 		}
+	}
 
-		protected override void BackButtonWasPressed(ViewController _)
-		{
-			// Dismiss ourselves
-			BeatSaberUI.MainFlowCoordinator.DismissFlowCoordinator(this);
-		}
+	protected override void BackButtonWasPressed(ViewController _)
+	{
+		// Dismiss ourselves
+		BeatSaberUI.MainFlowCoordinator.DismissFlowCoordinator(this);
 	}
 }
