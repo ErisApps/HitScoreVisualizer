@@ -8,25 +8,31 @@ internal class MenuButtonManager : IInitializable, IDisposable
 {
 	private readonly HitScoreFlowCoordinator hitScoreFlowCoordinator;
 	private readonly MainFlowCoordinator mainFlowCoordinator;
+	private readonly MenuButtons menuButtons;
+	private readonly MenuButton hsvMenuButton;
 
-	private readonly MenuButton hsvButton;
+	private const string Title = "Hit Score Visualizer";
+	private const string HoverHint = "Change your score visualizer config";
 
-	public MenuButtonManager(HitScoreFlowCoordinator hitScoreFlowCoordinator, MainFlowCoordinator mainFlowCoordinator)
+	public MenuButtonManager(
+		HitScoreFlowCoordinator hitScoreFlowCoordinator,
+		MainFlowCoordinator mainFlowCoordinator,
+		MenuButtons menuButtons)
 	{
 		this.hitScoreFlowCoordinator = hitScoreFlowCoordinator;
 		this.mainFlowCoordinator = mainFlowCoordinator;
-
-		hsvButton = new($"<size=89.5%>{Plugin.Metadata.Name}", "Select the config you want.", OnClick);
+		this.menuButtons = menuButtons;
+		hsvMenuButton = new(Title, HoverHint, OnClick);
 	}
 
 	public void Initialize()
 	{
-		MenuButtons.Instance.RegisterButton(hsvButton);
+		menuButtons.RegisterButton(hsvMenuButton);
 	}
 
 	public void Dispose()
 	{
-		MenuButtons.Instance.UnregisterButton(hsvButton);
+		menuButtons.UnregisterButton(hsvMenuButton);
 	}
 
 	private void OnClick()

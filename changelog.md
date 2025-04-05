@@ -1,5 +1,11 @@
 ## Changelog
 
+### 3.5.3
+- Added spaces to the main menu button
+
+### 3.5.2
+- Fixed bloom font causing black screen when Enhancements was not installed
+
 ### 3.5.1
 - Added a setting to allow hit score text to be shown while "No Texts and Huds" is enabled
 - Fixed bloom font showing over notes and environment objects
