@@ -1,7 +1,8 @@
-using Newtonsoft.Json;
+using System;
 
 namespace HitScoreVisualizer.Models;
 
+[Serializable]
 public class TimeDependenceJudgmentSegment
 {
 	// This judgment will be applied only when the time dependence >= this number.
@@ -9,12 +10,5 @@ public class TimeDependenceJudgmentSegment
 	public required float Threshold { get; init; }
 
 	// The text to replace the appropriate judgment specifier with (%T) when this judgment applies.
-	public required string? Text { get; init; }
-
-	[JsonConstructor]
-	public TimeDependenceJudgmentSegment(float threshold = 0f, string? text = null)
-	{
-		Threshold = threshold;
-		Text = text ?? string.Empty;
-	}
+	public required string Text { get; init; }
 }
