@@ -21,7 +21,7 @@ public class ConfigProvider : IInitializable
 {
 	private readonly SiraLog siraLog;
 	private readonly HSVConfig hsvConfig;
-	private readonly Version pluginVersion;
+	private readonly ConfigMigrator configMigrator;
 
 	private readonly string hsvConfigsFolderPath = Path.Combine(UnityGame.UserDataPath, nameof(HitScoreVisualizer));
 	private readonly string hsvConfigsBackupFolderPath;
@@ -35,33 +35,17 @@ public class ConfigProvider : IInitializable
 		ContractResolver = new HsvConfigContractResolver()
 	};
 
-	private readonly Dictionary<Version, Func<HsvConfigModel, bool>> migrationActions;
-
-	private readonly Version minimumMigratableVersion;
-	private readonly Version maximumMigrationNeededVersion;
-
 	internal string? CurrentConfigPath => hsvConfig.ConfigFilePath;
 
 	public HsvConfigModel? CurrentConfig { get; private set; }
 
-	internal ConfigProvider(SiraLog siraLog, HSVConfig hsvConfig, UBinder<Plugin, PluginMetadata> pluginMetadata)
+	internal ConfigProvider(SiraLog siraLog, HSVConfig hsvConfig, ConfigMigrator configMigrator)
 	{
 		this.siraLog = siraLog;
 		this.hsvConfig = hsvConfig;
-		pluginVersion = pluginMetadata.Value.HVersion;
+		this.configMigrator = configMigrator;
 
 		hsvConfigsBackupFolderPath = Path.Combine(hsvConfigsFolderPath, "Backups");
-
-		migrationActions = new()
-		{
-			{ new(2, 0, 0), RunMigration2_0_0 },
-			{ new(2, 1, 0), RunMigration2_1_0 },
-			{ new(2, 2, 3), RunMigration2_2_3 },
-			{ new(3, 2, 0), RunMigration3_2_0 }
-		};
-
-		minimumMigratableVersion = migrationActions.Keys.Min();
-		maximumMigrationNeededVersion = migrationActions.Keys.Max();
 	}
 
 	public async void Initialize()
@@ -109,7 +93,7 @@ public class ConfigProvider : IInitializable
 		var configFileInfo = new ConfigFileInfo(Path.GetFileNameWithoutExtension(hsvConfig.ConfigFilePath), hsvConfig.ConfigFilePath)
 		{
 			Configuration = userConfig,
-			State = GetConfigState(userConfig, Path.GetFileNameWithoutExtension(hsvConfig.ConfigFilePath), true)
+			State = configMigrator.GetConfigState(userConfig, Path.GetFileNameWithoutExtension(hsvConfig.ConfigFilePath), true)
 		};
 
 		await SelectUserConfig(configFileInfo).ConfigureAwait(false);
@@ -126,7 +110,7 @@ public class ConfigProvider : IInitializable
 		foreach (var configInfo in configFileInfoList)
 		{
 			configInfo.Configuration = await LoadConfig(Path.Combine(hsvConfigsFolderPath, configInfo.ConfigPath)).ConfigureAwait(false);
-			configInfo.State = GetConfigState(configInfo.Configuration, configInfo.ConfigName);
+			configInfo.State = configMigrator.GetConfigState(configInfo.Configuration, configInfo.ConfigName);
 		}
 
 		return configFileInfoList;
@@ -182,7 +166,7 @@ public class ConfigProvider : IInitializable
 			else
 			{
 				siraLog.Debug("Starting actual config migration logic for config");
-				RunMigration(configFileInfo.Configuration!);
+				configMigrator.RunMigration(configFileInfo.Configuration!);
 			}
 
 			await SaveConfig(configFileInfo.ConfigPath, configFileInfo.Configuration).ConfigureAwait(false);
@@ -190,7 +174,7 @@ public class ConfigProvider : IInitializable
 			siraLog.Debug($"Config migration finished successfully and updated config is stored to disk at path: '{existingConfigFullPath}'");
 		}
 
-		if (Validate(configFileInfo.Configuration!, configFileInfo.ConfigName))
+		if (configMigrator.Validate(configFileInfo.Configuration!, configFileInfo.ConfigName))
 		{
 			CurrentConfig = configFileInfo.Configuration;
 			hsvConfig.ConfigFilePath = configFileInfo.ConfigPath;
@@ -251,294 +235,6 @@ public class ConfigProvider : IInitializable
 		{
 			siraLog.Error(e);
 		}
-	}
-
-	private ConfigState GetConfigState(HsvConfigModel? configuration, string configName, bool shouldLogWarning = false)
-	{
-		if (configuration is null)
-		{
-			LogWarning($"Config {configName} is not recognized as a valid HSV config file");
-			return ConfigState.Broken;
-		}
-
-		var configVersion = configuration.GetVersion();
-
-		// Both full version comparison and check on major, minor or patch version inequality in case the mod is versioned with a pre-release id
-		if (configVersion > pluginVersion &&
-		    (configVersion.Major != pluginVersion.Major
-		     || configVersion.Minor != pluginVersion.Minor
-		     || configVersion.Patch != pluginVersion.Patch))
-		{
-			LogWarning($"Config {configName} is made for a newer version of HSV than is currently installed. Targets {configVersion} while only {pluginVersion} is installed");
-			return ConfigState.NewerVersion;
-		}
-
-		if (configVersion < minimumMigratableVersion)
-		{
-			LogWarning($"Config {configName} is too old and cannot be migrated. Please manually update said config to a newer version of HSV");
-			return ConfigState.Incompatible;
-		}
-
-		if (configVersion < maximumMigrationNeededVersion)
-		{
-			LogWarning($"Config {configName} is is made for an older version of HSV, but can be migrated (safely?). Targets {configVersion} while version {pluginVersion} is installed");
-			return ConfigState.NeedsMigration;
-		}
-
-		return Validate(configuration, configName) ? ConfigState.Compatible : ConfigState.ValidationFailed;
-
-		void LogWarning(string message)
-		{
-			if (shouldLogWarning)
-			{
-				siraLog.Warn(message);
-			}
-		}
-	}
-
-	// ReSharper disable once CognitiveComplexity
-	private bool Validate(HsvConfigModel configuration, string configName)
-	{
-		if (!configuration.Judgments?.Any() ?? true)
-		{
-			siraLog.Warn($"No judgments found for {configName}");
-			return false;
-		}
-
-		if (!ValidateJudgments(configuration, configName))
-		{
-			return false;
-		}
-
-		// 99 is the max for NumberFormatInfo.NumberDecimalDigits
-		if (configuration.TimeDependenceDecimalPrecision < 0 || configuration.TimeDependenceDecimalPrecision > 99)
-		{
-			siraLog.Warn($"timeDependencyDecimalPrecision value {configuration.TimeDependenceDecimalPrecision} is outside the range of acceptable values [0, 99]");
-			return false;
-		}
-
-		if (configuration.TimeDependenceDecimalOffset < 0 || configuration.TimeDependenceDecimalOffset > Math.Log10(float.MaxValue))
-		{
-			siraLog.Warn($"timeDependencyDecimalOffset value {configuration.TimeDependenceDecimalOffset} is outside the range of acceptable values [0, {(int) Math.Log10(float.MaxValue)}]");
-			return false;
-		}
-
-		if (configuration.BeforeCutAngleJudgments != null)
-		{
-			configuration.BeforeCutAngleJudgments = configuration.BeforeCutAngleJudgments.OrderByDescending(x => x.Threshold).ToList();
-			if (!ValidateJudgmentSegment(configuration.BeforeCutAngleJudgments, configName))
-			{
-				return false;
-			}
-		}
-
-		if (configuration.AccuracyJudgments != null)
-		{
-			configuration.AccuracyJudgments = configuration.AccuracyJudgments.OrderByDescending(x => x.Threshold).ToList();
-			if (!ValidateJudgmentSegment(configuration.AccuracyJudgments, configName))
-			{
-				return false;
-			}
-		}
-
-		if (configuration.AfterCutAngleJudgments != null)
-		{
-			configuration.AfterCutAngleJudgments = configuration.AfterCutAngleJudgments.OrderByDescending(x => x.Threshold).ToList();
-			if (!ValidateJudgmentSegment(configuration.AfterCutAngleJudgments, configName))
-			{
-				return false;
-			}
-		}
-
-		if (configuration.TimeDependenceJudgments != null)
-		{
-			configuration.TimeDependenceJudgments = configuration.TimeDependenceJudgments.OrderByDescending(x => x.Threshold).ToList();
-			if (!ValidateTimeDependenceJudgmentSegment(configuration.TimeDependenceJudgments, configName))
-			{
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	// ReSharper disable once CognitiveComplexity
-	private bool ValidateJudgments(HsvConfigModel configuration, string configName)
-	{
-		configuration.Judgments = configuration.Judgments!.OrderByDescending(x => x.Threshold).ToList();
-		var prevJudgment = configuration.Judgments[0];
-		if (prevJudgment.Fade)
-		{
-			prevJudgment = new()
-			{
-				Color = prevJudgment.Color,
-				Fade = false,
-				Text = prevJudgment.Text,
-				Threshold = prevJudgment.Threshold,
-			};
-		}
-
-		if (!ValidateJudgmentColor(prevJudgment, configName))
-		{
-			siraLog.Warn($"Judgment entry for threshold {prevJudgment.Threshold} has invalid color in {configName}");
-			return false;
-		}
-
-		if (configuration.Judgments.Count > 1)
-		{
-			for (var i = 1; i < configuration.Judgments.Count; i++)
-			{
-				var currentJudgment = configuration.Judgments[i];
-				if (prevJudgment.Threshold != currentJudgment.Threshold)
-				{
-					if (!ValidateJudgmentColor(currentJudgment, configName))
-					{
-						siraLog.Warn($"Judgment entry for threshold {currentJudgment.Threshold} has invalid color in {configName}");
-						return false;
-					}
-
-					prevJudgment = currentJudgment;
-					continue;
-				}
-
-				siraLog.Warn($"Duplicate entry found for threshold {currentJudgment.Threshold} in {configName}");
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	private bool ValidateJudgmentColor(NormalJudgment judgment, string configName)
-	{
-		if (judgment.Color.Count != 4)
-		{
-			siraLog.Warn($"Judgment for threshold {judgment.Threshold} has invalid color in {configName}! Make sure to include exactly 4 numbers for each judgment's color!");
-			return false;
-		}
-
-		if (judgment.Color.All(x => x >= 0f))
-		{
-			return true;
-		}
-
-		siraLog.Warn($"Judgment for threshold {judgment.Threshold} has invalid color in {configName}! Make sure to include exactly 4 numbers that are greater or equal than 0 (and preferably smaller or equal than 1) for each judgment's color!");
-		return false;
-	}
-
-	private bool ValidateJudgmentSegment(List<JudgmentSegment> segments, string configName)
-	{
-		if (segments.Count <= 1)
-		{
-			return true;
-		}
-
-		var prevJudgmentSegment = segments.First();
-		for (var i = 1; i < segments.Count; i++)
-		{
-			var currentJudgment = segments[i];
-			if (prevJudgmentSegment.Threshold != currentJudgment.Threshold)
-			{
-				prevJudgmentSegment = currentJudgment;
-				continue;
-			}
-
-			siraLog.Warn($"Duplicate entry found for threshold {currentJudgment.Threshold} in {configName}");
-			return false;
-		}
-
-		return true;
-	}
-
-	private bool ValidateTimeDependenceJudgmentSegment(List<TimeDependenceJudgmentSegment> segments, string configName)
-	{
-		if (segments.Count <= 1)
-		{
-			return true;
-		}
-
-		var prevJudgmentSegment = segments.First();
-		for (var i = 1; i < segments.Count; i++)
-		{
-			var currentJudgment = segments[i];
-			if (prevJudgmentSegment.Threshold - currentJudgment.Threshold > double.Epsilon)
-			{
-				prevJudgmentSegment = currentJudgment;
-				continue;
-			}
-
-			siraLog.Warn($"Duplicate entry found for threshold {currentJudgment.Threshold} in {configName}");
-			return false;
-		}
-
-		return true;
-	}
-
-	private void RunMigration(HsvConfigModel userConfig)
-	{
-		foreach (var requiredMigration in migrationActions.Keys.Where(migrationVersion => migrationVersion >= userConfig.GetVersion()))
-		{
-			migrationActions[requiredMigration](userConfig);
-		}
-
-		userConfig.SetVersion(pluginVersion);
-	}
-
-	private static bool RunMigration2_0_0(HsvConfigModel configuration)
-	{
-		configuration.BeforeCutAngleJudgments = [JudgmentSegment.Default];
-		configuration.AccuracyJudgments = [JudgmentSegment.Default];
-		configuration.AfterCutAngleJudgments = [JudgmentSegment.Default];
-
-		return true;
-	}
-
-	private static bool RunMigration2_1_0(HsvConfigModel configuration)
-	{
-		if (configuration.Judgments != null)
-		{
-			configuration.Judgments = configuration.Judgments
-				.Where(j => j.Threshold == 110)
-				.Select(j => new NormalJudgment
-				{
-					Threshold = 115,
-					Text = j.Text,
-					Color = j.Color,
-					Fade = j.Fade
-				}).ToList();
-		}
-
-		if (configuration.AccuracyJudgments != null)
-		{
-			configuration.AccuracyJudgments = configuration.AccuracyJudgments
-				.Where(aj => aj.Threshold == 10)
-				.Select(s => new JudgmentSegment
-				{
-					Threshold = 15,
-					Text = s.Text,
-				}).ToList();
-		}
-
-		return true;
-	}
-
-	private static bool RunMigration2_2_3(HsvConfigModel configuration)
-	{
-		configuration.DoIntermediateUpdates = true;
-
-		return true;
-	}
-
-	private static bool RunMigration3_2_0(HsvConfigModel configuration)
-	{
-#pragma warning disable 618
-		if (configuration.UseFixedPos)
-		{
-			configuration.FixedPosition = new Vector3(configuration.FixedPosX, configuration.FixedPosY, configuration.FixedPosZ);
-		}
-#pragma warning restore 618
-
-		return true;
 	}
 
 	private bool CreateHsvConfigsFolderIfYeetedByPlayer(bool calledOnInit = true)
