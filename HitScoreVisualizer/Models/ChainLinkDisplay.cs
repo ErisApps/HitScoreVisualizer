@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace HitScoreVisualizer.Settings;
+namespace HitScoreVisualizer.Models;
 
 public class ChainLinkDisplay
 {

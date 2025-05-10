@@ -1,9 +1,9 @@
 using System.Runtime.CompilerServices;
-using HitScoreVisualizer.Utilities.Services;
+using HitScoreVisualizer.Models;
 using IPA.Config.Stores;
 
 [assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
-namespace HitScoreVisualizer.Settings;
+namespace HitScoreVisualizer;
 
 internal class HSVConfig
 {

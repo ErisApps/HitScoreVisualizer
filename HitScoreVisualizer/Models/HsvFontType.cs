@@ -1,4 +1,4 @@
-namespace HitScoreVisualizer.Utilities.Services;
+namespace HitScoreVisualizer.Models;
 
 public enum HsvFontType
 {
