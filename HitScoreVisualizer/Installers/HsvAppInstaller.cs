@@ -1,5 +1,4 @@
 using HitScoreVisualizer.HarmonyPatches;
-using HitScoreVisualizer.Settings;
 using HitScoreVisualizer.Utilities.Services;
 using JetBrains.Annotations;
 using Zenject;

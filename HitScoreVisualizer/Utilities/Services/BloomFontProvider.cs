@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using HitScoreVisualizer.Models;
 using HitScoreVisualizer.Utilities.Extensions;
 using TMPro;
 using UnityEngine;

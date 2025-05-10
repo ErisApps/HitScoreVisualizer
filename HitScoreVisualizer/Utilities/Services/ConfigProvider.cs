@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using HitScoreVisualizer.Models;
-using HitScoreVisualizer.Settings;
+using HitScoreVisualizer.Utilities.Extensions;
 using HitScoreVisualizer.Utilities.Json;
 using IPA.Loader;
 using IPA.Utilities;
@@ -23,18 +23,26 @@ public class ConfigProvider : IInitializable
 	private readonly HSVConfig hsvConfig;
 	private readonly Version pluginVersion;
 
-	private readonly string hsvConfigsFolderPath;
+	private readonly string hsvConfigsFolderPath = Path.Combine(UnityGame.UserDataPath, nameof(HitScoreVisualizer));
 	private readonly string hsvConfigsBackupFolderPath;
-	private readonly JsonSerializerSettings jsonSerializerSettings;
 
-	private readonly Dictionary<Version, Func<Configuration, bool>> migrationActions;
+	private readonly JsonSerializerSettings configSerializerSettings = new()
+	{
+		DefaultValueHandling = DefaultValueHandling.Include,
+		NullValueHandling = NullValueHandling.Ignore,
+		Formatting = Formatting.Indented,
+		Converters = [ new Vector3Converter() ],
+		ContractResolver = new HsvConfigContractResolver()
+	};
+
+	private readonly Dictionary<Version, Func<HsvConfigModel, bool>> migrationActions;
 
 	private readonly Version minimumMigratableVersion;
 	private readonly Version maximumMigrationNeededVersion;
 
 	internal string? CurrentConfigPath => hsvConfig.ConfigFilePath;
 
-	public Configuration? CurrentConfig { get; private set; }
+	public HsvConfigModel? CurrentConfig { get; private set; }
 
 	internal ConfigProvider(SiraLog siraLog, HSVConfig hsvConfig, UBinder<Plugin, PluginMetadata> pluginMetadata)
 	{
@@ -42,23 +50,14 @@ public class ConfigProvider : IInitializable
 		this.hsvConfig = hsvConfig;
 		pluginVersion = pluginMetadata.Value.HVersion;
 
-		jsonSerializerSettings = new JsonSerializerSettings
-		{
-			DefaultValueHandling = DefaultValueHandling.Include,
-			NullValueHandling = NullValueHandling.Ignore,
-			Formatting = Formatting.Indented,
-			Converters = [ new Vector3Converter() ],
-			ContractResolver = ShouldNotSerializeContractResolver.Instance
-		};
-		hsvConfigsFolderPath = Path.Combine(UnityGame.UserDataPath, nameof(HitScoreVisualizer));
 		hsvConfigsBackupFolderPath = Path.Combine(hsvConfigsFolderPath, "Backups");
 
-		migrationActions = new Dictionary<Version, Func<Configuration, bool>>
+		migrationActions = new()
 		{
-			{ new Version(2, 0, 0), RunMigration2_0_0 },
-			{ new Version(2, 1, 0), RunMigration2_1_0 },
-			{ new Version(2, 2, 3), RunMigration2_2_3 },
-			{ new Version(3, 2, 0), RunMigration3_2_0 }
+			{ new(2, 0, 0), RunMigration2_0_0 },
+			{ new(2, 1, 0), RunMigration2_1_0 },
+			{ new(2, 2, 3), RunMigration2_2_3 },
+			{ new(3, 2, 0), RunMigration3_2_0 }
 		};
 
 		minimumMigratableVersion = migrationActions.Keys.Min();
@@ -69,7 +68,7 @@ public class ConfigProvider : IInitializable
 	{
 		if (CreateHsvConfigsFolderIfYeetedByPlayer())
 		{
-			await SaveConfig(Path.Combine(hsvConfigsFolderPath, "HitScoreVisualizerConfig (default).json"), Configuration.Default).ConfigureAwait(false);
+			await SaveConfig(Path.Combine(hsvConfigsFolderPath, "HitScoreVisualizerConfig (default).json"), HsvConfigModel.Default).ConfigureAwait(false);
 
 			var oldHsvConfigPath = Path.Combine(UnityGame.UserDataPath, "HitScoreVisualizerConfig.json");
 			if (File.Exists(oldHsvConfigPath))
@@ -161,7 +160,7 @@ public class ConfigProvider : IInitializable
 			var backupFolderPath = Path.GetDirectoryName(Path.Combine(hsvConfigsBackupFolderPath, configFileInfo.ConfigPath))!;
 			Directory.CreateDirectory(backupFolderPath);
 
-			var newFileName = $"{Path.GetFileNameWithoutExtension(existingConfigFullPath)} (backup of config made for {configFileInfo.Configuration!.Version})";
+			var newFileName = $"{Path.GetFileNameWithoutExtension(existingConfigFullPath)} (backup of config made for {configFileInfo.Configuration!.GetVersion()})";
 			var fileExtension = Path.GetExtension(existingConfigFullPath);
 			var combinedConfigBackupPath = Path.Combine(backupFolderPath, newFileName + fileExtension);
 
@@ -178,7 +177,7 @@ public class ConfigProvider : IInitializable
 			if (configFileInfo.Configuration!.IsDefaultConfig)
 			{
 				siraLog.Warn("Config is marked as default config and will therefore be reset to defaults");
-				configFileInfo.Configuration = Configuration.Default;
+				configFileInfo.Configuration = HsvConfigModel.Default;
 			}
 			else
 			{
@@ -213,7 +212,7 @@ public class ConfigProvider : IInitializable
 		}
 	}
 
-	private async Task<Configuration?> LoadConfig(string relativePath)
+	private async Task<HsvConfigModel?> LoadConfig(string relativePath)
 	{
 		CreateHsvConfigsFolderIfYeetedByPlayer(false);
 
@@ -221,7 +220,7 @@ public class ConfigProvider : IInitializable
 		{
 			using var streamReader = new StreamReader(Path.Combine(hsvConfigsFolderPath, relativePath));
 			var content = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-			return JsonConvert.DeserializeObject<Configuration>(content, jsonSerializerSettings);
+			return JsonConvert.DeserializeObject<HsvConfigModel>(content, configSerializerSettings);
 		}
 		catch (Exception ex)
 		{
@@ -231,7 +230,7 @@ public class ConfigProvider : IInitializable
 		}
 	}
 
-	private async Task SaveConfig(string relativePath, Configuration configuration)
+	private async Task SaveConfig(string relativePath, HsvConfigModel configuration)
 	{
 		CreateHsvConfigsFolderIfYeetedByPlayer(false);
 
@@ -245,7 +244,7 @@ public class ConfigProvider : IInitializable
 		try
 		{
 			using var streamWriter = new StreamWriter(fullPath, false);
-			var content = JsonConvert.SerializeObject(configuration, Formatting.Indented, jsonSerializerSettings);
+			var content = JsonConvert.SerializeObject(configuration, Formatting.Indented, configSerializerSettings);
 			await streamWriter.WriteAsync(content).ConfigureAwait(false);
 		}
 		catch (Exception e)
@@ -254,8 +253,40 @@ public class ConfigProvider : IInitializable
 		}
 	}
 
-	private ConfigState GetConfigState(Configuration? configuration, string configName, bool shouldLogWarning = false)
+	private ConfigState GetConfigState(HsvConfigModel? configuration, string configName, bool shouldLogWarning = false)
 	{
+		if (configuration is null)
+		{
+			LogWarning($"Config {configName} is not recognized as a valid HSV config file");
+			return ConfigState.Broken;
+		}
+
+		var configVersion = configuration.GetVersion();
+
+		// Both full version comparison and check on major, minor or patch version inequality in case the mod is versioned with a pre-release id
+		if (configVersion > pluginVersion &&
+		    (configVersion.Major != pluginVersion.Major
+		     || configVersion.Minor != pluginVersion.Minor
+		     || configVersion.Patch != pluginVersion.Patch))
+		{
+			LogWarning($"Config {configName} is made for a newer version of HSV than is currently installed. Targets {configVersion} while only {pluginVersion} is installed");
+			return ConfigState.NewerVersion;
+		}
+
+		if (configVersion < minimumMigratableVersion)
+		{
+			LogWarning($"Config {configName} is too old and cannot be migrated. Please manually update said config to a newer version of HSV");
+			return ConfigState.Incompatible;
+		}
+
+		if (configVersion < maximumMigrationNeededVersion)
+		{
+			LogWarning($"Config {configName} is is made for an older version of HSV, but can be migrated (safely?). Targets {configVersion} while version {pluginVersion} is installed");
+			return ConfigState.NeedsMigration;
+		}
+
+		return Validate(configuration, configName) ? ConfigState.Compatible : ConfigState.ValidationFailed;
+
 		void LogWarning(string message)
 		{
 			if (shouldLogWarning)
@@ -263,40 +294,12 @@ public class ConfigProvider : IInitializable
 				siraLog.Warn(message);
 			}
 		}
-
-		if (configuration?.Version == null)
-		{
-			LogWarning($"Config {configName} is not recognized as a valid HSV config file");
-			return ConfigState.Broken;
-		}
-
-		// Both full version comparison and check on major, minor or patch version inequality in case the mod is versioned with a pre-release id
-		if (configuration.Version > pluginVersion &&
-		    (configuration.Version.Major != pluginVersion.Major || configuration.Version.Minor != pluginVersion.Minor || configuration.Version.Patch != pluginVersion.Patch))
-		{
-			LogWarning($"Config {configName} is made for a newer version of HSV than is currently installed. Targets {configuration.Version} while only {pluginVersion} is installed");
-			return ConfigState.NewerVersion;
-		}
-
-		if (configuration.Version < minimumMigratableVersion)
-		{
-			LogWarning($"Config {configName} is too old and cannot be migrated. Please manually update said config to a newer version of HSV");
-			return ConfigState.Incompatible;
-		}
-
-		if (configuration.Version < maximumMigrationNeededVersion)
-		{
-			LogWarning($"Config {configName} is is made for an older version of HSV, but can be migrated (safely?). Targets {configuration.Version} while version {pluginVersion} is installed");
-			return ConfigState.NeedsMigration;
-		}
-
-		return !Validate(configuration, configName) ? ConfigState.ValidationFailed : ConfigState.Compatible;
 	}
 
 	// ReSharper disable once CognitiveComplexity
-	private bool Validate(Configuration configuration, string configName)
+	private bool Validate(HsvConfigModel configuration, string configName)
 	{
-		if (!configuration.NormalJudgments?.Any() ?? true)
+		if (!configuration.Judgments?.Any() ?? true)
 		{
 			siraLog.Warn($"No judgments found for {configName}");
 			return false;
@@ -360,13 +363,19 @@ public class ConfigProvider : IInitializable
 	}
 
 	// ReSharper disable once CognitiveComplexity
-	private bool ValidateJudgments(Configuration configuration, string configName)
+	private bool ValidateJudgments(HsvConfigModel configuration, string configName)
 	{
-		configuration.NormalJudgments = configuration.NormalJudgments!.OrderByDescending(x => x.Threshold).ToList();
-		var prevJudgment = configuration.NormalJudgments[0];
+		configuration.Judgments = configuration.Judgments!.OrderByDescending(x => x.Threshold).ToList();
+		var prevJudgment = configuration.Judgments[0];
 		if (prevJudgment.Fade)
 		{
-			prevJudgment = new(prevJudgment.Threshold, prevJudgment.Text, prevJudgment.Color, false);
+			prevJudgment = new()
+			{
+				Color = prevJudgment.Color,
+				Fade = false,
+				Text = prevJudgment.Text,
+				Threshold = prevJudgment.Threshold,
+			};
 		}
 
 		if (!ValidateJudgmentColor(prevJudgment, configName))
@@ -375,11 +384,11 @@ public class ConfigProvider : IInitializable
 			return false;
 		}
 
-		if (configuration.NormalJudgments.Count > 1)
+		if (configuration.Judgments.Count > 1)
 		{
-			for (var i = 1; i < configuration.NormalJudgments.Count; i++)
+			for (var i = 1; i < configuration.Judgments.Count; i++)
 			{
-				var currentJudgment = configuration.NormalJudgments[i];
+				var currentJudgment = configuration.Judgments[i];
 				if (prevJudgment.Threshold != currentJudgment.Threshold)
 				{
 					if (!ValidateJudgmentColor(currentJudgment, configName))
@@ -465,18 +474,17 @@ public class ConfigProvider : IInitializable
 		return true;
 	}
 
-	private void RunMigration(Configuration userConfig)
+	private void RunMigration(HsvConfigModel userConfig)
 	{
-		var userConfigVersion = userConfig.Version;
-		foreach (var requiredMigration in migrationActions.Keys.Where(migrationVersion => migrationVersion >= userConfigVersion))
+		foreach (var requiredMigration in migrationActions.Keys.Where(migrationVersion => migrationVersion >= userConfig.GetVersion()))
 		{
 			migrationActions[requiredMigration](userConfig);
 		}
 
-		userConfig.Version = pluginVersion;
+		userConfig.SetVersion(pluginVersion);
 	}
 
-	private static bool RunMigration2_0_0(Configuration configuration)
+	private static bool RunMigration2_0_0(HsvConfigModel configuration)
 	{
 		configuration.BeforeCutAngleJudgments = [JudgmentSegment.Default];
 		configuration.AccuracyJudgments = [JudgmentSegment.Default];
@@ -485,43 +493,43 @@ public class ConfigProvider : IInitializable
 		return true;
 	}
 
-	private static bool RunMigration2_1_0(Configuration configuration)
+	private static bool RunMigration2_1_0(HsvConfigModel configuration)
 	{
-		if (configuration.NormalJudgments != null)
+		if (configuration.Judgments != null)
 		{
-			List<NormalJudgment> migratedJudgments = [];
-
-			foreach (var j in configuration.NormalJudgments.Where(j => j.Threshold == 110))
-			{
-				migratedJudgments.Add(new(115, j.Text, j.Color, j.Fade));
-			}
-
-			configuration.NormalJudgments = migratedJudgments;
+			configuration.Judgments = configuration.Judgments
+				.Where(j => j.Threshold == 110)
+				.Select(j => new NormalJudgment
+				{
+					Threshold = 115,
+					Text = j.Text,
+					Color = j.Color,
+					Fade = j.Fade
+				}).ToList();
 		}
 
 		if (configuration.AccuracyJudgments != null)
 		{
-			List<JudgmentSegment> migratedSegments = [];
-
-			foreach (var s in configuration.AccuracyJudgments.Where(aj => aj.Threshold == 10))
-			{
-				migratedSegments.Add(new(15, s.Text));
-			}
-
-			configuration.AccuracyJudgments = migratedSegments;
+			configuration.AccuracyJudgments = configuration.AccuracyJudgments
+				.Where(aj => aj.Threshold == 10)
+				.Select(s => new JudgmentSegment
+				{
+					Threshold = 15,
+					Text = s.Text,
+				}).ToList();
 		}
 
 		return true;
 	}
 
-	private static bool RunMigration2_2_3(Configuration configuration)
+	private static bool RunMigration2_2_3(HsvConfigModel configuration)
 	{
 		configuration.DoIntermediateUpdates = true;
 
 		return true;
 	}
 
-	private static bool RunMigration3_2_0(Configuration configuration)
+	private static bool RunMigration3_2_0(HsvConfigModel configuration)
 	{
 #pragma warning disable 618
 		if (configuration.UseFixedPos)
@@ -535,18 +543,18 @@ public class ConfigProvider : IInitializable
 
 	private bool CreateHsvConfigsFolderIfYeetedByPlayer(bool calledOnInit = true)
 	{
-		if (!Directory.Exists(hsvConfigsFolderPath))
+		if (Directory.Exists(hsvConfigsFolderPath))
 		{
-			if (!calledOnInit)
-			{
-				siraLog.Warn("*sigh* Don't yeet the HSV configs folder while the game is running... Recreating it again...");
-			}
-
-			Directory.CreateDirectory(hsvConfigsFolderPath);
-
-			return true;
+			return false;
 		}
 
-		return false;
+		if (!calledOnInit)
+		{
+			siraLog.Warn("*sigh* Don't yeet the HSV configs folder while the game is running... Recreating it again...");
+		}
+
+		Directory.CreateDirectory(hsvConfigsFolderPath);
+
+		return true;
 	}
 }

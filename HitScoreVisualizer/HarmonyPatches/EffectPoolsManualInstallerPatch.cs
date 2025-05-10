@@ -1,4 +1,3 @@
-using HitScoreVisualizer.Settings;
 using HitScoreVisualizer.Utilities.Services;
 using SiraUtil.Affinity;
 using TMPro;

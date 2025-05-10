@@ -1,5 +1,5 @@
 using System.Text;
-using HitScoreVisualizer.Settings;
+using HitScoreVisualizer.Models;
 using HitScoreVisualizer.Utilities.Extensions;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -16,7 +16,7 @@ internal class JudgmentService
 		this.configProvider = configProvider;
 	}
 
-	private Configuration Config => configProvider.CurrentConfig ?? Configuration.Default;
+	private HsvConfigModel Config => configProvider.CurrentConfig ?? HsvConfigModel.Default;
 
 	public (string hitScoreText, Color hitScoreColor) Judge(IReadonlyCutScoreBuffer cutScoreBuffer, bool assumeMaxPostSwing)
 	{
@@ -41,19 +41,19 @@ internal class JudgmentService
 	{
 		var judgment = NormalJudgment.Default;
 		var fadeJudgment = NormalJudgment.Default;
-		Config.NormalJudgments ??= [judgment];
+		Config.Judgments ??= [judgment];
 
-		for (var i = 0; i < Config.NormalJudgments.Count; i++)
+		for (var i = 0; i < Config.Judgments.Count; i++)
 		{
-			if (Config.NormalJudgments[i].Threshold > totalCutScore)
+			if (Config.Judgments[i].Threshold > totalCutScore)
 			{
 				continue;
 			}
 
-			judgment = Config.NormalJudgments[i];
+			judgment = Config.Judgments[i];
 			if (i > 0)
 			{
-				fadeJudgment = Config.NormalJudgments[i - 1];
+				fadeJudgment = Config.Judgments[i - 1];
 			}
 			break;
 		}

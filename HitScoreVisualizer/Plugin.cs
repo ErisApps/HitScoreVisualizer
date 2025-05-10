@@ -1,11 +1,14 @@
+using System;
 using HitScoreVisualizer.Installers;
-using HitScoreVisualizer.Settings;
+using HitScoreVisualizer.Utilities.Json;
 using IPA;
 using IPA.Config;
 using IPA.Config.Stores;
 using IPA.Loader;
-using IPA.Logging;
+using Newtonsoft.Json;
 using SiraUtil.Zenject;
+using UnityEngine;
+using Logger = IPA.Logging.Logger;
 
 namespace HitScoreVisualizer;
 
