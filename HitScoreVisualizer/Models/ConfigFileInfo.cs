@@ -5,12 +5,18 @@ using Version = Hive.Versioning.Version;
 
 namespace HitScoreVisualizer.Models;
 
-internal class ConfigFileInfo(string fileName, string filePath)
+internal class ConfigFileInfo
 {
-	public string ConfigPath { get; } = filePath;
+	public ConfigFileInfo(string fileName, string filePath)
+	{
+		ConfigPath = filePath;
+		ConfigName = fileName;
+	}
+
+	public string ConfigPath { get; }
 
 	[UIValue("config-name")]
-	public string ConfigName { get; } = fileName;
+	public string ConfigName { get; }
 
 	[UIValue("config-description")]
 	public string ConfigDescription => State switch
