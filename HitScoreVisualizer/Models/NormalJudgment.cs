@@ -30,13 +30,4 @@ public class NormalJudgment
 		Text = "%s",
 		Color = [1, 1, 1, 1]
 	};
-
-	[JsonConstructor]
-	public NormalJudgment(int threshold = 0, string? text = null, List<float>? color = null, bool fade = false)
-	{
-		Threshold = threshold;
-		Text = text ?? string.Empty;
-		Color = color ?? [0, 0, 0, 0];
-		Fade = fade;
-	}
 }

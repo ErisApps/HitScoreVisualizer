@@ -1,26 +1,23 @@
+using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace HitScoreVisualizer.Models;
 
+[Serializable]
 public class ChainLinkDisplay
 {
-	[JsonConstructor]
-	public ChainLinkDisplay(string? text = null, List<float>? color = null)
-	{
-		Text = text ?? string.Empty;
-		Color = color ?? [0, 0, 0, 0];
-	}
-
-	[JsonIgnore]
-	internal static ChainLinkDisplay Default { get; } = new("<u>20", [1, 1, 1, 1]);
-
 	// The text to display for a chain segment
-	[JsonProperty("text")]
-	public string Text { get; }
+	public required string Text { get; set; }
 
 	// 4 floats, 0-1; red, green, blue, glow (not transparency!)
 	// leaving this out should look obviously wrong
-	[JsonProperty("color")]
-	public List<float> Color { get; }
+	public required List<float> Color { get; set; }
+
+	[JsonIgnore]
+	internal static ChainLinkDisplay Default { get; } = new()
+	{
+		Text = "<u>20</u>",
+		Color = [1f, 1f, 1f, 1f]
+	};
 }
