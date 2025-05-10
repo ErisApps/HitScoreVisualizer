@@ -30,47 +30,18 @@ internal class ConfigMigrator
 		maximumMigrationNeededVersion = migrationActions.Keys.Max();
 	}
 
-	public ConfigState GetConfigState(HsvConfigModel? configuration, string configName, bool shouldLogWarning = false)
+	public ConfigState GetConfigState(HsvConfigModel? configuration, string configName)
 	{
 		if (configuration is null)
 		{
-			LogWarning($"Config {configName} is not recognized as a valid HSV config file");
 			return ConfigState.Broken;
 		}
-
 		var configVersion = configuration.GetVersion();
 
-		// Both full version comparison and check on major, minor or patch version inequality in case the mod is versioned with a pre-release id
-		if (configVersion > PluginVersion
-		    && (configVersion.Major != PluginVersion.Major
-		        || configVersion.Minor != PluginVersion.Minor
-		        || configVersion.Patch != PluginVersion.Patch))
-		{
-			LogWarning($"Config {configName} is made for a newer version of HSV than is currently installed. Targets {configVersion} while only {PluginVersion} is installed");
-			return ConfigState.NewerVersion;
-		}
-
-		if (configVersion < minimumMigratableVersion)
-		{
-			LogWarning($"Config {configName} is too old and cannot be migrated. Please manually update said config to a newer version of HSV");
-			return ConfigState.Incompatible;
-		}
-
-		if (configVersion < maximumMigrationNeededVersion)
-		{
-			LogWarning($"Config {configName} is is made for an older version of HSV, but can be migrated (safely?). Targets {configVersion} while version {PluginVersion} is installed");
-			return ConfigState.NeedsMigration;
-		}
-
-		return Validate(configuration, configName) ? ConfigState.Compatible : ConfigState.ValidationFailed;
-
-		void LogWarning(string message)
-		{
-			if (shouldLogWarning)
-			{
-				Plugin.Log.Warn(message);
-			}
-		}
+		return configVersion.NewerThan(PluginVersion) ? ConfigState.NewerVersion
+			: configVersion < minimumMigratableVersion ? ConfigState.Incompatible
+			: configVersion < maximumMigrationNeededVersion ? ConfigState.NeedsMigration
+			: Validate(configuration, configName) ? ConfigState.Compatible : ConfigState.ValidationFailed;
 	}
 
 	public void RunMigration(HsvConfigModel userConfig)
