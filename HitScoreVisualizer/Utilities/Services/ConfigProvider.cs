@@ -6,14 +6,10 @@ using System.Threading.Tasks;
 using HitScoreVisualizer.Models;
 using HitScoreVisualizer.Utilities.Extensions;
 using HitScoreVisualizer.Utilities.Json;
-using IPA.Loader;
 using IPA.Utilities;
 using Newtonsoft.Json;
 using SiraUtil.Logging;
-using SiraUtil.Zenject;
-using UnityEngine;
 using Zenject;
-using Version = Hive.Versioning.Version;
 
 namespace HitScoreVisualizer.Utilities.Services;
 
@@ -90,11 +86,17 @@ public class ConfigProvider : IInitializable
 			return;
 		}
 
+		var configName = Path.GetFileNameWithoutExtension(hsvConfig.ConfigFilePath);
 		var configFileInfo = new ConfigFileInfo(Path.GetFileNameWithoutExtension(hsvConfig.ConfigFilePath), hsvConfig.ConfigFilePath)
 		{
 			Configuration = userConfig,
-			State = configMigrator.GetConfigState(userConfig, Path.GetFileNameWithoutExtension(hsvConfig.ConfigFilePath), true)
+			State = configMigrator.GetConfigState(userConfig, configName)
 		};
+
+		if (configFileInfo.State.HasWarning())
+		{
+			Plugin.Log.Warn(configFileInfo.State.GetWarningMessage(configName, userConfig.GetVersion()));
+		}
 
 		await SelectUserConfig(configFileInfo).ConfigureAwait(false);
 	}
