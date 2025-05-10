@@ -176,7 +176,7 @@ public class ConfigProvider : IInitializable
 			siraLog.Debug($"Config migration finished successfully and updated config is stored to disk at path: '{existingConfigFullPath}'");
 		}
 
-		if (configMigrator.Validate(configFileInfo.Configuration!, configFileInfo.ConfigName))
+		if (configFileInfo.Configuration!.Validate(configFileInfo.ConfigName))
 		{
 			CurrentConfig = configFileInfo.Configuration;
 			hsvConfig.ConfigFilePath = configFileInfo.ConfigPath;
