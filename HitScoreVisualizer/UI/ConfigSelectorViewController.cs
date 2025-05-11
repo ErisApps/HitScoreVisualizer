@@ -18,17 +18,10 @@ namespace HitScoreVisualizer.UI;
 [ViewDefinition("HitScoreVisualizer.UI.Views.ConfigSelector.bsml")]
 internal class ConfigSelectorViewController : BSMLAutomaticViewController
 {
-	private SiraLog siraLog = null!;
-	private ConfigProvider configProvider = null!;
+	[Inject] private readonly SiraLog siraLog = null!;
+	[Inject] private readonly ConfigProvider configProvider = null!;
 
 	private ConfigFileInfo? selectedConfigFileInfo;
-
-	[Inject]
-	internal void Construct(SiraLog siraLog, ConfigProvider configProvider)
-	{
-		this.siraLog = siraLog;
-		this.configProvider = configProvider;
-	}
 
 	[UIComponent("configs-list")]
 	public CustomCellListTableData? customListTableData;

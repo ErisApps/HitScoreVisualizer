@@ -13,13 +13,7 @@ namespace HitScoreVisualizer.UI;
 [ViewDefinition("HitScoreVisualizer.UI.Views.PluginSettings.bsml")]
 internal class PluginSettingsViewController : BSMLAutomaticViewController
 {
-	private HSVConfig config = null!;
-
-	[Inject]
-	public void Construct(HSVConfig config)
-	{
-		this.config = config;
-	}
+	[Inject] private readonly HSVConfig config = null!;
 
 	[UIValue("font-type-choices")] private List<object> trailTypeChoices = Enum.GetNames(typeof(HsvFontType)).ToList<object>();
 	[UIValue("font-type")]

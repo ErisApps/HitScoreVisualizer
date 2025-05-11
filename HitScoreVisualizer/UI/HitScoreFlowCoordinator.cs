@@ -6,15 +6,8 @@ namespace HitScoreVisualizer.UI;
 
 internal class HitScoreFlowCoordinator : FlowCoordinator
 {
-	private ConfigSelectorViewController configSelectorViewController = null!;
-	private PluginSettingsViewController pluginSettingsViewController = null!;
-
-	[Inject]
-	internal void Construct(ConfigSelectorViewController configSelectorViewController, PluginSettingsViewController pluginSettingsViewController)
-	{
-		this.configSelectorViewController = configSelectorViewController;
-		this.pluginSettingsViewController = pluginSettingsViewController;
-	}
+	[Inject] private readonly ConfigSelectorViewController configSelectorViewController = null!;
+	[Inject] private readonly PluginSettingsViewController pluginSettingsViewController = null!;
 
 	protected override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
 	{
