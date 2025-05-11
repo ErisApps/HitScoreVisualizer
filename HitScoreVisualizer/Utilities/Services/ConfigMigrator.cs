@@ -22,8 +22,6 @@ internal class ConfigMigrator
 	private readonly Version minimumMigratableVersion;
 	private readonly Version maximumMigrationNeededVersion;
 
-	private Version PluginVersion => Plugin.Metadata.HVersion;
-
 	public ConfigMigrator(PluginDirectories directories)
 	{
 		this.directories = directories;
@@ -41,7 +39,7 @@ internal class ConfigMigrator
 		}
 		var configVersion = configuration.GetVersion();
 
-		return configVersion.NewerThan(PluginVersion) ? ConfigState.NewerVersion
+		return configVersion.NewerThan(Plugin.Metadata.HVersion) ? ConfigState.NewerVersion
 			: configVersion < minimumMigratableVersion ? ConfigState.Incompatible
 			: configVersion < maximumMigrationNeededVersion ? ConfigState.NeedsMigration
 			: configuration.Validate(configName) ? ConfigState.Compatible : ConfigState.ValidationFailed;
@@ -80,7 +78,7 @@ internal class ConfigMigrator
 				migration.Migrate(config);
 			}
 
-			config.SetVersion(PluginVersion);
+			config.SetVersion(Plugin.Metadata.HVersion);
 		}
 		else
 		{
