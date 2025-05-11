@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,16 +22,16 @@ internal class ConfigSelectorViewController : BSMLAutomaticViewController
 
 	[UIComponent("configs-list")]
 	public CustomCellListTableData? customListTableData;
+	private readonly CustomCellListTableData configsList = null!;
 
 	[UIValue("available-configs")]
 	internal List<object> AvailableConfigs { get; } = [];
+	public bool LoadingConfigs { get; private set; }
 
 	[UIValue("loading-available-configs")]
 	internal bool LoadingConfigs { get; private set; }
 
 	[UIValue("has-loaded-available-configs")]
-	internal bool HasLoadedConfigs => !LoadingConfigs;
-
 	[UIValue("is-valid-config-selected")]
 	internal bool ConfigPickable =>
 		pluginConfig.SelectedConfig?.ConfigSelectable() ?? false;
@@ -49,7 +48,6 @@ internal class ConfigSelectorViewController : BSMLAutomaticViewController
 	internal bool CanConfigGetYeeted =>
 		pluginConfig.SelectedConfig != null && pluginConfig.SelectedConfig.ConfigPath != pluginConfig.ConfigFilePath;
 
-	[UIAction("config-Selected")]
 	internal void Select(TableView _, object obj)
 	{
 		pluginConfig.SelectedConfig = (ConfigFileInfo)obj;
@@ -57,14 +55,11 @@ internal class ConfigSelectorViewController : BSMLAutomaticViewController
 		NotifyPropertyChanged(nameof(CanConfigGetYeeted));
 	}
 
-	[UIAction("reload-list")]
-	internal async void RefreshList()
 	{
 		await LoadInternal().ConfigureAwait(false);
 	}
 
-	[UIAction("pick-config")]
-	internal async void PickConfig()
+	public async void PickConfig()
 	{
 		if (ConfigPickable && pluginConfig.SelectedConfig != null)
 		{
@@ -73,7 +68,6 @@ internal class ConfigSelectorViewController : BSMLAutomaticViewController
 		}
 	}
 
-	[UIAction("unpick-config")]
 	internal void UnpickConfig()
 	{
 		if (HasConfigCurrently)
@@ -85,60 +79,42 @@ internal class ConfigSelectorViewController : BSMLAutomaticViewController
 					Plugin.Log.Warn($"{nameof(customListTableData)} is null.");
 					return;
 				}
-
-				customListTableData.TableView.ClearSelection();
-			});
-
+			configsList.TableView.ClearSelection();
 			configLoader.UnselectUserConfig();
+
 			NotifyPropertyChanged(nameof(HasConfigCurrently));
 			NotifyPropertyChanged(nameof(LoadedConfigText));
 		}
 	}
 
-	[UIAction("yeet-config")]
-	internal async void YeetConfig()
+	public async void YeetConfig()
 	{
-		if (!CanConfigGetYeeted)
+		if (ConfigYeetable)
 		{
-			return;
+			configLoader.YeetConfig(pluginConfig.SelectedConfig!.ConfigPath);
+			await LoadInternal().ConfigureAwait(false);
+
+			NotifyPropertyChanged(nameof(ConfigYeetable));
 		}
-
-		configLoader.YeetConfig(pluginConfig.SelectedConfig!.ConfigPath);
-		await LoadInternal().ConfigureAwait(false);
-
-		NotifyPropertyChanged(nameof(CanConfigGetYeeted));
 	}
 
 	protected override async void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
 	{
 		base.DidActivate(firstActivation, addedToHierarchy, screenSystemEnabling);
-
 		await LoadInternal().ConfigureAwait(false);
 	}
 
 	protected override void DidDeactivate(bool removedFromHierarchy, bool screenSystemDisabling)
 	{
 		base.DidDeactivate(removedFromHierarchy, screenSystemDisabling);
-
-		AvailableConfigs.Clear();
-
+		configsList.Data.Clear();
 		pluginConfig.SelectedConfig = null;
 	}
 
 	private async Task LoadInternal()
 	{
-		if (customListTableData == null)
-		{
-			Plugin.Log.Warn($"{nameof(customListTableData)} is null.");
-			return;
-		}
-
-		if (AvailableConfigs.Count > 0)
-		{
-			AvailableConfigs.Clear();
-		}
-
 		LoadingConfigs = true;
+
 		NotifyPropertyChanged(nameof(LoadingConfigs));
 		NotifyPropertyChanged(nameof(HasLoadedConfigs));
 
@@ -146,17 +122,17 @@ internal class ConfigSelectorViewController : BSMLAutomaticViewController
 			.OrderByDescending(x => x.State)
 			.ThenBy(x => x.ConfigName)
 			.ToList();
-		AvailableConfigs.AddRange(intermediateConfigs);
-
 		var currentConfigIndex = intermediateConfigs.FindIndex(x => x.ConfigPath == pluginConfig.ConfigFilePath);
+
+		configsList.Data = intermediateConfigs;
 
 		await UnityMainThreadTaskScheduler.Factory.StartNew(() =>
 		{
-			customListTableData.TableView.ReloadData();
-			customListTableData.TableView.ScrollToCellWithIdx(0, TableView.ScrollPositionType.Beginning, false);
+			configsList.TableView.ReloadData();
+			configsList.TableView.ScrollToCellWithIdx(0, TableView.ScrollPositionType.Beginning, false);
 			if (currentConfigIndex >= 0)
 			{
-				customListTableData.TableView.SelectCellWithIdx(currentConfigIndex, true);
+				configsList.TableView.SelectCellWithIdx(currentConfigIndex, true);
 			}
 
 			LoadingConfigs = false;
@@ -164,6 +140,6 @@ internal class ConfigSelectorViewController : BSMLAutomaticViewController
 			NotifyPropertyChanged(nameof(HasLoadedConfigs));
 			NotifyPropertyChanged(nameof(HasConfigCurrently));
 			NotifyPropertyChanged(nameof(LoadedConfigText));
-		}).ConfigureAwait(false);
+		});
 	}
 }

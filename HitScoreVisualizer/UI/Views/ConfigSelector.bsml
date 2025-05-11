@@ -9,10 +9,9 @@
 
 			<custom-list id='configs-list'
 						 pref-width="110"
-						 contents="available-configs"
 						 cell-size="10"
 						 pref-height="55"
-						 select-cell='config-Selected'>
+						 select-cell='ConfigSelected'>
 				<stack size-delta-x="3">
 					<bg bg="panel-top-gradient" bg-color="#BD288199" tags='hovered' size-delta-x="1"/>
 					<bg bg="panel-top-gradient" bg-color="#fff" tags='selected' size-delta-x="1"/>
@@ -44,22 +43,22 @@
 						child-align='MiddleCenter'
 						text='Refresh'
 						hover-hint="Refreshes the list"
-						on-click='reload-list'/>
+						on-click='RefreshList'/>
 
 				<button pref-width='28' pref-height="12"
 						word-wrapping='false'
 						text='Select'
 						hover-hint="Loads the currently selected config."
-						interactable='~is-valid-config-selected'
-						on-click='pick-config'/>
+						interactable='~ConfigPickable'
+						on-click='PickConfig'/>
 
 				<button pref-width='28' pref-height="12"
 						word-wrapping='false'
 						face-color="#BD2881"
 						text='Reset to none'
 						hover-hint="Unselects the currently loaded config, basically reverting to the default game behavior."
-						interactable='~has-config-loaded'
-						on-click='unpick-config'/>
+						interactable='~HasConfigCurrently'
+						on-click='UnpickConfig'/>
 
 				<button pref-width='28' pref-height="12"
 						word-wrapping='false'
@@ -67,7 +66,7 @@
 						face-color="#d1002d"
 						text="Yeet config"
 						hover-hint="Yeets the config out of existence."
-						interactable="~is-config-yeetable"
+						interactable="~ConfigYeetable"
 						event-click="show-yeet-modal"/>
 
 			</vertical>
@@ -84,17 +83,17 @@
 					child-expand-width='false'
 					child-control-width='true'
 					spacing="2"
-					active="~loading-available-configs">
+					active="~LoadingConfigs">
 			<loading-indicator preserve-aspect='true' pref-width='4' pref-height='4' source='#LoadingIndicator'/>
 			<text text="Loading..." italics="true"/>
 		</horizontal>
 
 		<horizontal>
 			<vertical horizontal-fit="Unconstrained" pref-width="110">
-				<text text="~config-loaded-text"
+				<text text="~LoadedConfigText"
 					  italics="true"
 					  size-delta-x="100"
-					  active="~has-loaded-available-configs"
+					  active="~HasLoadedConfigs"
 					  overflow-mode="Ellipsis"/>
 			</vertical>
 			<text text="Found an issue? Message qqrz"
@@ -131,7 +130,7 @@
 						face-color="#d1002d"
 						text="Yes"
 						event-click="hide-yeet-modal"
-						on-click="yeet-config"/>
+						on-click="YeetConfig"/>
 			</horizontal>
 		</vertical>
 	</modal>
