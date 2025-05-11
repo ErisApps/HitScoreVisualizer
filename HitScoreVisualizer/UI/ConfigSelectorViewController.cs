@@ -21,40 +21,32 @@ internal class ConfigSelectorViewController : BSMLAutomaticViewController
 	[Inject] private readonly ConfigLoader configLoader = null!;
 
 	[UIComponent("configs-list")]
-	public CustomCellListTableData? customListTableData;
 	private readonly CustomCellListTableData configsList = null!;
 
-	[UIValue("available-configs")]
-	internal List<object> AvailableConfigs { get; } = [];
 	public bool LoadingConfigs { get; private set; }
 
-	[UIValue("loading-available-configs")]
-	internal bool LoadingConfigs { get; private set; }
+	public bool HasLoadedConfigs => !LoadingConfigs;
 
-	[UIValue("has-loaded-available-configs")]
-	[UIValue("is-valid-config-selected")]
-	internal bool ConfigPickable =>
+	public bool ConfigPickable =>
 		pluginConfig.SelectedConfig?.ConfigSelectable() ?? false;
 
-	[UIValue("has-config-loaded")]
-	internal bool HasConfigCurrently =>
+	public bool HasConfigCurrently =>
 		!string.IsNullOrWhiteSpace(pluginConfig.ConfigFilePath);
 
-	[UIValue("config-loaded-text")]
-	internal string LoadedConfigText =>
+	public string LoadedConfigText =>
 		$"Currently Loaded Config<size=90%> : {(HasConfigCurrently ? Path.GetFileNameWithoutExtension(pluginConfig.ConfigFilePath) : "None")}";
 
-	[UIValue("is-config-yeetable")]
-	internal bool CanConfigGetYeeted =>
+	public bool ConfigYeetable =>
 		pluginConfig.SelectedConfig != null && pluginConfig.SelectedConfig.ConfigPath != pluginConfig.ConfigFilePath;
 
-	internal void Select(TableView _, object obj)
+	public void ConfigSelected(TableView _, object obj)
 	{
 		pluginConfig.SelectedConfig = (ConfigFileInfo)obj;
 		NotifyPropertyChanged(nameof(ConfigPickable));
-		NotifyPropertyChanged(nameof(CanConfigGetYeeted));
+		NotifyPropertyChanged(nameof(ConfigYeetable));
 	}
 
+	public async void RefreshList()
 	{
 		await LoadInternal().ConfigureAwait(false);
 	}
@@ -68,17 +60,10 @@ internal class ConfigSelectorViewController : BSMLAutomaticViewController
 		}
 	}
 
-	internal void UnpickConfig()
+	public void UnpickConfig()
 	{
 		if (HasConfigCurrently)
 		{
-			UnityMainThreadTaskScheduler.Factory.StartNew(() =>
-			{
-				if (customListTableData == null)
-				{
-					Plugin.Log.Warn($"{nameof(customListTableData)} is null.");
-					return;
-				}
 			configsList.TableView.ClearSelection();
 			configLoader.UnselectUserConfig();
 
