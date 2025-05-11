@@ -15,22 +15,20 @@ internal class PluginSettingsViewController : BSMLAutomaticViewController
 {
 	[Inject] private readonly PluginConfig config = null!;
 
-	[UIValue("font-type-choices")] private List<object> trailTypeChoices = Enum.GetNames(typeof(HsvFontType)).ToList<object>();
-	[UIValue("font-type")]
+	public List<object> FontTypeChoices = Enum.GetNames(typeof(HsvFontType)).ToList<object>();
+
 	public string FontType
 	{
 		get => config.FontType.ToString();
 		set => config.FontType = Enum.TryParse(value, out HsvFontType t) ? t : HsvFontType.Default;
 	}
 
-	[UIValue("disable-italics")]
 	public bool DisableItalics
 	{
 		get => config.DisableItalics;
 		set => config.DisableItalics = value;
 	}
 
-	[UIValue("override-no-texts-and-huds")]
 	public bool OverrideNoTextsAndHuds
 	{
 		get => config.OverrideNoTextsAndHuds;

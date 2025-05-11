@@ -8,14 +8,14 @@
 
 		<vertical child-expand-height="false">
 			<list-setting text="Font Type"
-						  value="font-type"
-						  choices="font-type-choices"
+						  value="FontType"
+						  choices="FontTypeChoices"
 						  apply-on-change="true"/>
 			<toggle-setting text="Disable Score Italics"
-							value="disable-italics"
+							value="DisableItalics"
 							apply-on-change="true"/>
 			<toggle-setting text="Override No Texts And Huds"
-							value="override-no-texts-and-huds"
+							value="OverrideNoTextsAndHuds"
 							apply-on-change="true"
 							hover-hint="Allows you to see hit scores while 'No Texts And Huds' is enabled"/>
 		</vertical>
