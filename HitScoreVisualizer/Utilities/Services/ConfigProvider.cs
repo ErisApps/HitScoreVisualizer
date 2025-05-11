@@ -8,19 +8,15 @@ using HitScoreVisualizer.Utilities.Extensions;
 using HitScoreVisualizer.Utilities.Json;
 using IPA.Utilities;
 using Newtonsoft.Json;
-using SiraUtil.Logging;
 using Zenject;
 
 namespace HitScoreVisualizer.Utilities.Services;
 
 public class ConfigProvider : IInitializable
 {
-	private readonly SiraLog siraLog;
 	private readonly HSVConfig hsvConfig;
 	private readonly ConfigMigrator configMigrator;
-
-	private readonly string hsvConfigsFolderPath = Path.Combine(UnityGame.UserDataPath, nameof(HitScoreVisualizer));
-	private readonly string hsvConfigsBackupFolderPath;
+	private readonly PluginDirectories directories;
 
 	private readonly JsonSerializerSettings configSerializerSettings = new()
 	{
@@ -35,36 +31,35 @@ public class ConfigProvider : IInitializable
 
 	public HsvConfigModel? CurrentConfig { get; private set; }
 
-	internal ConfigProvider(SiraLog siraLog, HSVConfig hsvConfig, ConfigMigrator configMigrator)
+	internal ConfigProvider(HSVConfig hsvConfig, ConfigMigrator configMigrator, PluginDirectories directories)
 	{
-		this.siraLog = siraLog;
 		this.hsvConfig = hsvConfig;
 		this.configMigrator = configMigrator;
-
-		hsvConfigsBackupFolderPath = Path.Combine(hsvConfigsFolderPath, "Backups");
+		this.directories = directories;
 	}
 
 	public async void Initialize()
 	{
-		if (CreateHsvConfigsFolderIfYeetedByPlayer())
+		var defaultConfigPath = Path.Combine(directories.Configs.FullName, "HitScoreVisualizerConfig (default).json");
+		var defaultConfigFile = new FileInfo(defaultConfigPath);
+
+		if (!defaultConfigFile.Exists)
 		{
-			await SaveConfig(Path.Combine(hsvConfigsFolderPath, "HitScoreVisualizerConfig (default).json"), HsvConfigModel.Default).ConfigureAwait(false);
-
-			var oldHsvConfigPath = Path.Combine(UnityGame.UserDataPath, "HitScoreVisualizerConfig.json");
-			if (File.Exists(oldHsvConfigPath))
+			await SaveConfig(new("HitScoreVisualizerConfig (default).json", defaultConfigPath)
 			{
-				try
-				{
-					var destinationHsvConfigPath = Path.Combine(hsvConfigsFolderPath, "HitScoreVisualizerConfig (imported).json");
-					File.Move(oldHsvConfigPath, destinationHsvConfigPath);
+				Configuration = HsvConfigModel.Default
+			});
+		}
 
-					hsvConfig.ConfigFilePath = destinationHsvConfigPath;
-				}
-				catch (Exception e)
-				{
-					siraLog.Warn(e);
-				}
-			}
+		var legacyConfigPath = Path.Combine(UnityGame.UserDataPath, "HitScoreVisualizerConfig.json");
+		var legacyConfigFile = new FileInfo(legacyConfigPath);
+
+		if (legacyConfigFile.Exists)
+		{
+			var destinationHsvConfigPath = Path.Combine(directories.Configs.FullName, "HitScoreVisualizerConfig (imported).json");
+			File.Move(legacyConfigPath, destinationHsvConfigPath);
+
+			hsvConfig.ConfigFilePath = destinationHsvConfigPath;
 		}
 
 		if (hsvConfig.ConfigFilePath == null)
@@ -72,7 +67,7 @@ public class ConfigProvider : IInitializable
 			return;
 		}
 
-		var fullPath = Path.Combine(hsvConfigsFolderPath, hsvConfig.ConfigFilePath);
+		var fullPath = Path.Combine(directories.Configs.FullName, hsvConfig.ConfigFilePath);
 		if (!File.Exists(fullPath))
 		{
 			hsvConfig.ConfigFilePath = null;
@@ -82,7 +77,7 @@ public class ConfigProvider : IInitializable
 		var userConfig = await LoadConfig(hsvConfig.ConfigFilePath).ConfigureAwait(false);
 		if (userConfig == null)
 		{
-			siraLog.Warn($"Couldn't load userConfig at {fullPath}");
+			Plugin.Log.Warn($"Couldn't load userConfig at {fullPath}");
 			return;
 		}
 
@@ -101,21 +96,25 @@ public class ConfigProvider : IInitializable
 		await SelectUserConfig(configFileInfo).ConfigureAwait(false);
 	}
 
-	internal async Task<IEnumerable<ConfigFileInfo>> ListAvailableConfigs()
+	internal async Task<ConfigFileInfo[]> ListAvailableConfigs()
 	{
-		var configFileInfoList = Directory
-			.EnumerateFiles(hsvConfigsFolderPath, "*.json", SearchOption.AllDirectories)
-			.Where(path => !path.StartsWith(hsvConfigsBackupFolderPath))
-			.Select(x => new ConfigFileInfo(Path.GetFileNameWithoutExtension(x), x.Substring(hsvConfigsFolderPath.Length + 1)))
-			.ToList();
+		var createFileTasks = directories.Configs
+			.EnumerateFiles("*.json", SearchOption.AllDirectories)
+			.Where(file => !file.FullName.StartsWith(directories.Backups.FullName))
+			.Select(CreateConfigFileInfo);
 
-		foreach (var configInfo in configFileInfoList)
+		return await Task.WhenAll(createFileTasks);
+
+		async Task<ConfigFileInfo> CreateConfigFileInfo(FileInfo file)
 		{
-			configInfo.Configuration = await LoadConfig(Path.Combine(hsvConfigsFolderPath, configInfo.ConfigPath)).ConfigureAwait(false);
-			configInfo.State = configMigrator.GetConfigState(configInfo.Configuration, configInfo.ConfigName);
+			var config = await LoadConfig(Path.Combine(directories.Configs.FullName, file.Name));
+			var configName = Path.GetFileNameWithoutExtension(file.Name);
+			return new(configName, file.FullName.Substring(directories.Configs.FullName.Length + 1))
+			{
+				Configuration = config,
+				State = configMigrator.GetConfigState(config, configName)
+			};
 		}
-
-		return configFileInfoList;
 	}
 
 	internal static bool ConfigSelectable(ConfigState? state)
@@ -139,41 +138,9 @@ public class ConfigProvider : IInitializable
 
 		if (configFileInfo.State == ConfigState.NeedsMigration)
 		{
-			var existingConfigFullPath = Path.Combine(hsvConfigsFolderPath, configFileInfo.ConfigPath);
-			siraLog.Notice($"Config at path '{existingConfigFullPath}' requires migration. Starting automagical config migration logic.");
-
-			// Create backups folder if it not exists
-			var backupFolderPath = Path.GetDirectoryName(Path.Combine(hsvConfigsBackupFolderPath, configFileInfo.ConfigPath))!;
-			Directory.CreateDirectory(backupFolderPath);
-
-			var newFileName = $"{Path.GetFileNameWithoutExtension(existingConfigFullPath)} (backup of config made for {configFileInfo.Configuration!.GetVersion()})";
-			var fileExtension = Path.GetExtension(existingConfigFullPath);
-			var combinedConfigBackupPath = Path.Combine(backupFolderPath, newFileName + fileExtension);
-
-			if (File.Exists(combinedConfigBackupPath))
-			{
-				var existingFileCount = Directory.EnumerateFiles(backupFolderPath).Count(filePath => Path.GetFileNameWithoutExtension(filePath).StartsWith(newFileName));
-				newFileName += $" ({(++existingFileCount).ToString()})";
-				combinedConfigBackupPath = Path.Combine(backupFolderPath, newFileName + fileExtension);
-			}
-
-			siraLog.Debug($"Backing up config file at '{existingConfigFullPath}' to '{combinedConfigBackupPath}'");
-			File.Copy(existingConfigFullPath, combinedConfigBackupPath);
-
-			if (configFileInfo.Configuration!.IsDefaultConfig)
-			{
-				siraLog.Warn("Config is marked as default config and will therefore be reset to defaults");
-				configFileInfo.Configuration = HsvConfigModel.Default;
-			}
-			else
-			{
-				siraLog.Debug("Starting actual config migration logic for config");
-				configMigrator.RunMigration(configFileInfo.Configuration!);
-			}
-
-			await SaveConfig(configFileInfo.ConfigPath, configFileInfo.Configuration).ConfigureAwait(false);
-
-			siraLog.Debug($"Config migration finished successfully and updated config is stored to disk at path: '{existingConfigFullPath}'");
+			configFileInfo = configMigrator.MigrateConfig(configFileInfo);
+			await SaveConfig(configFileInfo);
+			Plugin.Log.Debug($"Config migration finished successfully and updated config is stored to disk at path: '{configFileInfo.ConfigPath}'");
 		}
 
 		if (configFileInfo.Configuration!.Validate(configFileInfo.ConfigName))
@@ -191,7 +158,7 @@ public class ConfigProvider : IInitializable
 
 	internal void YeetConfig(string relativePath)
 	{
-		var fullPath = Path.Combine(hsvConfigsFolderPath, relativePath);
+		var fullPath = Path.Combine(directories.Configs.FullName, relativePath);
 		if (File.Exists(fullPath))
 		{
 			File.Delete(fullPath);
@@ -200,59 +167,37 @@ public class ConfigProvider : IInitializable
 
 	private async Task<HsvConfigModel?> LoadConfig(string relativePath)
 	{
-		CreateHsvConfigsFolderIfYeetedByPlayer(false);
-
 		try
 		{
-			using var streamReader = new StreamReader(Path.Combine(hsvConfigsFolderPath, relativePath));
+			using var streamReader = new StreamReader(Path.Combine(directories.Configs.FullName, relativePath));
 			var content = await streamReader.ReadToEndAsync().ConfigureAwait(false);
 			return JsonConvert.DeserializeObject<HsvConfigModel>(content, configSerializerSettings);
 		}
 		catch (Exception ex)
 		{
-			siraLog.Warn($"Problem encountered when trying to load a config;\nFile path: {relativePath}\n{ex}");
+			Plugin.Log.Warn($"Problem encountered when trying to load a config;\nFile path: {relativePath}\n{ex}");
 			// Expected behaviour when file isn't an actual hsv config file...
 			return null;
 		}
 	}
 
-	private async Task SaveConfig(string relativePath, HsvConfigModel configuration)
+	private async Task SaveConfig(ConfigFileInfo configFile)
 	{
-		CreateHsvConfigsFolderIfYeetedByPlayer(false);
-
-		var fullPath = Path.Combine(hsvConfigsFolderPath, relativePath);
-		var folderPath = Path.GetDirectoryName(fullPath);
-		if (folderPath != null && Directory.Exists(folderPath))
-		{
-			Directory.CreateDirectory(folderPath);
-		}
-
 		try
 		{
-			using var streamWriter = new StreamWriter(fullPath, false);
-			var content = JsonConvert.SerializeObject(configuration, Formatting.Indented, configSerializerSettings);
-			await streamWriter.WriteAsync(content).ConfigureAwait(false);
+			if (configFile.Configuration is null)
+			{
+				return;
+			}
+
+			await using var streamWriter = new StreamWriter(configFile.ConfigPath, false);
+
+			var content = JsonConvert.SerializeObject(configFile.Configuration, Formatting.Indented, configSerializerSettings);
+			await streamWriter.WriteAsync(content);
 		}
 		catch (Exception e)
 		{
-			siraLog.Error(e);
+			Plugin.Log.Error(e);
 		}
-	}
-
-	private bool CreateHsvConfigsFolderIfYeetedByPlayer(bool calledOnInit = true)
-	{
-		if (Directory.Exists(hsvConfigsFolderPath))
-		{
-			return false;
-		}
-
-		if (!calledOnInit)
-		{
-			siraLog.Warn("*sigh* Don't yeet the HSV configs folder while the game is running... Recreating it again...");
-		}
-
-		Directory.CreateDirectory(hsvConfigsFolderPath);
-
-		return true;
 	}
 }

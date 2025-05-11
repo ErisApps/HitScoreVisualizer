@@ -18,7 +18,8 @@ internal sealed class HsvAppInstaller : Installer
 	public override void InstallBindings()
 	{
 		Container.BindInstance(hsvConfig);
-		
+		Container.Bind<PluginDirectories>().AsSingle();
+
 		Container.BindInterfacesAndSelfTo<ConfigProvider>().AsSingle();
 		Container.Bind<ConfigMigrator>().AsSingle();
 
