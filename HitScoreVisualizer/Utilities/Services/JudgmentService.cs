@@ -9,14 +9,14 @@ namespace HitScoreVisualizer.Utilities.Services;
 [UsedImplicitly]
 internal class JudgmentService
 {
-	private readonly ConfigProvider configProvider;
+	private readonly PluginConfig pluginConfig;
 
-	private JudgmentService(ConfigProvider configProvider)
+	private JudgmentService(PluginConfig pluginConfig)
 	{
-		this.configProvider = configProvider;
+		this.pluginConfig = pluginConfig;
 	}
 
-	private HsvConfigModel Config => configProvider.CurrentConfig ?? HsvConfigModel.Default;
+	private HsvConfigModel Config => pluginConfig.SelectedConfig?.Configuration ?? HsvConfigModel.Default;
 
 	public (string hitScoreText, Color hitScoreColor) Judge(IReadonlyCutScoreBuffer cutScoreBuffer, bool assumeMaxPostSwing)
 	{

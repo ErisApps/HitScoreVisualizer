@@ -8,19 +8,19 @@ namespace HitScoreVisualizer.Installers;
 [UsedImplicitly]
 internal sealed class HsvAppInstaller : Installer
 {
-	private readonly HSVConfig hsvConfig;
+	private readonly PluginConfig pluginConfig;
 
-	private HsvAppInstaller(HSVConfig hsvConfig)
+	private HsvAppInstaller(PluginConfig pluginConfig)
 	{
-		this.hsvConfig = hsvConfig;
+		this.pluginConfig = pluginConfig;
 	}
 
 	public override void InstallBindings()
 	{
-		Container.BindInstance(hsvConfig);
+		Container.BindInstance(pluginConfig);
 		Container.Bind<PluginDirectories>().AsSingle();
 
-		Container.BindInterfacesAndSelfTo<ConfigProvider>().AsSingle();
+		Container.BindInterfacesAndSelfTo<ConfigLoader>().AsSingle();
 		Container.Bind<ConfigMigrator>().AsSingle();
 
 		Container.BindInterfacesAndSelfTo<BloomFontProvider>().AsSingle();

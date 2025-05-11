@@ -6,10 +6,10 @@ using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HitScoreVisualizer.Models;
+using HitScoreVisualizer.Utilities.Extensions;
 using HitScoreVisualizer.Utilities.Services;
 using HMUI;
 using IPA.Utilities.Async;
-using SiraUtil.Logging;
 using Zenject;
 
 namespace HitScoreVisualizer.UI;
@@ -18,10 +18,8 @@ namespace HitScoreVisualizer.UI;
 [ViewDefinition("HitScoreVisualizer.UI.Views.ConfigSelector.bsml")]
 internal class ConfigSelectorViewController : BSMLAutomaticViewController
 {
-	[Inject] private readonly SiraLog siraLog = null!;
-	[Inject] private readonly ConfigProvider configProvider = null!;
-
-	private ConfigFileInfo? selectedConfigFileInfo;
+	[Inject] private readonly PluginConfig pluginConfig = null!;
+	[Inject] private readonly ConfigLoader configLoader = null!;
 
 	[UIComponent("configs-list")]
 	public CustomCellListTableData? customListTableData;
@@ -36,22 +34,26 @@ internal class ConfigSelectorViewController : BSMLAutomaticViewController
 	internal bool HasLoadedConfigs => !LoadingConfigs;
 
 	[UIValue("is-valid-config-selected")]
-	internal bool CanConfigGetSelected => selectedConfigFileInfo?.ConfigPath != configProvider.CurrentConfigPath && ConfigProvider.ConfigSelectable(selectedConfigFileInfo?.State);
+	internal bool ConfigPickable =>
+		pluginConfig.SelectedConfig?.ConfigSelectable() ?? false;
 
 	[UIValue("has-config-loaded")]
-	internal bool HasConfigCurrently => !string.IsNullOrWhiteSpace(configProvider.CurrentConfigPath);
+	internal bool HasConfigCurrently =>
+		!string.IsNullOrWhiteSpace(pluginConfig.ConfigFilePath);
 
 	[UIValue("config-loaded-text")]
-	internal string LoadedConfigText => $"Currently Loaded Config<size=90%> : {(HasConfigCurrently ? Path.GetFileNameWithoutExtension(configProvider.CurrentConfigPath) : "None")}";
+	internal string LoadedConfigText =>
+		$"Currently Loaded Config<size=90%> : {(HasConfigCurrently ? Path.GetFileNameWithoutExtension(pluginConfig.ConfigFilePath) : "None")}";
 
 	[UIValue("is-config-yeetable")]
-	internal bool CanConfigGetYeeted => selectedConfigFileInfo?.ConfigPath != null && selectedConfigFileInfo.ConfigPath != configProvider.CurrentConfigPath;
+	internal bool CanConfigGetYeeted =>
+		pluginConfig.SelectedConfig != null && pluginConfig.SelectedConfig.ConfigPath != pluginConfig.ConfigFilePath;
 
 	[UIAction("config-Selected")]
-	internal void Select(TableView _, object @object)
+	internal void Select(TableView _, object obj)
 	{
-		selectedConfigFileInfo = (ConfigFileInfo)@object;
-		NotifyPropertyChanged(nameof(CanConfigGetSelected));
+		pluginConfig.SelectedConfig = (ConfigFileInfo)obj;
+		NotifyPropertyChanged(nameof(ConfigPickable));
 		NotifyPropertyChanged(nameof(CanConfigGetYeeted));
 	}
 
@@ -64,9 +66,9 @@ internal class ConfigSelectorViewController : BSMLAutomaticViewController
 	[UIAction("pick-config")]
 	internal async void PickConfig()
 	{
-		if (CanConfigGetSelected && selectedConfigFileInfo != null)
+		if (ConfigPickable && pluginConfig.SelectedConfig != null)
 		{
-			await configProvider.SelectUserConfig(selectedConfigFileInfo).ConfigureAwait(false);
+			await configLoader.SelectUserConfig(pluginConfig.SelectedConfig).ConfigureAwait(false);
 			await LoadInternal().ConfigureAwait(false);
 		}
 	}
@@ -80,14 +82,14 @@ internal class ConfigSelectorViewController : BSMLAutomaticViewController
 			{
 				if (customListTableData == null)
 				{
-					siraLog.Warn($"{nameof(customListTableData)} is null.");
+					Plugin.Log.Warn($"{nameof(customListTableData)} is null.");
 					return;
 				}
 
 				customListTableData.TableView.ClearSelection();
 			});
 
-			configProvider.UnselectUserConfig();
+			configLoader.UnselectUserConfig();
 			NotifyPropertyChanged(nameof(HasConfigCurrently));
 			NotifyPropertyChanged(nameof(LoadedConfigText));
 		}
@@ -101,7 +103,7 @@ internal class ConfigSelectorViewController : BSMLAutomaticViewController
 			return;
 		}
 
-		configProvider.YeetConfig(selectedConfigFileInfo!.ConfigPath);
+		configLoader.YeetConfig(pluginConfig.SelectedConfig!.ConfigPath);
 		await LoadInternal().ConfigureAwait(false);
 
 		NotifyPropertyChanged(nameof(CanConfigGetYeeted));
@@ -120,14 +122,14 @@ internal class ConfigSelectorViewController : BSMLAutomaticViewController
 
 		AvailableConfigs.Clear();
 
-		selectedConfigFileInfo = null;
+		pluginConfig.SelectedConfig = null;
 	}
 
 	private async Task LoadInternal()
 	{
 		if (customListTableData == null)
 		{
-			siraLog.Warn($"{nameof(customListTableData)} is null.");
+			Plugin.Log.Warn($"{nameof(customListTableData)} is null.");
 			return;
 		}
 
@@ -140,13 +142,13 @@ internal class ConfigSelectorViewController : BSMLAutomaticViewController
 		NotifyPropertyChanged(nameof(LoadingConfigs));
 		NotifyPropertyChanged(nameof(HasLoadedConfigs));
 
-		var intermediateConfigs = (await configProvider.ListAvailableConfigs())
+		var intermediateConfigs = (await configLoader.ListAvailableConfigs())
 			.OrderByDescending(x => x.State)
 			.ThenBy(x => x.ConfigName)
 			.ToList();
 		AvailableConfigs.AddRange(intermediateConfigs);
 
-		var currentConfigIndex = intermediateConfigs.FindIndex(x => x.ConfigPath == configProvider.CurrentConfigPath);
+		var currentConfigIndex = intermediateConfigs.FindIndex(x => x.ConfigPath == pluginConfig.ConfigFilePath);
 
 		await UnityMainThreadTaskScheduler.Factory.StartNew(() =>
 		{

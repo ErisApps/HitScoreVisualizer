@@ -12,9 +12,9 @@ using Zenject;
 
 namespace HitScoreVisualizer.Utilities.Services;
 
-public class ConfigProvider : IInitializable
+public class ConfigLoader : IInitializable
 {
-	private readonly HSVConfig hsvConfig;
+	private readonly PluginConfig pluginConfig;
 	private readonly ConfigMigrator configMigrator;
 	private readonly PluginDirectories directories;
 
@@ -27,13 +27,9 @@ public class ConfigProvider : IInitializable
 		ContractResolver = new HsvConfigContractResolver()
 	};
 
-	internal string? CurrentConfigPath => hsvConfig.ConfigFilePath;
-
-	public HsvConfigModel? CurrentConfig { get; private set; }
-
-	internal ConfigProvider(HSVConfig hsvConfig, ConfigMigrator configMigrator, PluginDirectories directories)
+	internal ConfigLoader(PluginConfig pluginConfig, ConfigMigrator configMigrator, PluginDirectories directories)
 	{
-		this.hsvConfig = hsvConfig;
+		this.pluginConfig = pluginConfig;
 		this.configMigrator = configMigrator;
 		this.directories = directories;
 	}
@@ -59,30 +55,30 @@ public class ConfigProvider : IInitializable
 			var destinationHsvConfigPath = Path.Combine(directories.Configs.FullName, "HitScoreVisualizerConfig (imported).json");
 			File.Move(legacyConfigPath, destinationHsvConfigPath);
 
-			hsvConfig.ConfigFilePath = destinationHsvConfigPath;
+			pluginConfig.ConfigFilePath = destinationHsvConfigPath;
 		}
 
-		if (hsvConfig.ConfigFilePath == null)
+		if (pluginConfig.ConfigFilePath == null)
 		{
 			return;
 		}
 
-		var fullPath = Path.Combine(directories.Configs.FullName, hsvConfig.ConfigFilePath);
+		var fullPath = Path.Combine(directories.Configs.FullName, pluginConfig.ConfigFilePath);
 		if (!File.Exists(fullPath))
 		{
-			hsvConfig.ConfigFilePath = null;
+			pluginConfig.ConfigFilePath = null;
 			return;
 		}
 
-		var userConfig = await LoadConfig(hsvConfig.ConfigFilePath).ConfigureAwait(false);
+		var userConfig = await LoadConfig(pluginConfig.ConfigFilePath).ConfigureAwait(false);
 		if (userConfig == null)
 		{
 			Plugin.Log.Warn($"Couldn't load userConfig at {fullPath}");
 			return;
 		}
 
-		var configName = Path.GetFileNameWithoutExtension(hsvConfig.ConfigFilePath);
-		var configFileInfo = new ConfigFileInfo(Path.GetFileNameWithoutExtension(hsvConfig.ConfigFilePath), hsvConfig.ConfigFilePath)
+		var configName = Path.GetFileNameWithoutExtension(pluginConfig.ConfigFilePath);
+		var configFileInfo = new ConfigFileInfo(Path.GetFileNameWithoutExtension(pluginConfig.ConfigFilePath), pluginConfig.ConfigFilePath)
 		{
 			Configuration = userConfig,
 			State = configMigrator.GetConfigState(userConfig, configName)
@@ -117,22 +113,12 @@ public class ConfigProvider : IInitializable
 		}
 	}
 
-	internal static bool ConfigSelectable(ConfigState? state)
-	{
-		return state switch
-		{
-			ConfigState.Compatible => true,
-			ConfigState.NeedsMigration => true,
-			_ => false
-		};
-	}
-
 	internal async Task SelectUserConfig(ConfigFileInfo configFileInfo)
 	{
 		// safe-guarding just to be sure
-		if (!ConfigSelectable(configFileInfo.State))
+		if (!configFileInfo.ConfigSelectable())
 		{
-			hsvConfig.ConfigFilePath = null;
+			pluginConfig.ConfigFilePath = null;
 			return;
 		}
 
@@ -145,15 +131,15 @@ public class ConfigProvider : IInitializable
 
 		if (configFileInfo.Configuration!.Validate(configFileInfo.ConfigName))
 		{
-			CurrentConfig = configFileInfo.Configuration;
-			hsvConfig.ConfigFilePath = configFileInfo.ConfigPath;
+			pluginConfig.SelectedConfig = configFileInfo;
+			pluginConfig.ConfigFilePath = configFileInfo.ConfigPath;
 		}
 	}
 
 	internal void UnselectUserConfig()
 	{
-		CurrentConfig = null;
-		hsvConfig.ConfigFilePath = null;
+		pluginConfig.SelectedConfig = null;
+		pluginConfig.ConfigFilePath = null;
 	}
 
 	internal void YeetConfig(string relativePath)

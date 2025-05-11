@@ -6,13 +6,13 @@ namespace HitScoreVisualizer.HarmonyPatches;
 
 internal class FlyingScoreEffectPatch : IAffinity
 {
+	private readonly PluginConfig pluginConfig;
 	private readonly JudgmentService judgmentService;
-	private readonly ConfigProvider configProvider;
 
-	private FlyingScoreEffectPatch(JudgmentService judgmentService, ConfigProvider configProvider)
+	private FlyingScoreEffectPatch(PluginConfig pluginConfig, JudgmentService judgmentService)
 	{
+		this.pluginConfig = pluginConfig;
 		this.judgmentService = judgmentService;
-		this.configProvider = configProvider;
 	}
 
 	// When the flying score effect spawns, InitAndPresent is called
@@ -23,7 +23,7 @@ internal class FlyingScoreEffectPatch : IAffinity
 	[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.InitAndPresent))]
 	internal bool InitAndPresent(ref FlyingScoreEffect __instance, IReadonlyCutScoreBuffer cutScoreBuffer, float duration, Vector3 targetPos)
 	{
-		var configuration = configProvider.CurrentConfig;
+		var configuration = pluginConfig.SelectedConfig?.Configuration;
 
 		if (configuration == null)
 		{
@@ -65,7 +65,7 @@ internal class FlyingScoreEffectPatch : IAffinity
 	[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.HandleCutScoreBufferDidChange))]
 	internal bool HandleCutScoreBufferDidChange(FlyingScoreEffect __instance, CutScoreBuffer cutScoreBuffer)
 	{
-		var configuration = configProvider.CurrentConfig;
+		var configuration = pluginConfig.SelectedConfig?.Configuration;
 		if (configuration == null)
 		{
 			// Run original implementation
@@ -88,7 +88,7 @@ internal class FlyingScoreEffectPatch : IAffinity
 	[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.HandleCutScoreBufferDidFinish))]
 	internal void HandleCutScoreBufferDidFinish(FlyingScoreEffect __instance, CutScoreBuffer cutScoreBuffer)
 	{
-		if (configProvider.CurrentConfig == null)
+		if (pluginConfig.SelectedConfig?.Configuration == null)
 		{
 			return;
 		}

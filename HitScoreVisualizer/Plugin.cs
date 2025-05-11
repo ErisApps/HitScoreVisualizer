@@ -17,14 +17,14 @@ public class Plugin
 {
 	internal static PluginMetadata Metadata { get; private set; } = null!;
 	internal static Logger Log { get; private set; } = null!;
-	internal static HSVConfig Config { get; private set; } = null!;
+	internal static PluginConfig Config { get; private set; } = null!;
 
 	[Init]
 	public Plugin(Logger logger, Config config, PluginMetadata pluginMetadata, Zenjector zenject)
 	{
 		Metadata = pluginMetadata;
 		Log = logger;
-		Config = config.Generated<HSVConfig>();
+		Config = config.Generated<PluginConfig>();
 
 		zenject.UseLogger(logger);
 		zenject.UseMetadataBinder<Plugin>();
