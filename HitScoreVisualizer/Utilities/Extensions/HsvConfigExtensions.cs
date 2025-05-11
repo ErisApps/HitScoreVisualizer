@@ -16,4 +16,9 @@ internal static class HsvConfigExtensions
 	{
 		return new(config.MajorVersion, config.MinorVersion, config.PatchVersion);
 	}
+
+	internal static bool ConfigSelectable(this ConfigFileInfo config)
+	{
+		return config.State is ConfigState.Compatible or ConfigState.NeedsMigration;
+	}
 }

@@ -9,12 +9,12 @@ namespace HitScoreVisualizer.HarmonyPatches;
 internal class EffectPoolsManualInstallerPatch : IAffinity
 {
 	private readonly BloomFontProvider bloomFontProvider;
-	private readonly HSVConfig hsvConfig;
+	private readonly PluginConfig pluginConfig;
 
-	private EffectPoolsManualInstallerPatch(BloomFontProvider bloomFontProvider, HSVConfig hsvConfig)
+	private EffectPoolsManualInstallerPatch(BloomFontProvider bloomFontProvider, PluginConfig pluginConfig)
 	{
 		this.bloomFontProvider = bloomFontProvider;
-		this.hsvConfig = hsvConfig;
+		this.pluginConfig = pluginConfig;
 	}
 
 	[AffinityPrefix]
@@ -27,7 +27,7 @@ internal class EffectPoolsManualInstallerPatch : IAffinity
 		text.overflowMode = TextOverflowModes.Overflow;
 
 		// Configure font shader and italics
-		text.fontStyle = hsvConfig.DisableItalics ? FontStyles.Normal : FontStyles.Italic;
-		text.font = bloomFontProvider.GetFontForType(hsvConfig.FontType);
+		text.fontStyle = pluginConfig.DisableItalics ? FontStyles.Normal : FontStyles.Italic;
+		text.font = bloomFontProvider.GetFontForType(pluginConfig.FontType);
 	}
 }
