@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using HitScoreVisualizer.Models;
 using HitScoreVisualizer.Utilities.Extensions;
-using UnityEngine;
 using Version = Hive.Versioning.Version;
 
 namespace HitScoreVisualizer.Utilities.Services;
@@ -13,7 +12,13 @@ internal class ConfigMigrator
 {
 	private readonly PluginDirectories directories;
 
-	private readonly Dictionary<Version, Func<HsvConfigModel, bool>> migrationActions;
+	private readonly IHsvConfigMigration[] migrations = [
+		new ConfigMigration200(),
+		new ConfigMigration210(),
+		new ConfigMigration223(),
+		new ConfigMigration320()
+	];
+
 	private readonly Version minimumMigratableVersion;
 	private readonly Version maximumMigrationNeededVersion;
 
@@ -23,16 +28,9 @@ internal class ConfigMigrator
 	{
 		this.directories = directories;
 
-		migrationActions = new()
-		{
-			{ new(2, 0, 0), RunMigration2_0_0 },
-			{ new(2, 1, 0), RunMigration2_1_0 },
-			{ new(2, 2, 3), RunMigration2_2_3 },
-			{ new(3, 2, 0), RunMigration3_2_0 }
-		};
-
-		minimumMigratableVersion = migrationActions.Keys.Min();
-		maximumMigrationNeededVersion = migrationActions.Keys.Max();
+		var versions = migrations.Select(m => m.Version).ToList();
+		minimumMigratableVersion = versions.Min();
+		maximumMigrationNeededVersion = versions.Max();
 	}
 
 	public ConfigState GetConfigState(HsvConfigModel? configuration, string configName)
@@ -72,82 +70,24 @@ internal class ConfigMigrator
 		Plugin.Log.Debug($"Backing up config file at '{existingConfigFullPath}' to '{combinedConfigBackupPath}'");
 		File.Copy(existingConfigFullPath, combinedConfigBackupPath);
 
-		if (configFileInfo.Configuration!.IsDefaultConfig)
+		if (!configFileInfo.Configuration!.IsDefaultConfig)
+		{
+			Plugin.Log.Debug($"Starting config migration for {configFileInfo.ConfigName}");
+
+			var config = configFileInfo.Configuration;
+			foreach (var migration in migrations.Where((m => m.Version >= config.GetVersion())))
+			{
+				migration.Migrate(config);
+			}
+
+			config.SetVersion(PluginVersion);
+		}
+		else
 		{
 			Plugin.Log.Warn("Config is marked as default config and will therefore be reset to defaults");
 			configFileInfo.Configuration = HsvConfigModel.Default;
 		}
-		else
-		{
-			Plugin.Log.Debug("Starting actual config migration logic for config");
-			RunMigration(configFileInfo.Configuration!);
-		}
 
 		return configFileInfo;
-	}
-
-	public void RunMigration(HsvConfigModel userConfig)
-	{
-		foreach (var requiredMigration in migrationActions.Keys.Where(migrationVersion =>
-			         migrationVersion >= userConfig.GetVersion()))
-		{
-			migrationActions[requiredMigration](userConfig);
-		}
-
-		userConfig.SetVersion(PluginVersion);
-	}
-
-	private static bool RunMigration2_0_0(HsvConfigModel configuration)
-	{
-		configuration.BeforeCutAngleJudgments = [JudgmentSegment.Default];
-		configuration.AccuracyJudgments = [JudgmentSegment.Default];
-		configuration.AfterCutAngleJudgments = [JudgmentSegment.Default];
-
-		return true;
-	}
-
-	private static bool RunMigration2_1_0(HsvConfigModel configuration)
-	{
-		configuration.Judgments = configuration.Judgments
-			.Where(j => j.Threshold == 110)
-			.Select(j => new NormalJudgment
-			{
-				Threshold = 115,
-				Text = j.Text,
-				Color = j.Color,
-				Fade = j.Fade
-			}).ToList();
-
-		if (configuration.AccuracyJudgments != null)
-		{
-			configuration.AccuracyJudgments = configuration.AccuracyJudgments
-				.Where(aj => aj.Threshold == 10)
-				.Select(s => new JudgmentSegment
-				{
-					Threshold = 15,
-					Text = s.Text,
-				}).ToList();
-		}
-
-		return true;
-	}
-
-	private static bool RunMigration2_2_3(HsvConfigModel configuration)
-	{
-		configuration.DoIntermediateUpdates = true;
-
-		return true;
-	}
-
-	private static bool RunMigration3_2_0(HsvConfigModel configuration)
-	{
-#pragma warning disable 618
-		if (configuration.UseFixedPos)
-		{
-			configuration.FixedPosition = new Vector3(configuration.FixedPosX, configuration.FixedPosY, configuration.FixedPosZ);
-		}
-#pragma warning restore 618
-
-		return true;
 	}
 }
