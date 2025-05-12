@@ -8,14 +8,8 @@ namespace HitScoreVisualizer.HarmonyPatches;
 
 internal class HarmonyPatchManager : IInitializable, IDisposable
 {
-	private readonly SiraLog log;
 	private readonly Harmony harmony = new(Plugin.Metadata.Id);
 	private readonly Assembly executingAssembly = Assembly.GetExecutingAssembly();
-
-	public HarmonyPatchManager(SiraLog log)
-	{
-		this.log = log;
-	}
 
 	public void Initialize()
 	{
@@ -25,7 +19,7 @@ internal class HarmonyPatchManager : IInitializable, IDisposable
 		}
 		catch (Exception e)
 		{
-			log.Error(e);
+			Plugin.Log.Error(e);
 		}
 	}
 
