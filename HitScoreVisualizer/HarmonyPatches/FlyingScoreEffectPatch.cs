@@ -23,7 +23,7 @@ internal class FlyingScoreEffectPatch : IAffinity
 	[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.InitAndPresent))]
 	internal bool InitAndPresent(ref FlyingScoreEffect __instance, IReadonlyCutScoreBuffer cutScoreBuffer, float duration, Vector3 targetPos)
 	{
-		var configuration = pluginConfig.SelectedConfig?.Configuration;
+		var configuration = pluginConfig.SelectedConfig?.Config;
 
 		if (configuration == null)
 		{
@@ -65,7 +65,7 @@ internal class FlyingScoreEffectPatch : IAffinity
 	[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.HandleCutScoreBufferDidChange))]
 	internal bool HandleCutScoreBufferDidChange(FlyingScoreEffect __instance, CutScoreBuffer cutScoreBuffer)
 	{
-		var configuration = pluginConfig.SelectedConfig?.Configuration;
+		var configuration = pluginConfig.SelectedConfig?.Config;
 		if (configuration == null)
 		{
 			// Run original implementation
@@ -88,7 +88,7 @@ internal class FlyingScoreEffectPatch : IAffinity
 	[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.HandleCutScoreBufferDidFinish))]
 	internal void HandleCutScoreBufferDidFinish(FlyingScoreEffect __instance, CutScoreBuffer cutScoreBuffer)
 	{
-		if (pluginConfig.SelectedConfig?.Configuration == null)
+		if (pluginConfig.SelectedConfig?.Config == null)
 		{
 			return;
 		}

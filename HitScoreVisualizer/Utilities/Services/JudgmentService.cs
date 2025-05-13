@@ -16,7 +16,7 @@ internal class JudgmentService
 		this.pluginConfig = pluginConfig;
 	}
 
-	private HsvConfigModel Config => pluginConfig.SelectedConfig?.Configuration ?? HsvConfigModel.Default;
+	private HsvConfigModel Config => pluginConfig.SelectedConfig?.Config ?? HsvConfigModel.Default;
 
 	public (string hitScoreText, Color hitScoreColor) Judge(IReadonlyCutScoreBuffer cutScoreBuffer, bool assumeMaxPostSwing)
 	{

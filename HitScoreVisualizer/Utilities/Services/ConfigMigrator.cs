@@ -31,7 +31,7 @@ internal class ConfigMigrator
 		maximumMigrationNeededVersion = versions.Max();
 	}
 
-	public ConfigState GetConfigState(HsvConfigModel? configuration, string configName)
+	public ConfigState GetConfigState(HsvConfigModel? configuration)
 	{
 		if (configuration is null)
 		{
@@ -42,50 +42,36 @@ internal class ConfigMigrator
 		return configVersion.NewerThan(Plugin.Metadata.HVersion) ? ConfigState.NewerVersion
 			: configVersion < minimumMigratableVersion ? ConfigState.Incompatible
 			: configVersion < maximumMigrationNeededVersion ? ConfigState.NeedsMigration
-			: configuration.Validate(configName) ? ConfigState.Compatible : ConfigState.ValidationFailed;
+			: configuration.Validate() ? ConfigState.Compatible : ConfigState.ValidationFailed;
 	}
 
-	public ConfigFileInfo MigrateConfig(ConfigFileInfo configFileInfo)
+	public ConfigInfo MigrateConfig(ConfigInfo configInfo)
 	{
-		var existingConfigFullPath = Path.Combine(directories.Configs.FullName, configFileInfo.ConfigPath);
-		Plugin.Log.Notice($"Config at path '{existingConfigFullPath}' requires migration. Starting automagical config migration logic.");
-
-		// Create backups folder if it not exists
-		var backupFolderPath = Path.GetDirectoryName(Path.Combine(directories.Backups.FullName, configFileInfo.ConfigPath))!;
-		Directory.CreateDirectory(backupFolderPath);
-
-		var newFileName = $"{Path.GetFileNameWithoutExtension(existingConfigFullPath)} (backup of config made for {configFileInfo.Configuration!.GetVersion()})";
-		var fileExtension = Path.GetExtension(existingConfigFullPath);
-		var combinedConfigBackupPath = Path.Combine(backupFolderPath, newFileName + fileExtension);
-
-		if (File.Exists(combinedConfigBackupPath))
+		if (configInfo.Config is null)
 		{
-			var existingFileCount = Directory.EnumerateFiles(backupFolderPath).Count(filePath => Path.GetFileNameWithoutExtension(filePath).StartsWith(newFileName));
-			newFileName += $" ({(++existingFileCount).ToString()})";
-			combinedConfigBackupPath = Path.Combine(backupFolderPath, newFileName + fileExtension);
+			Plugin.Log.Warn($"Can't migrate {configInfo.ConfigName} because there is no HSV config");
+			return configInfo;
 		}
 
-		Plugin.Log.Debug($"Backing up config file at '{existingConfigFullPath}' to '{combinedConfigBackupPath}'");
-		File.Copy(existingConfigFullPath, combinedConfigBackupPath);
+		// Create a backup file
+		var backupName = $"{configInfo.ConfigName} (backup of config made for {configInfo.Config.GetVersion()}{configInfo.File.Extension})";
+		var backupPath = FilePathUtils.GetUniqueFilePath(Path.Combine(directories.Backups.FullName, backupName));
+		configInfo.File.CopyTo(backupPath);
 
-		if (!configFileInfo.Configuration!.IsDefaultConfig)
-		{
-			Plugin.Log.Debug($"Starting config migration for {configFileInfo.ConfigName}");
-
-			var config = configFileInfo.Configuration;
-			foreach (var migration in migrations.Where((m => m.Version >= config.GetVersion())))
-			{
-				migration.Migrate(config);
-			}
-
-			config.SetVersion(Plugin.Metadata.HVersion);
-		}
-		else
+		if (configInfo.Config.IsDefaultConfig)
 		{
 			Plugin.Log.Warn("Config is marked as default config and will therefore be reset to defaults");
-			configFileInfo.Configuration = HsvConfigModel.Default;
+			configInfo.Config = HsvConfigModel.Default;
+			return configInfo;
 		}
 
-		return configFileInfo;
+		foreach (var migration in migrations.Where((m => m.Version >= configInfo.Config.GetVersion())))
+		{
+			Plugin.Log.Debug($"Running migration {migration.Version} on {configInfo.ConfigName}");
+			migration.Migrate(configInfo.Config);
+		}
+
+		configInfo.Config.SetVersion(Plugin.Metadata.HVersion);
+		return configInfo;
 	}
 }

@@ -7,15 +7,9 @@ namespace HitScoreVisualizer.Utilities.Extensions;
 
 internal static class HsvConfigValidation
 {
-	public static bool Validate(this HsvConfigModel configuration, string configName)
+	public static bool Validate(this HsvConfigModel configuration)
 	{
-		if (!configuration.Judgments.Any())
-		{
-			Plugin.Log.Warn($"No judgments found for {configName}");
-			return false;
-		}
-
-		if (!ValidateJudgments(configuration, configName))
+		if (!configuration.Judgments.Any() || !ValidateJudgments(configuration))
 		{
 			return false;
 		}
@@ -36,7 +30,7 @@ internal static class HsvConfigValidation
 		if (configuration.BeforeCutAngleJudgments != null)
 		{
 			configuration.BeforeCutAngleJudgments = configuration.BeforeCutAngleJudgments.OrderByDescending(x => x.Threshold).ToList();
-			if (!ValidateJudgmentSegment(configuration.BeforeCutAngleJudgments, configName))
+			if (!ValidateJudgmentSegment(configuration.BeforeCutAngleJudgments))
 			{
 				return false;
 			}
@@ -45,7 +39,7 @@ internal static class HsvConfigValidation
 		if (configuration.AccuracyJudgments != null)
 		{
 			configuration.AccuracyJudgments = configuration.AccuracyJudgments.OrderByDescending(x => x.Threshold).ToList();
-			if (!ValidateJudgmentSegment(configuration.AccuracyJudgments, configName))
+			if (!ValidateJudgmentSegment(configuration.AccuracyJudgments))
 			{
 				return false;
 			}
@@ -54,7 +48,7 @@ internal static class HsvConfigValidation
 		if (configuration.AfterCutAngleJudgments != null)
 		{
 			configuration.AfterCutAngleJudgments = configuration.AfterCutAngleJudgments.OrderByDescending(x => x.Threshold).ToList();
-			if (!ValidateJudgmentSegment(configuration.AfterCutAngleJudgments, configName))
+			if (!ValidateJudgmentSegment(configuration.AfterCutAngleJudgments))
 			{
 				return false;
 			}
@@ -63,7 +57,7 @@ internal static class HsvConfigValidation
 		if (configuration.TimeDependenceJudgments != null)
 		{
 			configuration.TimeDependenceJudgments = configuration.TimeDependenceJudgments.OrderByDescending(x => x.Threshold).ToList();
-			if (!ValidateTimeDependenceJudgmentSegment(configuration.TimeDependenceJudgments, configName))
+			if (!ValidateTimeDependenceJudgmentSegment(configuration.TimeDependenceJudgments))
 			{
 				return false;
 			}
@@ -72,7 +66,7 @@ internal static class HsvConfigValidation
 		return true;
 	}
 
-	private static bool ValidateJudgments(HsvConfigModel configuration, string configName)
+	private static bool ValidateJudgments(HsvConfigModel configuration)
 	{
 		configuration.Judgments = configuration.Judgments.OrderByDescending(x => x.Threshold).ToList();
 		var prevJudgment = configuration.Judgments[0];
@@ -87,9 +81,9 @@ internal static class HsvConfigValidation
 			};
 		}
 
-		if (!ValidateJudgmentColor(prevJudgment, configName))
+		if (!ValidateJudgmentColor(prevJudgment))
 		{
-			Plugin.Log.Warn($"Judgment entry for threshold {prevJudgment.Threshold} has invalid color in {configName}");
+			Plugin.Log.Warn($"Judgment entry for threshold {prevJudgment.Threshold} has invalid color");
 			return false;
 		}
 
@@ -100,9 +94,9 @@ internal static class HsvConfigValidation
 				var currentJudgment = configuration.Judgments[i];
 				if (prevJudgment.Threshold != currentJudgment.Threshold)
 				{
-					if (!ValidateJudgmentColor(currentJudgment, configName))
+					if (!ValidateJudgmentColor(currentJudgment))
 					{
-						Plugin.Log.Warn($"Judgment entry for threshold {currentJudgment.Threshold} has invalid color in {configName}");
+						Plugin.Log.Warn($"Judgment entry for threshold {currentJudgment.Threshold} has invalid color");
 						return false;
 					}
 
@@ -110,7 +104,7 @@ internal static class HsvConfigValidation
 					continue;
 				}
 
-				Plugin.Log.Warn($"Duplicate entry found for threshold {currentJudgment.Threshold} in {configName}");
+				Plugin.Log.Warn($"Duplicate entry found for threshold {currentJudgment.Threshold}");
 				return false;
 			}
 		}
@@ -118,11 +112,11 @@ internal static class HsvConfigValidation
 		return true;
 	}
 
-	private static bool ValidateJudgmentColor(NormalJudgment judgment, string configName)
+	private static bool ValidateJudgmentColor(NormalJudgment judgment)
 	{
 		if (judgment.Color.Count != 4)
 		{
-			Plugin.Log.Warn($"Judgment for threshold {judgment.Threshold} has invalid color in {configName}! Make sure to include exactly 4 numbers for each judgment's color!");
+			Plugin.Log.Warn($"Judgment for threshold {judgment.Threshold} has invalid color. Make sure to include exactly 4 numbers for each judgment's color!");
 			return false;
 		}
 
@@ -131,11 +125,11 @@ internal static class HsvConfigValidation
 			return true;
 		}
 
-		Plugin.Log.Warn($"Judgment for threshold {judgment.Threshold} has invalid color in {configName}! Make sure to include exactly 4 numbers that are greater or equal than 0 (and preferably smaller or equal than 1) for each judgment's color!");
+		Plugin.Log.Warn($"Judgment for threshold {judgment.Threshold} has invalid color. Make sure to include exactly 4 numbers that are greater or equal than 0 (and preferably smaller or equal than 1) for each judgment's color!");
 		return false;
 	}
 
-	private static bool ValidateJudgmentSegment(List<JudgmentSegment> segments, string configName)
+	private static bool ValidateJudgmentSegment(List<JudgmentSegment> segments)
 	{
 		if (segments.Count <= 1)
 		{
@@ -152,14 +146,14 @@ internal static class HsvConfigValidation
 				continue;
 			}
 
-			Plugin.Log.Warn($"Duplicate entry found for threshold {currentJudgment.Threshold} in {configName}");
+			Plugin.Log.Warn($"Duplicate entry found for threshold {currentJudgment.Threshold}");
 			return false;
 		}
 
 		return true;
 	}
 
-	private static bool ValidateTimeDependenceJudgmentSegment(List<TimeDependenceJudgmentSegment> segments, string configName)
+	private static bool ValidateTimeDependenceJudgmentSegment(List<TimeDependenceJudgmentSegment> segments)
 	{
 		if (segments.Count <= 1)
 		{
@@ -176,7 +170,7 @@ internal static class HsvConfigValidation
 				continue;
 			}
 
-			Plugin.Log.Warn($"Duplicate entry found for threshold {currentJudgment.Threshold} in {configName}");
+			Plugin.Log.Warn($"Duplicate entry found for threshold {currentJudgment.Threshold}");
 			return false;
 		}
 
