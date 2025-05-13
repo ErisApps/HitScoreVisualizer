@@ -36,154 +36,152 @@ public class ConfigLoader : IInitializable
 
 	public async void Initialize()
 	{
-		var defaultConfigPath = Path.Combine(directories.Configs.FullName, "HitScoreVisualizerConfig (default).json");
-		var defaultConfigFile = new FileInfo(defaultConfigPath);
-
-		if (!defaultConfigFile.Exists)
+		try
 		{
-			await SaveConfig(new("HitScoreVisualizerConfig (default).json", defaultConfigPath)
-			{
-				Configuration = HsvConfigModel.Default
-			});
+			await CreateDefaultConfig();
+			await LoadSelectedConfig();
 		}
-
-		var legacyConfigPath = Path.Combine(UnityGame.UserDataPath, "HitScoreVisualizerConfig.json");
-		var legacyConfigFile = new FileInfo(legacyConfigPath);
-
-		if (legacyConfigFile.Exists)
+		catch (Exception ex)
 		{
-			var destinationHsvConfigPath = Path.Combine(directories.Configs.FullName, "HitScoreVisualizerConfig (imported).json");
-			File.Move(legacyConfigPath, destinationHsvConfigPath);
-
-			pluginConfig.ConfigFilePath = destinationHsvConfigPath;
+			Plugin.Log.Error($"Problem encountered while initializing loader:\n {ex}");
 		}
-
-		if (pluginConfig.ConfigFilePath == null)
-		{
-			return;
-		}
-
-		var fullPath = Path.Combine(directories.Configs.FullName, pluginConfig.ConfigFilePath);
-		if (!File.Exists(fullPath))
-		{
-			pluginConfig.ConfigFilePath = null;
-			return;
-		}
-
-		var userConfig = await LoadConfig(pluginConfig.ConfigFilePath).ConfigureAwait(false);
-		if (userConfig == null)
-		{
-			Plugin.Log.Warn($"Couldn't load userConfig at {fullPath}");
-			return;
-		}
-
-		var configName = Path.GetFileNameWithoutExtension(pluginConfig.ConfigFilePath);
-		var configFileInfo = new ConfigFileInfo(Path.GetFileNameWithoutExtension(pluginConfig.ConfigFilePath), pluginConfig.ConfigFilePath)
-		{
-			Configuration = userConfig,
-			State = configMigrator.GetConfigState(userConfig, configName)
-		};
-
-		if (configFileInfo.State.HasWarning())
-		{
-			Plugin.Log.Warn(configFileInfo.State.GetWarningMessage(configName, userConfig.GetVersion()));
-		}
-
-		await SelectUserConfig(configFileInfo).ConfigureAwait(false);
 	}
 
-	internal async Task<ConfigFileInfo[]> ListAvailableConfigs()
+	internal async Task<ConfigInfo[]> LoadAllHsvConfigs()
 	{
 		var createFileTasks = directories.Configs
 			.EnumerateFiles("*.json", SearchOption.AllDirectories)
 			.Where(file => !file.FullName.StartsWith(directories.Backups.FullName))
-			.Select(CreateConfigFileInfo);
+			.Select(GetConfigInfo);
 
 		return await Task.WhenAll(createFileTasks);
-
-		async Task<ConfigFileInfo> CreateConfigFileInfo(FileInfo file)
-		{
-			var config = await LoadConfig(Path.Combine(directories.Configs.FullName, file.Name));
-			var configName = Path.GetFileNameWithoutExtension(file.Name);
-			return new(configName, file.FullName.Substring(directories.Configs.FullName.Length + 1))
-			{
-				Configuration = config,
-				State = configMigrator.GetConfigState(config, configName)
-			};
-		}
 	}
 
-	internal async Task SelectUserConfig(ConfigFileInfo configFileInfo)
+	internal async Task<bool> TrySelectConfig(ConfigInfo? configInfo)
 	{
-		// safe-guarding just to be sure
-		if (!configFileInfo.ConfigSelectable())
+		if (configInfo is not { State: ConfigState.Compatible or ConfigState.NeedsMigration })
 		{
+			Plugin.Log.Warn("Tried selecting a config that is not compatible with the current version of the plugin");
 			pluginConfig.ConfigFilePath = null;
-			return;
+			return false;
 		}
 
-		if (configFileInfo.State == ConfigState.NeedsMigration)
+		if (configInfo.State is ConfigState.NeedsMigration)
 		{
-			configFileInfo = configMigrator.MigrateConfig(configFileInfo);
-			await SaveConfig(configFileInfo);
-			Plugin.Log.Debug($"Config migration finished successfully and updated config is stored to disk at path: '{configFileInfo.ConfigPath}'");
+			Plugin.Log.Warn("Selected a config that needs migration");
+			configInfo = configMigrator.MigrateConfig(configInfo);
+			await SaveConfig(configInfo);
 		}
 
-		if (configFileInfo.Configuration!.Validate(configFileInfo.ConfigName))
+		if (configInfo.Config != null && configInfo.Config.Validate())
 		{
-			pluginConfig.SelectedConfig = configFileInfo;
-			pluginConfig.ConfigFilePath = configFileInfo.ConfigPath;
+			Plugin.Log.Info($"Selecting config {configInfo.ConfigName}");
+			pluginConfig.SelectedConfig = configInfo;
+			pluginConfig.ConfigFilePath = configInfo.File.FullName.Substring(directories.Configs.FullName.Length + 1);
 		}
+
+		return pluginConfig.ConfigFilePath != null;
 	}
 
-	internal void UnselectUserConfig()
+	private async Task<ConfigInfo> GetConfigInfo(FileInfo file)
 	{
-		pluginConfig.SelectedConfig = null;
-		pluginConfig.ConfigFilePath = null;
-	}
-
-	internal void YeetConfig(string relativePath)
-	{
-		var fullPath = Path.Combine(directories.Configs.FullName, relativePath);
-		if (File.Exists(fullPath))
+		var config = await TryLoadConfig(file);
+		var version = config?.GetVersion() ?? Plugin.Metadata.HVersion;
+		var state = configMigrator.GetConfigState(config);
+		var description = state.GetConfigDescription(version);
+		return new(file, description, state)
 		{
-			File.Delete(fullPath);
-		}
+			Config = config
+		};
 	}
 
-	private async Task<HsvConfigModel?> LoadConfig(string relativePath)
+	private async Task<HsvConfigModel?> TryLoadConfig(FileInfo file)
 	{
 		try
 		{
-			using var streamReader = new StreamReader(Path.Combine(directories.Configs.FullName, relativePath));
-			var content = await streamReader.ReadToEndAsync().ConfigureAwait(false);
+			using var streamReader = file.OpenText();
+			var content = await streamReader.ReadToEndAsync();
 			return JsonConvert.DeserializeObject<HsvConfigModel>(content, configSerializerSettings);
 		}
 		catch (Exception ex)
 		{
-			Plugin.Log.Warn($"Problem encountered when trying to load a config;\nFile path: {relativePath}\n{ex}");
-			// Expected behaviour when file isn't an actual hsv config file...
+			Plugin.Log.Warn($"Problem encountered when trying to load {file.Name}\n{ex}");
 			return null;
 		}
 	}
 
-	private async Task SaveConfig(ConfigFileInfo configFile)
+	private async Task SaveConfig(ConfigInfo config)
 	{
 		try
 		{
-			if (configFile.Configuration is null)
+			if (config.Config is null)
 			{
 				return;
 			}
 
-			await using var streamWriter = new StreamWriter(configFile.ConfigPath, false);
-
-			var content = JsonConvert.SerializeObject(configFile.Configuration, Formatting.Indented, configSerializerSettings);
+			Plugin.Log.Info($"Saving config {config.ConfigName}");
+			await using var streamWriter = config.File.CreateText();
+			var content = JsonConvert.SerializeObject(config.Config, Formatting.Indented, configSerializerSettings);
 			await streamWriter.WriteAsync(content);
 		}
 		catch (Exception e)
 		{
 			Plugin.Log.Error(e);
 		}
+	}
+
+	private async Task CreateDefaultConfig()
+	{
+		const string defaultConfigName = "HitScoreVisualizerConfig (default).json";
+		var defaultConfigPath = Path.Combine(directories.Configs.FullName, defaultConfigName);
+		var defaultConfigFile = new FileInfo(defaultConfigPath);
+		if (!defaultConfigFile.Exists)
+		{
+			var defaultConfigDescription = ConfigState.Compatible.GetConfigDescription(Plugin.Metadata.HVersion);
+			await SaveConfig(new(defaultConfigFile, defaultConfigDescription, ConfigState.Compatible)
+			{
+				Config = HsvConfigModel.Default
+			});
+		}
+
+		var legacyConfigPath = Path.Combine(UnityGame.UserDataPath, "HitScoreVisualizerConfig.json");
+		var legacyConfigFile = new FileInfo(legacyConfigPath);
+		if (legacyConfigFile.Exists)
+		{
+			var destinationHsvConfigPath = Path.Combine(directories.Configs.FullName, "HitScoreVisualizerConfig (imported).json");
+			legacyConfigFile.MoveTo(destinationHsvConfigPath);
+		}
+	}
+
+	private async Task LoadSelectedConfig()
+	{
+		if (pluginConfig.ConfigFilePath == null)
+		{
+			return;
+		}
+
+		var fullPath = Path.Combine(directories.Configs.FullName, pluginConfig.ConfigFilePath);
+		var fileInfo = new FileInfo(fullPath);
+		if (!fileInfo.Exists)
+		{
+			Plugin.Log.Warn("Selected config file was not found; resetting to default.");
+			pluginConfig.ConfigFilePath = null;
+			return;
+		}
+
+		var selectedConfig = await GetConfigInfo(fileInfo);
+		if (selectedConfig.Config is null)
+		{
+			Plugin.Log.Warn("Problem encountered when trying to load selected config; resetting to default.");
+			pluginConfig.ConfigFilePath = null;
+			return;
+		}
+
+		if (selectedConfig.State.HasWarning())
+		{
+			Plugin.Log.Warn(selectedConfig.State.GetWarningMessage(selectedConfig.ConfigName, selectedConfig.Config.GetVersion()));
+		}
+
+		await TrySelectConfig(selectedConfig);
 	}
 }

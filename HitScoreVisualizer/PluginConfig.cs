@@ -14,5 +14,5 @@ internal class PluginConfig
 	public virtual bool OverrideNoTextsAndHuds { get; set; }
 
 	[Ignore]
-	public ConfigFileInfo? SelectedConfig { get; set; }
+	public ConfigInfo? SelectedConfig { get; set; }
 }

@@ -16,8 +16,8 @@
 					<bg bg="panel-top-gradient" bg-color="#BD288199" tags='hovered' size-delta-x="1"/>
 					<bg bg="panel-top-gradient" bg-color="#fff" tags='selected' size-delta-x="1"/>
 					<vertical horizontal-fit='Unconstrained' spacing="-2" child-align="MiddleLeft" pad-left="3" pad-right="3">
-						<text text="~config-name" font-size="5" rich-text="true" word-wrapping="false" italics="true"/>
-						<text text="~config-description" font-size="3.5" italics="true"/>
+						<text text="~ConfigName" font-size="5" rich-text="true" word-wrapping="false" italics="true"/>
+						<text text="~Description" font-size="3.5" italics="true"/>
 					</vertical>
 				</stack>
 			</custom-list>

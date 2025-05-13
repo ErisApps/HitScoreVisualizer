@@ -17,8 +17,11 @@ internal static class HsvConfigExtensions
 		return new(config.MajorVersion, config.MinorVersion, config.PatchVersion);
 	}
 
-	internal static bool ConfigSelectable(this ConfigFileInfo config)
+	internal static void Yeet(this ConfigInfo configInfo)
 	{
-		return config.State is ConfigState.Compatible or ConfigState.NeedsMigration;
+		if (configInfo.File.Exists)
+		{
+			configInfo.File.Delete();
+		}
 	}
 }
