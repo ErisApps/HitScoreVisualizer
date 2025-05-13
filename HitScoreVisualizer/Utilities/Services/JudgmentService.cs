@@ -23,7 +23,7 @@ internal class JudgmentService
 		var beforeCutScore = cutScoreBuffer.beforeCutScore;
 		var centerCutScore = cutScoreBuffer.centerDistanceCutScore;
 		var afterCutScore = assumeMaxPostSwing ? cutScoreBuffer.noteScoreDefinition.maxAfterCutScore : cutScoreBuffer.afterCutScore;
-		var totalCutScore = beforeCutScore + centerCutScore + afterCutScore;
+		var totalCutScore = cutScoreBuffer.cutScore;
 		var maxPossibleScore = cutScoreBuffer.noteScoreDefinition.maxCutScore;
 		var noteCutInfo = cutScoreBuffer.noteCutInfo;
 
