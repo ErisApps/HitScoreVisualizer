@@ -121,13 +121,6 @@ internal class ConfigSelectorViewController : BSMLAutomaticViewController
 		}
 	}
 
-	protected override void DidDeactivate(bool removedFromHierarchy, bool screenSystemDisabling)
-	{
-		base.DidDeactivate(removedFromHierarchy, screenSystemDisabling);
-		configsList.Data.Clear();
-		pluginConfig.SelectedConfig = null;
-	}
-
 	private async Task RefreshListInternal()
 	{
 		LoadingConfigs = true;
