@@ -31,18 +31,17 @@ public class HsvConfigModel
 
 	public required bool AssumeMaxPostSwing { get; set; }
 
-	public int TimeDependenceDecimalPrecision { get; set; } = 1;
-	public int TimeDependenceDecimalOffset { get; set; } = 2;
-
 	public required List<NormalJudgment> Judgments { get; set; }
-	public required List<ChainHeadJudgment> ChainHeadJudgments { get; set; }
 
+	public required List<ChainHeadJudgment> ChainHeadJudgments { get; set; }
 	public ChainLinkDisplay? ChainLinkDisplay { get; set; }
 
 	public List<JudgmentSegment>? BeforeCutAngleJudgments { get; set; }
 	public List<JudgmentSegment>? AccuracyJudgments { get; set; }
 	public List<JudgmentSegment>? AfterCutAngleJudgments { get; set; }
 
+	public int TimeDependenceDecimalPrecision { get; set; } = 1;
+	public int TimeDependenceDecimalOffset { get; set; } = 2;
 	public List<TimeDependenceJudgmentSegment>? TimeDependenceJudgments { get; set; }
 
 	[JsonIgnore]
@@ -55,94 +54,90 @@ public class HsvConfigModel
 		DisplayMode = "format",
 		DoIntermediateUpdates = true,
 		AssumeMaxPostSwing = false,
-		TimeDependenceDecimalPrecision = 1,
-		TimeDependenceDecimalOffset = 2,
-		Judgments =
-		[
+		Judgments = [
 			new()
 			{
 				Threshold = 115,
-				Text = "%BFantastic%A%n%s",
+				Text = "<size=150%><u>%s</u></size>",
 				Color = [1f, 1f, 1f, 1f]
 			},
 			new()
 			{
-				Threshold = 101,
-				Text = "<size=80%>%BExcellent%A</size>%n%s",
-				Color = [0.0f, 1.0f, 0.0f, 1.0f]
+				Threshold = 110,
+				Text = "%B<size=120%>%C%s</u></size>%A",
+				Color = [0f, 0.5f, 1f, 1f]
 			},
 			new()
 			{
-				Threshold = 90,
-				Text = "<size=80%>%BGreat%A</size>%n%s",
-				Color = [1.0f, 0.98f, 0.0f, 1.0f]
+				Threshold = 105,
+				Text = "%B%C%s</u>%A",
+				Color = [0f, 1f, 0f, 1f]
 			},
 			new()
 			{
-				Threshold = 80,
-				Text = "<size=80%>%BGood%A</size>%n%s",
-				Color = [1.0f, 0.6f, 0.0f, 1.0f],
-				Fade = true
-			},
-			new()
-			{
-				Threshold = 60,
-				Text = "<size=80%>%BDecent%A</size>%n%s",
-				Color = [1.0f, 0.0f, 0.0f, 1.0f],
-				Fade = true
-			},
-			new()
-			{
-				Threshold = 0,
-				Text = "<size=80%>%BWay Off%A</size>%n%s",
-				Color = [0.5f, 0.0f, 0.0f, 1.0f],
-				Fade = true
-			}
-		],
-		ChainHeadJudgments =
-		[
-			new()
-			{
-				Threshold = 85,
-				Text = "%BFantastic%A%n%s",
-				Color = [1f, 1f, 1f, 1f]
-			},
-			new()
-			{
-				Threshold = 71,
-				Text = "<size=80%>%BExcellent%A</size>%n%s",
-				Color = [0.0f, 1.0f, 0.0f, 1.0f]
-			},
-			new()
-			{
-				Threshold = 60,
-				Text = "<size=80%>%BGreat%A</size>%n%s",
-				Color = [1.0f, 0.98f, 0.0f, 1.0f]
+				Threshold = 100,
+				Text = "%B%C%s</u>%A",
+				Color = [1f, 1f, 0f, 1f]
 			},
 			new()
 			{
 				Threshold = 50,
-				Text = "<size=80%>%BGood%A</size>%n%s",
-				Color = [1.0f, 0.6f, 0.0f, 1.0f],
-				Fade = true
-			},
-			new()
-			{
-				Threshold = 30,
-				Text = "<size=80%>%BDecent%A</size>%n%s",
-				Color = [1.0f, 0.0f, 0.0f, 1.0f],
+				Text = "%B<size=80%>%s</size>%A",
+				Color = [1f, 0f, 0f, 1f],
 				Fade = true
 			},
 			new()
 			{
 				Threshold = 0,
-				Text = "<size=80%>%BWay Off%A</size>%n%s",
-				Color = [0.5f, 0.0f, 0.0f, 1.0f],
-				Fade = true
+				Text = "%B<size=80%>%s</size>%A",
+				Color = [1f, 0f, 0f, 1f]
 			}
 		],
-		BeforeCutAngleJudgments =
-		[
+		ChainHeadJudgments = [
+			new()
+			{
+				Threshold = 85,
+				Text = "<size=150%><u>%s</u></size>",
+				Color = [1f, 1f, 1f, 1f]
+			},
+			new()
+			{
+				Threshold = 80,
+				Text = "%B<size=120%>%C%s</u></size>",
+				Color = [0f, 0.5f, 1f, 1f]
+			},
+			new()
+			{
+				Threshold = 75,
+				Text = "%B%C%s</u>",
+				Color = [0f, 1f, 0f, 1f]
+			},
+			new()
+			{
+				Threshold = 70,
+				Text = "%B%C%s</u>",
+				Color = [1f, 1f, 0f, 1f]
+			},
+			new()
+			{
+				Threshold = 35,
+				Text = "%B<size=80%>%s</size>",
+				Color = [1f, 0f, 0f, 1f],
+				Fade = true
+			},
+			new()
+			{
+				Threshold = 0,
+				Text = "%B<size=80%>%s</size>",
+				Color = [1f, 0f, 0f, 1f]
+			}
+		],
+		ChainLinkDisplay = new()
+		{
+			Text = "<alpha=#80><size=80%>%s",
+			Color = [1f, 1f, 1f, 1f]
+		},
+		BeforeCutAngleJudgments = [
 			new()
 			{
 				Threshold = 70,
@@ -151,24 +146,22 @@ public class HsvConfigModel
 			new()
 			{
 				Threshold = 0,
-				Text = " "
+				Text = "<color=#ff4f4f> - </color>"
 			}
 		],
-		AccuracyJudgments =
-		[
+		AccuracyJudgments = [
 			new()
 			{
 				Threshold = 15,
-				Text = " + "
+				Text = "<u>"
 			},
 			new()
 			{
 				Threshold = 0,
-				Text = " "
+				Text = ""
 			}
 		],
-		AfterCutAngleJudgments =
-		[
+		AfterCutAngleJudgments = [
 			new()
 			{
 				Threshold = 30,
@@ -177,8 +170,11 @@ public class HsvConfigModel
 			new()
 			{
 				Threshold = 0,
-				Text = " "
+				Text = "<color=#ff4f4f> - </color>"
 			}
-		]
+		],
+		TimeDependenceDecimalPrecision = 1,
+		TimeDependenceDecimalOffset = 2,
+		TimeDependenceJudgments = []
 	};
 }
