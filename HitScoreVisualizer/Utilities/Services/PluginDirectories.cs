@@ -1,6 +1,5 @@
 using System.IO;
 using IPA.Utilities;
-using Zenject;
 
 namespace HitScoreVisualizer.Utilities.Services;
 

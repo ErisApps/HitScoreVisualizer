@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using HitScoreVisualizer.Models;
-using IPA.Utilities;
 using UnityEngine;
 
 namespace HitScoreVisualizer.Utilities.Extensions;
