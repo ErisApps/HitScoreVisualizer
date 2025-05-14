@@ -31,5 +31,6 @@ public class Plugin
 
 		zenject.Install<HsvAppInstaller>(Location.App, Config);
 		zenject.Install<HsvMenuInstaller>(Location.Menu);
+		zenject.Install<HsvPlayerInstaller>(Location.Player);
 	}
 }
