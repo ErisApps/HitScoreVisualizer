@@ -1,7 +1,5 @@
 using HitScoreVisualizer.Components;
 using HitScoreVisualizer.HarmonyPatches;
-using TMPro;
-using UnityEngine;
 using Zenject;
 
 namespace HitScoreVisualizer.Installers;

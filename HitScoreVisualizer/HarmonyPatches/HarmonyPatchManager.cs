@@ -1,7 +1,6 @@
 using System;
 using System.Reflection;
 using HarmonyLib;
-using SiraUtil.Logging;
 using Zenject;
 
 namespace HitScoreVisualizer.HarmonyPatches;

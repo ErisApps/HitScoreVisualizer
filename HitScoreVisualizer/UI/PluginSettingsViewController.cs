@@ -4,7 +4,6 @@ using System.Linq;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HitScoreVisualizer.Models;
-using HitScoreVisualizer.Utilities.Services;
 using Zenject;
 
 namespace HitScoreVisualizer.UI;
