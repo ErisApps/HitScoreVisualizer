@@ -30,6 +30,6 @@ internal sealed class HsvAppInstaller : Installer
 		// Patches
 		Container.BindInterfacesTo<HarmonyPatchManager>().AsSingle();
 		Container.BindInterfacesTo<EffectPoolsManualInstallerPatch>().AsSingle();
-		Container.BindInterfacesTo<FlyingScoreEffectPatch>().AsSingle();
+		Container.BindInterfacesTo<GameCoreInstallerHook>().AsSingle();
 	}
 }
