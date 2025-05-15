@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace HitScoreVisualizer.Models;
 
-public class NormalJudgment
+public class NormalJudgment : IJudgment
 {
 	// This judgment will be applied only to normal notes hit with score >= this number.
 	// Note that if no judgment can be applied to a note, the text will appear as in the unmodded
