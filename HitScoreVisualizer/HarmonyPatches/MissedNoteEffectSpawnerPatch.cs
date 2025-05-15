@@ -31,7 +31,8 @@ internal class MissedNoteEffectSpawnerPatch : IAffinity
 			noteController.worldRotation * position,
 			noteController.worldRotation,
 			noteController.inverseWorldRotation,
-			"MISSED");
+			"MISSED",
+			null);
 
 		// Cancel the original implementation
 		return false;
