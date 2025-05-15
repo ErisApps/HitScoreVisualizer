@@ -73,7 +73,7 @@ public class ConfigLoader : IInitializable
 			await SaveConfig(configInfo);
 		}
 
-		if (configInfo.Config != null && configInfo.Config.Validate())
+		if (configInfo is { Config: not null, State: ConfigState.Compatible })
 		{
 			Plugin.Log.Info($"Selecting config {configInfo.ConfigName}");
 			pluginConfig.SelectedConfig = configInfo;
