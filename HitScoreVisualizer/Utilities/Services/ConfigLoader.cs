@@ -7,6 +7,7 @@ using HitScoreVisualizer.Utilities.Extensions;
 using HitScoreVisualizer.Utilities.Json;
 using IPA.Utilities;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Zenject;
 
 namespace HitScoreVisualizer.Utilities.Services;
@@ -22,7 +23,7 @@ public class ConfigLoader : IInitializable
 		DefaultValueHandling = DefaultValueHandling.Include,
 		NullValueHandling = NullValueHandling.Ignore,
 		Formatting = Formatting.Indented,
-		Converters = [ new Vector3Converter() ],
+		Converters = [ new Vector3Converter(), new StringEnumConverter() ],
 		ContractResolver = new HsvConfigContractResolver()
 	};
 
