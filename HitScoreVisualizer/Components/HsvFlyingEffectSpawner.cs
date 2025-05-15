@@ -29,7 +29,7 @@ internal class HsvFlyingEffectSpawner : MonoBehaviour, IFlyingObjectEffectDidFin
 		pluginConfig = config;
 	}
 
-	public void SpawnText(Vector3 pos, Quaternion rotation, Quaternion inverseRotation, string text)
+	public void SpawnText(Vector3 pos, Quaternion rotation, Quaternion inverseRotation, string text, Color? color)
 	{
 		var missTextEffect = missTextEffectPool.Spawn();
 		missTextEffect.didFinishEvent.Add(this);
@@ -37,7 +37,7 @@ internal class HsvFlyingEffectSpawner : MonoBehaviour, IFlyingObjectEffectDidFin
 
 		var targetPos = rotation * new Vector3(Mathf.Sign((inverseRotation * pos).x) * xSpread, targetYPos, targetZPos);
 
-		missTextEffect.InitAndPresent(text, duration, targetPos, rotation, color, fontSize, false);
+		missTextEffect.InitAndPresent(text, duration, targetPos, rotation, color ?? this.color, fontSize, false);
 	}
 
 	public void HandleFlyingObjectEffectDidFinish(FlyingObjectEffect flyingObjectEffect)
