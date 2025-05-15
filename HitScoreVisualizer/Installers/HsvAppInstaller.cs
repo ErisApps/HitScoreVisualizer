@@ -25,8 +25,6 @@ internal sealed class HsvAppInstaller : Installer
 
 		Container.BindInterfacesAndSelfTo<BloomFontProvider>().AsSingle();
 
-		Container.Bind<JudgmentService>().AsSingle();
-
 		// Patches
 		Container.BindInterfacesTo<HarmonyPatchManager>().AsSingle();
 		Container.BindInterfacesTo<EffectPoolsManualInstallerPatch>().AsSingle();
