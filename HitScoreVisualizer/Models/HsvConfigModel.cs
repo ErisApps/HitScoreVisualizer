@@ -46,6 +46,8 @@ public class HsvConfigModel
 
 	public List<BadCutDisplay>? BadCutDisplays { get; set; }
 
+	public List<MissDisplay>? MissDisplays { get; set; }
+
 	[JsonIgnore]
 	internal static HsvConfigModel Default { get; } = new()
 	{
