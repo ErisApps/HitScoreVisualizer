@@ -32,9 +32,9 @@ internal class JudgmentsValidation : IConfigValidation
 			return false;
 		}
 
-		var isHighestJudgmentValid = judgments.First().Fade;
+		var isHighestJudgmentValid = !judgments.First().Fade;
 
-		var hasDuplicates = judgments
+		var hasDuplicates = judgments.Count > 1 && judgments
 			.OrderBy(x => x.Threshold)
 			.Zip(judgments.Skip(1), (a, b) => a.Threshold != b.Threshold)
 			.All(x => x);
