@@ -44,6 +44,8 @@ public class HsvConfigModel
 	public int TimeDependenceDecimalOffset { get; set; } = 2;
 	public List<TimeDependenceJudgmentSegment>? TimeDependenceJudgments { get; set; }
 
+	public List<BadCutDisplay>? BadCutDisplays { get; set; }
+
 	[JsonIgnore]
 	internal static HsvConfigModel Default { get; } = new()
 	{
