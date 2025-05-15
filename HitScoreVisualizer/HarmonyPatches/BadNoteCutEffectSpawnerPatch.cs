@@ -1,10 +1,9 @@
+using System;
 using System.Linq;
 using HitScoreVisualizer.Components;
 using HitScoreVisualizer.Models;
 using HitScoreVisualizer.Utilities.Extensions;
 using SiraUtil.Affinity;
-using UnityEngine;
-using Random = System.Random;
 
 namespace HitScoreVisualizer.HarmonyPatches;
 

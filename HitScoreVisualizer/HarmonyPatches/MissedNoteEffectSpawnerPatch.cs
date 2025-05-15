@@ -1,4 +1,7 @@
+using System;
 using HitScoreVisualizer.Components;
+using HitScoreVisualizer.Models;
+using HitScoreVisualizer.Utilities.Extensions;
 using SiraUtil.Affinity;
 
 namespace HitScoreVisualizer.HarmonyPatches;
@@ -6,10 +9,21 @@ namespace HitScoreVisualizer.HarmonyPatches;
 internal class MissedNoteEffectSpawnerPatch : IAffinity
 {
 	private readonly HsvFlyingEffectSpawner flyingEffectSpawner;
+	private readonly Random random;
 
-	public MissedNoteEffectSpawnerPatch(HsvFlyingEffectSpawner flyingEffectSpawner)
+	private readonly MissDisplay[] missDisplays = [];
+
+	public MissedNoteEffectSpawnerPatch(HsvFlyingEffectSpawner flyingEffectSpawner, HsvConfigModel config, Random random)
 	{
 		this.flyingEffectSpawner = flyingEffectSpawner;
+		this.random = random;
+
+		if (config.MissDisplays is null)
+		{
+			return;
+		}
+
+		missDisplays = config.MissDisplays.ToArray();
 	}
 
 	[AffinityPrefix]
@@ -24,17 +38,28 @@ internal class MissedNoteEffectSpawnerPatch : IAffinity
 			return false;
 		}
 
+		return !TrySpawnRandomText(missDisplays, noteController, __instance._spawnPosZ);
+	}
+
+	private bool TrySpawnRandomText(MissDisplay[] displays, NoteController noteController, float spawnPosZ)
+	{
+		if (displays is [])
+		{
+			return false;
+		}
+
 		var position = noteController.inverseWorldRotation * noteController.noteTransform.position;
-		position.z = __instance._spawnPosZ;
+		position.z = spawnPosZ;
+
+		var display = displays[random.Next(0, displays.Length)];
 
 		flyingEffectSpawner.SpawnText(
 			noteController.worldRotation * position,
 			noteController.worldRotation,
 			noteController.inverseWorldRotation,
-			"MISSED",
-			null);
+			display.Text,
+			display.Color.ToColor());
 
-		// Cancel the original implementation
-		return false;
+		return true;
 	}
 }
