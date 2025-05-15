@@ -1,3 +1,4 @@
+using HitScoreVisualizer.Models;
 using HitScoreVisualizer.Utilities.Services;
 using SiraUtil.Affinity;
 using UnityEngine;
@@ -6,13 +7,13 @@ namespace HitScoreVisualizer.HarmonyPatches;
 
 internal class FlyingScoreEffectPatch : IAffinity
 {
-	private readonly PluginConfig pluginConfig;
 	private readonly JudgmentService judgmentService;
+	private readonly HsvConfigModel config;
 
-	private FlyingScoreEffectPatch(PluginConfig pluginConfig, JudgmentService judgmentService)
+	private FlyingScoreEffectPatch(JudgmentService judgmentService, HsvConfigModel config)
 	{
-		this.pluginConfig = pluginConfig;
 		this.judgmentService = judgmentService;
+		this.config = config;
 	}
 
 	// When the flying score effect spawns, InitAndPresent is called
@@ -23,15 +24,7 @@ internal class FlyingScoreEffectPatch : IAffinity
 	[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.InitAndPresent))]
 	internal bool InitAndPresent(ref FlyingScoreEffect __instance, IReadonlyCutScoreBuffer cutScoreBuffer, float duration, Vector3 targetPos)
 	{
-		var configuration = pluginConfig.SelectedConfig?.Config;
-
-		if (configuration == null)
-		{
-			// Run original implementation
-			return true;
-		}
-
-		var (text, color) = judgmentService.Judge(cutScoreBuffer, configuration.AssumeMaxPostSwing);
+		var (text, color) = judgmentService.Judge(cutScoreBuffer, config.AssumeMaxPostSwing);
 		__instance._text.text = text;
 		__instance._color = color;
 		__instance._cutScoreBuffer = cutScoreBuffer;
@@ -45,15 +38,15 @@ internal class FlyingScoreEffectPatch : IAffinity
 			__instance._registeredToCallbacks = true;
 		}
 
-		if (configuration.FixedPosition != null)
+		if (config.FixedPosition != null)
 		{
 			// Set current and target position to the desired fixed position
-			targetPos = configuration.FixedPosition.Value;
+			targetPos = config.FixedPosition.Value;
 			__instance.transform.position = targetPos;
 		}
-		else if (configuration.TargetPositionOffset != null)
+		else if (config.TargetPositionOffset != null)
 		{
-			targetPos += configuration.TargetPositionOffset.Value;
+			targetPos += config.TargetPositionOffset.Value;
 		}
 
 		__instance.InitAndPresent(duration, targetPos, cutScoreBuffer.noteCutInfo.worldRotation, false);
@@ -65,14 +58,7 @@ internal class FlyingScoreEffectPatch : IAffinity
 	[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.HandleCutScoreBufferDidChange))]
 	internal bool HandleCutScoreBufferDidChange(FlyingScoreEffect __instance, CutScoreBuffer cutScoreBuffer)
 	{
-		var configuration = pluginConfig.SelectedConfig?.Config;
-		if (configuration == null)
-		{
-			// Run original implementation
-			return true;
-		}
-
-		if (!configuration.DoIntermediateUpdates)
+		if (!config.DoIntermediateUpdates)
 		{
 			return false;
 		}
@@ -88,11 +74,6 @@ internal class FlyingScoreEffectPatch : IAffinity
 	[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.HandleCutScoreBufferDidFinish))]
 	internal void HandleCutScoreBufferDidFinish(FlyingScoreEffect __instance, CutScoreBuffer cutScoreBuffer)
 	{
-		if (pluginConfig.SelectedConfig?.Config == null)
-		{
-			return;
-		}
-
 		var (text, color) = judgmentService.Judge(cutScoreBuffer, false);
 		__instance._text.text = text;
 		__instance._color = color;
