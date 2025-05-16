@@ -44,8 +44,10 @@ public class HsvConfigModel
 	public int TimeDependenceDecimalOffset { get; set; } = 2;
 	public List<TimeDependenceJudgmentSegment>? TimeDependenceJudgments { get; set; }
 
+	public bool RandomizeBadCutDisplays { get; set; } = true;
 	public List<BadCutDisplay>? BadCutDisplays { get; set; }
 
+	public bool RandomizeMissDisplays { get; set; } = true;
 	public List<MissDisplay>? MissDisplays { get; set; }
 
 	[JsonIgnore]
