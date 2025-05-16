@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using HitScoreVisualizer.Components;
 using HitScoreVisualizer.Models;
@@ -10,15 +11,17 @@ namespace HitScoreVisualizer.HarmonyPatches;
 internal class BadNoteCutEffectSpawnerPatch : IAffinity
 {
 	private readonly HsvFlyingEffectSpawner flyingEffectSpawner;
+	private readonly HsvConfigModel config;
 	private readonly Random random;
 
-	private readonly BadCutDisplay[] wrongDirectionDisplays = [];
-	private readonly BadCutDisplay[] wrongColorDisplays = [];
-	private readonly BadCutDisplay[] bombDisplays = [];
+	private readonly BadCutDisplayPicker wrongDirectionPicker = new([]);
+	private readonly BadCutDisplayPicker wrongColorPicker = new([]);
+	private readonly BadCutDisplayPicker bombPicker = new([]);
 
 	public BadNoteCutEffectSpawnerPatch(HsvFlyingEffectSpawner flyingEffectSpawner, HsvConfigModel config, Random random)
 	{
 		this.flyingEffectSpawner = flyingEffectSpawner;
+		this.config = config;
 		this.random = random;
 
 		if (config.BadCutDisplays is null or [])
@@ -26,9 +29,9 @@ internal class BadNoteCutEffectSpawnerPatch : IAffinity
 			return;
 		}
 
-		wrongDirectionDisplays = config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.WrongDirection or BadCutDisplayType.All).ToArray();
-		wrongColorDisplays = config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.WrongColor or BadCutDisplayType.All).ToArray();
-		bombDisplays = config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.Bomb or BadCutDisplayType.All).ToArray();
+		wrongDirectionPicker = new(config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.WrongDirection or BadCutDisplayType.All).ToArray());
+		wrongColorPicker = new(config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.WrongColor or BadCutDisplayType.All).ToArray());
+		bombPicker = new(config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.Bomb or BadCutDisplayType.All).ToArray());
 	}
 
 	[AffinityPrefix]
@@ -43,7 +46,7 @@ internal class BadNoteCutEffectSpawnerPatch : IAffinity
 
 		if (noteController.IsBomb())
 		{
-			return !TrySpawnRandomText(bombDisplays, in noteCutInfo, noteController);
+			return !TrySpawnText(bombPicker, noteController, in noteCutInfo);
 		}
 
 		if (!noteCutInfo.IsBadCut())
@@ -52,33 +55,72 @@ internal class BadNoteCutEffectSpawnerPatch : IAffinity
 			return false;
 		}
 
-		if (!noteCutInfo.saberTypeOK)
-		{
-			return !TrySpawnRandomText(wrongColorDisplays, in noteCutInfo, noteController);
-		}
-
-		return !TrySpawnRandomText(wrongDirectionDisplays, in noteCutInfo, noteController);
-
-		// Cancel the original implementation
+		return !TrySpawnText(noteCutInfo.saberTypeOK ? wrongDirectionPicker : wrongColorPicker, noteController, in noteCutInfo);
 	}
 
-
-	private bool TrySpawnRandomText(BadCutDisplay[] displays, in NoteCutInfo noteCutInfo, NoteController noteController)
+	private bool TrySpawnText(BadCutDisplayPicker picker, NoteController noteController, in NoteCutInfo noteCutInfo)
 	{
-		if (displays is [])
+		if (config.RandomizeBadCutDisplays && picker.TryGetRandomDisplay(random, out var display))
 		{
-			return false;
+			SpawnText(display, noteController, in noteCutInfo);
+			return true;
 		}
 
-		var display = displays[random.Next(0, displays.Length)];
+		if (picker.TryGetNextDisplay(out display))
+		{
+			SpawnText(display, noteController, in noteCutInfo);
+			return true;
+		}
 
+		return false;
+	}
+
+	private void SpawnText(BadCutDisplay display, NoteController noteController, in NoteCutInfo noteCutInfo)
+	{
 		flyingEffectSpawner.SpawnText(
 			noteCutInfo.cutPoint,
 			noteController.worldRotation,
 			noteController.inverseWorldRotation,
 			display.Text,
 			display.Color.ToColor());
+	}
 
-		return true;
+	private class BadCutDisplayPicker
+	{
+		private readonly BadCutDisplay[] displays;
+
+		public BadCutDisplayPicker(BadCutDisplay[] displays)
+		{
+			this.displays = displays;
+		}
+
+		private int currentDisplayIndex;
+
+		public bool TryGetNextDisplay([NotNullWhen(true)] out BadCutDisplay? display)
+		{
+			if (displays is [])
+			{
+				display = null;
+				return false;
+			}
+
+			display = displays[currentDisplayIndex];
+			currentDisplayIndex++;
+			currentDisplayIndex %= displays.Length;
+
+			return true;
+		}
+
+		public bool TryGetRandomDisplay(Random random, [NotNullWhen(true)] out BadCutDisplay? display)
+		{
+			if (displays is [])
+			{
+				display = null;
+				return false;
+			}
+
+			display = displays[random.Next(0, displays.Length)];
+			return true;
+		}
 	}
 }

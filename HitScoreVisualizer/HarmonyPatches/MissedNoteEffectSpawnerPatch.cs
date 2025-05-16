@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using HitScoreVisualizer.Components;
 using HitScoreVisualizer.Models;
 using HitScoreVisualizer.Utilities.Extensions;
@@ -9,13 +10,15 @@ namespace HitScoreVisualizer.HarmonyPatches;
 internal class MissedNoteEffectSpawnerPatch : IAffinity
 {
 	private readonly HsvFlyingEffectSpawner flyingEffectSpawner;
+	private readonly HsvConfigModel config;
 	private readonly Random random;
 
-	private readonly MissDisplay[] missDisplays = [];
+	private readonly MissDisplayPicker missPicker = new([]);
 
 	public MissedNoteEffectSpawnerPatch(HsvFlyingEffectSpawner flyingEffectSpawner, HsvConfigModel config, Random random)
 	{
 		this.flyingEffectSpawner = flyingEffectSpawner;
+		this.config = config;
 		this.random = random;
 
 		if (config.MissDisplays is null)
@@ -23,7 +26,7 @@ internal class MissedNoteEffectSpawnerPatch : IAffinity
 			return;
 		}
 
-		missDisplays = config.MissDisplays.ToArray();
+		missPicker = new(config.MissDisplays.ToArray());
 	}
 
 	[AffinityPrefix]
@@ -38,20 +41,30 @@ internal class MissedNoteEffectSpawnerPatch : IAffinity
 			return false;
 		}
 
-		return !TrySpawnRandomText(missDisplays, noteController, __instance._spawnPosZ);
+		return !TrySpawnText(missPicker, noteController, __instance._spawnPosZ);
 	}
 
-	private bool TrySpawnRandomText(MissDisplay[] displays, NoteController noteController, float spawnPosZ)
+	private bool TrySpawnText(MissDisplayPicker picker, NoteController noteController, float spawnPosZ)
 	{
-		if (displays is [])
+		if (config.RandomizeMissDisplays && picker.TryGetRandomDisplay(random, out var display))
 		{
-			return false;
+			SpawnText(display, noteController, spawnPosZ);
+			return true;
 		}
 
+		if (picker.TryGetNextDisplay(out display))
+		{
+			SpawnText(display, noteController, spawnPosZ);
+			return true;
+		}
+
+		return false;
+	}
+
+	private void SpawnText(MissDisplay display, NoteController noteController, float spawnPosZ)
+	{
 		var position = noteController.inverseWorldRotation * noteController.noteTransform.position;
 		position.z = spawnPosZ;
-
-		var display = displays[random.Next(0, displays.Length)];
 
 		flyingEffectSpawner.SpawnText(
 			noteController.worldRotation * position,
@@ -59,7 +72,44 @@ internal class MissedNoteEffectSpawnerPatch : IAffinity
 			noteController.inverseWorldRotation,
 			display.Text,
 			display.Color.ToColor());
+	}
 
-		return true;
+	private class MissDisplayPicker
+	{
+		private readonly MissDisplay[] displays;
+
+		public MissDisplayPicker(MissDisplay[] displays)
+		{
+			this.displays = displays;
+		}
+
+		private int currentDisplayIndex;
+
+		public bool TryGetNextDisplay([NotNullWhen(true)] out MissDisplay? display)
+		{
+			if (displays is [])
+			{
+				display = null;
+				return false;
+			}
+
+			display = displays[currentDisplayIndex];
+			currentDisplayIndex++;
+			currentDisplayIndex %= displays.Length;
+
+			return true;
+		}
+
+		public bool TryGetRandomDisplay(Random random, [NotNullWhen(true)] out MissDisplay? display)
+		{
+			if (displays is [])
+			{
+				display = null;
+				return false;
+			}
+
+			display = displays[random.Next(0, displays.Length)];
+			return true;
+		}
 	}
 }
