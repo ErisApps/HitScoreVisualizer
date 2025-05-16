@@ -2,6 +2,7 @@
 
 ### 3.6.0
 
+- Thresholds now must be sorted correctly in descending order in order for configs to be compatible
 - Removed `isDefaultConfig` - you don't need to update your configs, it will just be ignored
 - Added customization for miss and bad cut effects with custom text
 
