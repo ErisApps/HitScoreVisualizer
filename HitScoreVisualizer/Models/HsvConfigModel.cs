@@ -15,8 +15,6 @@ public class HsvConfigModel
 	public required ulong MinorVersion { get; set; } = Plugin.Metadata.HVersion.Minor;
 	public required ulong PatchVersion { get; set; } = Plugin.Metadata.HVersion.Patch;
 
-	public required bool IsDefaultConfig { get; set; }
-
 	public required string DisplayMode { get; set; }
 
 	[Obsolete("Use the FixedPosition property instead.")] public bool UseFixedPos { get; set; }
@@ -50,7 +48,6 @@ public class HsvConfigModel
 		MajorVersion = Plugin.Metadata.HVersion.Major,
 		MinorVersion = Plugin.Metadata.HVersion.Minor,
 		PatchVersion = Plugin.Metadata.HVersion.Patch,
-		IsDefaultConfig = true,
 		DisplayMode = "format",
 		DoIntermediateUpdates = true,
 		AssumeMaxPostSwing = false,

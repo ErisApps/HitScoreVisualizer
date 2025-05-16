@@ -58,13 +58,6 @@ internal class ConfigMigrator
 		var backupPath = FilePathUtils.GetUniqueFilePath(Path.Combine(directories.Backups.FullName, backupName));
 		configInfo.File.CopyTo(backupPath);
 
-		if (configInfo.Config.IsDefaultConfig)
-		{
-			Plugin.Log.Warn("Config is marked as default config and will therefore be reset to defaults");
-			configInfo.Config = HsvConfigModel.Default;
-			return configInfo;
-		}
-
 		foreach (var migration in migrations.Where((m => m.Version >= configInfo.Config.GetVersion())))
 		{
 			Plugin.Log.Debug($"Running migration {migration.Version} on {configInfo.ConfigName}");
