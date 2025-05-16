@@ -5,9 +5,6 @@ Below is a series of descriptions that relate to each value in a HitScoreVisuali
 ### "majorVersion" "minorVersion" "patchVersion"
 If the version number (excluding patch version) of the config is higher than that of the plugin, the config will not be loaded. If the version number of the config is lower than that of the plugin, the file will be automatically converted. Conversion is not guaranteed to occur, or be accurate, across major versions
 
-### "isDefaultConfig"
-If this is true, the config will be overwritten with the plugin' default settings after an update rather than being converted
-
 ### "displayMode"
 - If not set, by default, it will display judgment text above score.
 - If set to "scoreOnTop", it is like default but with score above.
@@ -65,14 +62,24 @@ Judgments for the part of the swing after cutting the block (score is from 0-30)
 ### "timeDependencyJudgments"
 Judgments for time dependence (score is from 0-1)
 
+### "badCutDisplays"
+What to show when achieving a bad cut, either through hitting a note in the wrong direction or with the wrong color saber, or by hitting a bomb
+
+### "randomizeBadCutDisplays"
+Whether to randomize the order in which bad cut displays appear
+
+### "missDisplays"
+What to show missing a note
+
+### "randomizeMissDisplays"
+Whether to randomize the order in which miss displays appear
 
 ### Example Config
 ```json
 {
   "majorVersion": 3,
-  "minorVersion": 4,
+  "minorVersion": 6,
   "patchVersion": 0,
-  "isDefaultConfig": false,
   "displayMode": "format",
   "fixedPosition": null,
   "targetPositionOffset": null,
@@ -107,6 +114,19 @@ Judgments for time dependence (score is from 0-1)
     { "threshold": 24, "text": "<color=#FFCC44>-</color>" },
     { "threshold": 0, "text": "<color=#FF0000>-</color>" }
   ],
-  "timeDependencyJudgments": []
+  "timeDependencyJudgments": [],
+  "randomizeBadCutDisplays": false,
+  "badCutDisplays": [
+	  { "text": "Bad Cut", "type": "WrongDirection", "color": [1, 1, 1, 1] },
+	  { "text": "Bad Cut", "type": "WrongColor", "color": [1, 1, 1, 1] },
+	  { "text": "Bomb", "type": "Bomb", "color": [1, 1, 1, 1] }
+  ],
+  "randomizeMissDisplays": true,
+  "missDisplays": [
+	  { "text": "MISS", "color": [1, 1, 1, 1] },
+	  { "text": "MOSS", "color": [1, 1, 1, 1] },
+	  { "text": "MASS", "color": [1, 1, 1, 1] },
+	  { "text": "MESS", "color": [1, 1, 1, 1] }
+  ]
 }
 ```

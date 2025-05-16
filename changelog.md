@@ -1,5 +1,48 @@
 ## Changelog
 
+### 3.6.0
+
+- Removed `isDefaultConfig` - you don't need to update your configs, it will just be ignored
+- Added customization for miss and bad cut effects with custom text
+
+```json
+"badCutDisplays": [
+	{
+		"text": "A Cut Of The Bad Variety",
+		"color": [1.0, 0.7, 0.7, 1.0]
+	}
+],
+"missDisplays": [
+	{
+		"text": "You Should Work On Your Aim",
+		"color": [0.6, 1.0, 0.7, 1.0]
+	}
+]
+```
+
+- Miss and bad cut effects will be randomized by default unless you specify `randomizeBadCutDisplays` and `randomizeMissDisplays`
+
+```json
+"randomizeBadCutDisplays": false,
+"randomizeMissDisplays": false
+```
+
+- For bad cuts, you can specify which types of bad cuts the display will show for. The options are `WrongDirection`, `WrongColor`, and `Bomb`. Not specifying a type will make the display show for all
+types of bad cuts
+
+```json
+"badCutDisplays": [
+	{
+		"text": "<size=600%>BOOM",
+		"type": "Bomb",
+		"color": [1.0, 1.0, 1.0, 1.0]
+	}
+]
+```
+
+- HitScoreVisualizer will recreate the default config file each time the game is loaded
+- Updated the default config to be more like the default config for the HitScoreVisualizer quest mod
+
 ### 3.5.3
 - Added spaces to the main menu button
 
@@ -13,7 +56,7 @@
 - Moved settings to the left screen and tweaked some interface elements' scale
 
 ### 3.5.0
-- Added a toggle in configs that will decide, when the note is first cut, if the score display will show the max possible after c~~~~ut score
+- Added a toggle in configs that will decide, when the note is first cut, if the score display will show the max possible after cut score
 ```json
 "assumeMaxPostSwing": true
 ```
