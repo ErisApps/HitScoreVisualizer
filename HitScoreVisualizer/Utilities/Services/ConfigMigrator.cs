@@ -1,8 +1,7 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using HitScoreVisualizer.Models;
+using HitScoreVisualizer.Models.ConfigMigrations;
 using HitScoreVisualizer.Utilities.Extensions;
 using Version = Hive.Versioning.Version;
 

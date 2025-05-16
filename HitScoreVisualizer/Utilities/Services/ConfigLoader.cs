@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,6 +7,7 @@ using HitScoreVisualizer.Utilities.Extensions;
 using HitScoreVisualizer.Utilities.Json;
 using IPA.Utilities;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Zenject;
 
 namespace HitScoreVisualizer.Utilities.Services;
@@ -23,7 +23,7 @@ public class ConfigLoader : IInitializable
 		DefaultValueHandling = DefaultValueHandling.Include,
 		NullValueHandling = NullValueHandling.Ignore,
 		Formatting = Formatting.Indented,
-		Converters = [ new Vector3Converter() ],
+		Converters = [ new Vector3Converter(), new StringEnumConverter() ],
 		ContractResolver = new HsvConfigContractResolver()
 	};
 
@@ -73,7 +73,7 @@ public class ConfigLoader : IInitializable
 			await SaveConfig(configInfo);
 		}
 
-		if (configInfo.Config != null && configInfo.Config.Validate())
+		if (configInfo is { Config: not null, State: ConfigState.Compatible })
 		{
 			Plugin.Log.Info($"Selecting config {configInfo.ConfigName}");
 			pluginConfig.SelectedConfig = configInfo;

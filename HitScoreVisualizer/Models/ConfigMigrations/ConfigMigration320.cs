@@ -1,8 +1,7 @@
-using HitScoreVisualizer.Models;
 using Hive.Versioning;
 using UnityEngine;
 
-namespace HitScoreVisualizer.Utilities.Services;
+namespace HitScoreVisualizer.Models.ConfigMigrations;
 
 internal class ConfigMigration320 : IHsvConfigMigration
 {

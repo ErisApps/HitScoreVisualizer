@@ -9,14 +9,12 @@ namespace HitScoreVisualizer.Utilities.Services;
 [UsedImplicitly]
 internal class JudgmentService
 {
-	private readonly PluginConfig pluginConfig;
+	private readonly HsvConfigModel config;
 
-	private JudgmentService(PluginConfig pluginConfig)
+	public JudgmentService(HsvConfigModel config)
 	{
-		this.pluginConfig = pluginConfig;
+		this.config = config;
 	}
-
-	private HsvConfigModel Config => pluginConfig.SelectedConfig?.Config ?? HsvConfigModel.Default;
 
 	public (string hitScoreText, Color hitScoreColor) Judge(IReadonlyCutScoreBuffer cutScoreBuffer, bool assumeMaxPostSwing)
 	{
@@ -41,19 +39,18 @@ internal class JudgmentService
 	{
 		var judgment = NormalJudgment.Default;
 		var fadeJudgment = NormalJudgment.Default;
-		Config.Judgments ??= [judgment];
 
-		for (var i = 0; i < Config.Judgments.Count; i++)
+		for (var i = 0; i < config.Judgments.Count; i++)
 		{
-			if (Config.Judgments[i].Threshold > totalCutScore)
+			if (config.Judgments[i].Threshold > totalCutScore)
 			{
 				continue;
 			}
 
-			judgment = Config.Judgments[i];
+			judgment = config.Judgments[i];
 			if (i > 0)
 			{
-				fadeJudgment = Config.Judgments[i - 1];
+				fadeJudgment = config.Judgments[i - 1];
 			}
 			break;
 		}
@@ -75,19 +72,18 @@ internal class JudgmentService
 	{
 		var judgment = ChainHeadJudgment.Default;
 		var fadeJudgment = ChainHeadJudgment.Default;
-		Config.ChainHeadJudgments ??= [judgment];
 
-		for (var i = 0; i < Config.ChainHeadJudgments.Count; i++)
+		for (var i = 0; i < config.ChainHeadJudgments.Count; i++)
 		{
-			if (Config.ChainHeadJudgments[i].Threshold > totalCutScore)
+			if (config.ChainHeadJudgments[i].Threshold > totalCutScore)
 			{
 				continue;
 			}
 
-			judgment = Config.ChainHeadJudgments[i];
+			judgment = config.ChainHeadJudgments[i];
 			if (i > 0)
 			{
-				fadeJudgment = Config.ChainHeadJudgments[i - 1];
+				fadeJudgment = config.ChainHeadJudgments[i - 1];
 			}
 			break;
 		}
@@ -104,7 +100,7 @@ internal class JudgmentService
 	private (string, Color) GetChainSegmentDisplay(int totalCutScore, int beforeCutScore,
 		int centerCutScore, int afterCutScore, int maxPossibleScore, NoteCutInfo noteCutInfo)
 	{
-		var chainLinkDisplay = Config.ChainLinkDisplay ?? ChainLinkDisplay.Default;
+		var chainLinkDisplay = config.ChainLinkDisplay ?? ChainLinkDisplay.Default;
 		var text = FormatJudgmentTextByMode(chainLinkDisplay.Text, totalCutScore, beforeCutScore, centerCutScore, afterCutScore, maxPossibleScore, noteCutInfo);
 		return (text, chainLinkDisplay.Color.ToColor());
 	}
@@ -112,7 +108,7 @@ internal class JudgmentService
 	private string FormatJudgmentTextByMode(string unformattedText, int totalCutScore, int beforeCutScore,
 		int centerCutScore, int afterCutScore, int maxPossibleScore, NoteCutInfo noteCutInfo)
 	{
-		return Config.DisplayMode switch
+		return config.DisplayMode switch
 		{
 			"format" => FormatJudgmentText(unformattedText, totalCutScore, beforeCutScore, centerCutScore, afterCutScore, maxPossibleScore, noteCutInfo),
 			"textOnly" => unformattedText,
@@ -146,11 +142,11 @@ internal class JudgmentService
 				'b' => beforeCutScore,
 				'c' => centerCutScore,
 				'a' => afterCutScore,
-				't' => (timeDependence * Mathf.Pow(10, Config.TimeDependenceDecimalOffset)).ToString($"n{Config.TimeDependenceDecimalPrecision}"),
-				'B' => Config.BeforeCutAngleJudgments.JudgeSegment(beforeCutScore),
-				'C' => Config.AccuracyJudgments.JudgeSegment(centerCutScore),
-				'A' => Config.AfterCutAngleJudgments.JudgeSegment(afterCutScore),
-				'T' => Config.TimeDependenceJudgments.JudgeTimeDependenceSegment(timeDependence, Config.TimeDependenceDecimalOffset, Config.TimeDependenceDecimalPrecision),
+				't' => (timeDependence * Mathf.Pow(10, config.TimeDependenceDecimalOffset)).ToString($"n{config.TimeDependenceDecimalPrecision}"),
+				'B' => config.BeforeCutAngleJudgments.JudgeSegment(beforeCutScore),
+				'C' => config.AccuracyJudgments.JudgeSegment(centerCutScore),
+				'A' => config.AfterCutAngleJudgments.JudgeSegment(afterCutScore),
+				'T' => config.TimeDependenceJudgments.JudgeTimeDependenceSegment(timeDependence, config.TimeDependenceDecimalOffset, config.TimeDependenceDecimalPrecision),
 				'd' => noteCutInfo.CalculateOffDirection().ToFormattedDirection(),
 				's' => totalCutScore,
 				'p' => $"{(double) totalCutScore / maxPossibleScore * 100:0}",

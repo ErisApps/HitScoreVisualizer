@@ -1,13 +1,9 @@
-using System;
 using HitScoreVisualizer.Installers;
-using HitScoreVisualizer.Utilities.Json;
 using IPA;
 using IPA.Config;
 using IPA.Config.Stores;
 using IPA.Loader;
-using Newtonsoft.Json;
 using SiraUtil.Zenject;
-using UnityEngine;
 using Logger = IPA.Logging.Logger;
 
 namespace HitScoreVisualizer;
@@ -31,5 +27,6 @@ public class Plugin
 
 		zenject.Install<HsvAppInstaller>(Location.App, Config);
 		zenject.Install<HsvMenuInstaller>(Location.Menu);
+		zenject.Install<HsvPlayerInstaller>(Location.Player);
 	}
 }
