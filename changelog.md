@@ -1,5 +1,10 @@
 ## Changelog
 
+### 3.6.1
+
+- Added a button to open the config folder in the file explorer
+- Fixed judgment thresholds being falsely invalidated as having "duplicate thresholds"
+
 ### 3.6.0
 
 - Thresholds now must be sorted correctly in descending order in order for configs to be compatible
