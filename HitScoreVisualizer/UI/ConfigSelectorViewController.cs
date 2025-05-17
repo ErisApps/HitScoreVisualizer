@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,6 +21,7 @@ internal class ConfigSelectorViewController : BSMLAutomaticViewController
 {
 	[Inject] private readonly PluginConfig pluginConfig = null!;
 	[Inject] private readonly ConfigLoader configLoader = null!;
+	[Inject] private readonly PluginDirectories directories = null!;
 
 	[UIComponent("configs-list")]
 	private readonly CustomCellListTableData configsList = null!;
@@ -106,6 +108,11 @@ internal class ConfigSelectorViewController : BSMLAutomaticViewController
 		{
 			Plugin.Log.Error($"Encountered a problem while deleting selected config: {ex}");
 		}
+	}
+
+	public void FolderButtonPressed()
+	{
+		Process.Start(directories.Configs.FullName);
 	}
 
 	protected override async void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)

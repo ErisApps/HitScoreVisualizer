@@ -69,6 +69,12 @@
 						interactable="~ConfigYeetable"
 						event-click="show-yeet-modal"/>
 
+				<button pref-width='28' pref-height="12"
+						word-wrapping='false'
+						text="Open HSV Folder"
+						hover-hint="Opens the file explorer to the HitScoreVisualizer config folder."
+						on-click="FolderButtonPressed"/>
+
 			</vertical>
 
 		</vertical>
