@@ -25,21 +25,22 @@ internal class JudgmentSegmentsValidation : IConfigValidation
 			.Zip(segments.Skip(1), (a, b) => a.Threshold > b.Threshold)
 			.All(x => x);
 
-		var hasDuplicate = segments
-			.OrderBy(j => j.Threshold)
-			.Zip(segments.Skip(1), (a, b) => a.Threshold != b.Threshold)
-			.All(x => x);
-
 		if (!isOrdered)
 		{
 			Plugin.Log.Warn("Judgment segments are not correctly ordered; they should be ordered from highest to lowest threshold");
+			return false;
 		}
+
+		var hasDuplicate = segments
+			.Zip(segments.Skip(1), (a, b) => a.Threshold == b.Threshold)
+			.Contains(true);
 
 		if (hasDuplicate)
 		{
 			Plugin.Log.Warn("Judgment segments contain a duplicate threshold");
+			return false;
 		}
 
-		return isOrdered && !hasDuplicate;
+		return true;
 	}
 }

@@ -35,9 +35,8 @@ internal class JudgmentsValidation : IConfigValidation
 		var isHighestJudgmentValid = !judgments.First().Fade;
 
 		var hasDuplicates = judgments.Count > 1 && judgments
-			.OrderBy(x => x.Threshold)
-			.Zip(judgments.Skip(1), (a, b) => a.Threshold != b.Threshold)
-			.All(x => x);
+			.Zip(judgments.Skip(1), (a, b) => a.Threshold == b.Threshold)
+			.Contains(true);
 
 		var areColorsValid = judgments.All(IsJudgmentColorValid);
 

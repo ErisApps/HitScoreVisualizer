@@ -17,21 +17,22 @@ internal class TimeDependenceJudgmentsValidation : IConfigValidation
 			.Zip(judgments.Skip(1), (a, b) => a.Threshold > b.Threshold)
 			.All(x => x);
 
-		var hasDuplicate = judgments
-			.OrderBy(j => j.Threshold)
-			.Zip(judgments.Skip(1), (a, b) => !Mathf.Approximately(a.Threshold, b.Threshold))
-			.All(x => x);
-
 		if (!isOrdered)
 		{
 			Plugin.Log.Warn("Time dependence judgments are not correctly ordered; they should be ordered from highest to lowest threshold");
+			return false;
 		}
+
+		var hasDuplicate = judgments
+			.Zip(judgments.Skip(1), (a, b) => Mathf.Approximately(a.Threshold, b.Threshold))
+			.Contains(true);
 
 		if (hasDuplicate)
 		{
 			Plugin.Log.Warn("Time dependence judgments contain a duplicate threshold");
+			return false;
 		}
 
-		return isOrdered && !hasDuplicate;
+		return true;
 	}
 }
