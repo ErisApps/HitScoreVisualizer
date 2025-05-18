@@ -1,6 +1,5 @@
 using System;
-using System.Collections.Generic;
-using Newtonsoft.Json;
+using UnityEngine;
 
 namespace HitScoreVisualizer.Models;
 
@@ -9,7 +8,7 @@ public class BadCutDisplay
 {
 	public required string Text { get; init; }
 
-	public required List<float> Color { get; init; }
+	public required Color Color { get; init; }
 
 	public BadCutDisplayType? Type { get; init; } = BadCutDisplayType.All;
 }

@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using Newtonsoft.Json;
+using UnityEngine;
 
 namespace HitScoreVisualizer.Models;
 
@@ -15,7 +15,7 @@ public class NormalJudgment : IJudgment
 
 	// 4 floats, 0-1; red, green, blue, glow (not transparency!)
 	// leaving this out should look obviously wrong
-	public required List<float> Color { get; init; }
+	public required Color Color { get; init; }
 
 	// If true, the text color will be interpolated between this judgment's color and the previous
 	// based on how close to the next threshold it is.
@@ -28,6 +28,6 @@ public class NormalJudgment : IJudgment
 	{
 		Threshold = 0,
 		Text = "%s",
-		Color = [1, 1, 1, 1]
+		Color = Color.white
 	};
 }

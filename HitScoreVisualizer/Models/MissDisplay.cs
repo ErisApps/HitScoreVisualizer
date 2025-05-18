@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using UnityEngine;
 
 namespace HitScoreVisualizer.Models;
 
@@ -6,5 +6,5 @@ public class MissDisplay
 {
 	public required string Text { get; init; }
 
-	public required List<float> Color { get; init; }
+	public required Color Color { get; init; }
 }

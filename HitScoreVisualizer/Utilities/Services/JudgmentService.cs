@@ -57,10 +57,10 @@ internal class JudgmentService
 
 		var color = judgment.Fade
 			? Color.Lerp(
-				judgment.Color.ToColor(),
-				fadeJudgment.Color.ToColor(),
+				judgment.Color,
+				fadeJudgment.Color,
 				Mathf.InverseLerp(judgment.Threshold, fadeJudgment.Threshold, totalCutScore))
-			: judgment.Color.ToColor();
+			: judgment.Color;
 
 		var text = FormatJudgmentTextByMode(judgment.Text, totalCutScore, beforeCutScore, centerCutScore, afterCutScore, maxPossibleScore, noteCutInfo);
 
@@ -88,9 +88,8 @@ internal class JudgmentService
 			break;
 		}
 
-		var color = !judgment.Fade ? judgment.Color.ToColor()
-			: Color.Lerp(judgment.Color.ToColor(), fadeJudgment.Color.ToColor(),
-				Mathf.InverseLerp(judgment.Threshold, fadeJudgment.Threshold, totalCutScore));
+		var color = !judgment.Fade ? judgment.Color
+			: Color.Lerp(judgment.Color, fadeJudgment.Color, Mathf.InverseLerp(judgment.Threshold, fadeJudgment.Threshold, totalCutScore));
 
 		var text = FormatJudgmentTextByMode(judgment.Text, totalCutScore, beforeCutScore, centerCutScore, afterCutScore, maxPossibleScore, noteCutInfo);
 
@@ -102,7 +101,7 @@ internal class JudgmentService
 	{
 		var chainLinkDisplay = config.ChainLinkDisplay ?? ChainLinkDisplay.Default;
 		var text = FormatJudgmentTextByMode(chainLinkDisplay.Text, totalCutScore, beforeCutScore, centerCutScore, afterCutScore, maxPossibleScore, noteCutInfo);
-		return (text, chainLinkDisplay.Color.ToColor());
+		return (text, chainLinkDisplay.Color);
 	}
 
 	private string FormatJudgmentTextByMode(string unformattedText, int totalCutScore, int beforeCutScore,

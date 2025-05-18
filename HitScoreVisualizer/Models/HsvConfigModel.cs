@@ -62,38 +62,38 @@ public class HsvConfigModel
 			{
 				Threshold = 115,
 				Text = "<size=150%><u>%s</u></size>",
-				Color = [1f, 1f, 1f, 1f]
+				Color = new(1f, 1f, 1f)
 			},
 			new()
 			{
 				Threshold = 110,
 				Text = "%B<size=120%>%C%s</u></size>%A",
-				Color = [0f, 0.5f, 1f, 1f]
+				Color = new(0f, 0.5f, 1.0f)
 			},
 			new()
 			{
 				Threshold = 105,
 				Text = "%B%C%s</u>%A",
-				Color = [0f, 1f, 0f, 1f]
+				Color = new(0f, 1f, 0f)
 			},
 			new()
 			{
 				Threshold = 100,
 				Text = "%B%C%s</u>%A",
-				Color = [1f, 1f, 0f, 1f]
+				Color = new(1f, 1f, 0f)
 			},
 			new()
 			{
 				Threshold = 50,
 				Text = "%B<size=80%>%s</size>%A",
-				Color = [1f, 0f, 0f, 1f],
+				Color = new(1f, 0f, 0f),
 				Fade = true
 			},
 			new()
 			{
 				Threshold = 0,
 				Text = "%B<size=80%>%s</size>%A",
-				Color = [1f, 0f, 0f, 1f]
+				Color = new(1f, 0f, 0f)
 			}
 		],
 		ChainHeadJudgments = [
@@ -101,44 +101,44 @@ public class HsvConfigModel
 			{
 				Threshold = 85,
 				Text = "<size=150%><u>%s</u></size>",
-				Color = [1f, 1f, 1f, 1f]
+				Color = new(1f, 1f, 1f)
 			},
 			new()
 			{
 				Threshold = 80,
 				Text = "%B<size=120%>%C%s</u></size>",
-				Color = [0f, 0.5f, 1f, 1f]
+				Color = new(0f, 0.5f, 1.0f)
 			},
 			new()
 			{
 				Threshold = 75,
 				Text = "%B%C%s</u>",
-				Color = [0f, 1f, 0f, 1f]
+				Color = new(0f, 1f, 0f)
 			},
 			new()
 			{
 				Threshold = 70,
 				Text = "%B%C%s</u>",
-				Color = [1f, 1f, 0f, 1f]
+				Color = new(1f, 1f, 0f)
 			},
 			new()
 			{
 				Threshold = 35,
 				Text = "%B<size=80%>%s</size>",
-				Color = [1f, 0f, 0f, 1f],
+				Color = new(1f, 0f, 0f),
 				Fade = true
 			},
 			new()
 			{
 				Threshold = 0,
 				Text = "%B<size=80%>%s</size>",
-				Color = [1f, 0f, 0f, 1f]
+				Color = new(1f, 0f, 0f)
 			}
 		],
 		ChainLinkDisplay = new()
 		{
 			Text = "<alpha=#80><size=80%>%s",
-			Color = [1f, 1f, 1f, 1f]
+			Color = new(1f, 1f, 1f)
 		},
 		BeforeCutAngleJudgments = [
 			new()

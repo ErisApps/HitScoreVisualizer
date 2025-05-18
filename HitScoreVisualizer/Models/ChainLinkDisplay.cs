@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using Newtonsoft.Json;
+using UnityEngine;
 
 namespace HitScoreVisualizer.Models;
 
@@ -12,12 +12,12 @@ public class ChainLinkDisplay
 
 	// 4 floats, 0-1; red, green, blue, glow (not transparency!)
 	// leaving this out should look obviously wrong
-	public required List<float> Color { get; set; }
+	public required Color Color { get; set; }
 
 	[JsonIgnore]
 	internal static ChainLinkDisplay Default { get; } = new()
 	{
 		Text = "<u>20</u>",
-		Color = [1f, 1f, 1f, 1f]
+		Color = Color.white
 	};
 }

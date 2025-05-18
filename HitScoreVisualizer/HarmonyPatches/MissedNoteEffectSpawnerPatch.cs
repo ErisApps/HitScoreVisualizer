@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using HitScoreVisualizer.Components;
 using HitScoreVisualizer.Models;
-using HitScoreVisualizer.Utilities.Extensions;
 using SiraUtil.Affinity;
 
 namespace HitScoreVisualizer.HarmonyPatches;
@@ -71,7 +70,7 @@ internal class MissedNoteEffectSpawnerPatch : IAffinity
 			noteController.worldRotation,
 			noteController.inverseWorldRotation,
 			display.Text,
-			display.Color.ToColor());
+			display.Color);
 	}
 
 	private class MissDisplayPicker

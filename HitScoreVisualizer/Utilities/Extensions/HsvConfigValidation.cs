@@ -11,14 +11,11 @@ internal static class HsvConfigValidation
 	[
 		new JudgmentsValidation(config => config.Judgments),
 		new JudgmentsValidation(config => config.ChainHeadJudgments),
-		new ChainLinkDisplayValidation(),
 		new JudgmentSegmentsValidation(config => config.BeforeCutAngleJudgments),
 		new JudgmentSegmentsValidation(config => config.AccuracyJudgments),
 		new JudgmentSegmentsValidation(config => config.AfterCutAngleJudgments),
 		new TimeDependenceDecimalValidation(),
-		new TimeDependenceJudgmentsValidation(),
-		new BadCutDisplaysValidation(),
-		new MissDisplaysValidation()
+		new TimeDependenceJudgmentsValidation()
 	];
 
 	public static bool Validate(this HsvConfigModel configuration)

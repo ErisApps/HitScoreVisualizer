@@ -23,7 +23,7 @@ public class ConfigLoader : IInitializable
 		DefaultValueHandling = DefaultValueHandling.Include,
 		NullValueHandling = NullValueHandling.Ignore,
 		Formatting = Formatting.Indented,
-		Converters = [ new Vector3Converter(), new StringEnumConverter() ],
+		Converters = [ new Vector3Converter(), new StringEnumConverter(), new ColorArrayConverter() ],
 		ContractResolver = new HsvConfigContractResolver()
 	};
 

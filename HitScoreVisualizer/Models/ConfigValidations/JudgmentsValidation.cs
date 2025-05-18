@@ -38,8 +38,6 @@ internal class JudgmentsValidation : IConfigValidation
 			.Zip(judgments.Skip(1), (a, b) => a.Threshold == b.Threshold)
 			.Contains(true);
 
-		var areColorsValid = judgments.All(IsJudgmentColorValid);
-
 		if (!isHighestJudgmentValid)
 		{
 			Plugin.Log.Warn("The first judgment cannot have fade set to true");
@@ -50,28 +48,6 @@ internal class JudgmentsValidation : IConfigValidation
 			Plugin.Log.Warn("Judgments contain a duplicate threshold");
 		}
 
-		if (!areColorsValid)
-		{
-			Plugin.Log.Warn("One or more Judgments contain an invalid color");
-		}
-
-		return isHighestJudgmentValid && !hasDuplicates && areColorsValid;
-	}
-
-	private static bool IsJudgmentColorValid(IJudgment judgment)
-	{
-		if (judgment.Color.Count != 4)
-		{
-			Plugin.Log.Warn($"Judgment for threshold {judgment.Threshold} has invalid color. Make sure to include exactly 4 numbers for each judgment's color!");
-			return false;
-		}
-
-		if (judgment.Color.All(x => x >= 0f))
-		{
-			return true;
-		}
-
-		Plugin.Log.Warn($"Judgment for threshold {judgment.Threshold} has invalid color. Make sure to include exactly 4 numbers that are greater or equal than 0 (and preferably smaller or equal than 1) for each judgment's color!");
-		return false;
+		return isHighestJudgmentValid && !hasDuplicates;
 	}
 }
