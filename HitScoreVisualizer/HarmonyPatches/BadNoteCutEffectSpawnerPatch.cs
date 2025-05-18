@@ -1,8 +1,8 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using HitScoreVisualizer.Components;
 using HitScoreVisualizer.Models;
+using HitScoreVisualizer.Utilities;
 using HitScoreVisualizer.Utilities.Extensions;
 using SiraUtil.Affinity;
 
@@ -14,9 +14,9 @@ internal class BadNoteCutEffectSpawnerPatch : IAffinity
 	private readonly HsvConfigModel config;
 	private readonly Random random;
 
-	private readonly BadCutDisplayPicker wrongDirectionPicker = new([]);
-	private readonly BadCutDisplayPicker wrongColorPicker = new([]);
-	private readonly BadCutDisplayPicker bombPicker = new([]);
+	private readonly ArrayPicker<BadCutDisplay> wrongDirectionPicker = new([]);
+	private readonly ArrayPicker<BadCutDisplay> wrongColorPicker = new([]);
+	private readonly ArrayPicker<BadCutDisplay> bombPicker = new([]);
 
 	public BadNoteCutEffectSpawnerPatch(HsvFlyingEffectSpawner flyingEffectSpawner, HsvConfigModel config, Random random)
 	{
@@ -58,7 +58,7 @@ internal class BadNoteCutEffectSpawnerPatch : IAffinity
 		return !TrySpawnText(noteCutInfo.saberTypeOK ? wrongDirectionPicker : wrongColorPicker, noteController, in noteCutInfo);
 	}
 
-	private bool TrySpawnText(BadCutDisplayPicker picker, NoteController noteController, in NoteCutInfo noteCutInfo)
+	private bool TrySpawnText(ArrayPicker<BadCutDisplay> picker, NoteController noteController, in NoteCutInfo noteCutInfo)
 	{
 		if (config.RandomizeBadCutDisplays && picker.TryGetRandomDisplay(random, out var display))
 		{
@@ -83,44 +83,5 @@ internal class BadNoteCutEffectSpawnerPatch : IAffinity
 			noteController.inverseWorldRotation,
 			display.Text,
 			display.Color);
-	}
-
-	private class BadCutDisplayPicker
-	{
-		private readonly BadCutDisplay[] displays;
-
-		public BadCutDisplayPicker(BadCutDisplay[] displays)
-		{
-			this.displays = displays;
-		}
-
-		private int currentDisplayIndex;
-
-		public bool TryGetNextDisplay([NotNullWhen(true)] out BadCutDisplay? display)
-		{
-			if (displays is [])
-			{
-				display = null;
-				return false;
-			}
-
-			display = displays[currentDisplayIndex];
-			currentDisplayIndex++;
-			currentDisplayIndex %= displays.Length;
-
-			return true;
-		}
-
-		public bool TryGetRandomDisplay(Random random, [NotNullWhen(true)] out BadCutDisplay? display)
-		{
-			if (displays is [])
-			{
-				display = null;
-				return false;
-			}
-
-			display = displays[random.Next(0, displays.Length)];
-			return true;
-		}
 	}
 }

@@ -1,7 +1,7 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using HitScoreVisualizer.Components;
 using HitScoreVisualizer.Models;
+using HitScoreVisualizer.Utilities;
 using SiraUtil.Affinity;
 
 namespace HitScoreVisualizer.HarmonyPatches;
@@ -12,7 +12,7 @@ internal class MissedNoteEffectSpawnerPatch : IAffinity
 	private readonly HsvConfigModel config;
 	private readonly Random random;
 
-	private readonly MissDisplayPicker missPicker = new([]);
+	private readonly ArrayPicker<MissDisplay> missPicker = new([]);
 
 	public MissedNoteEffectSpawnerPatch(HsvFlyingEffectSpawner flyingEffectSpawner, HsvConfigModel config, Random random)
 	{
@@ -43,7 +43,7 @@ internal class MissedNoteEffectSpawnerPatch : IAffinity
 		return !TrySpawnText(missPicker, noteController, __instance._spawnPosZ);
 	}
 
-	private bool TrySpawnText(MissDisplayPicker picker, NoteController noteController, float spawnPosZ)
+	private bool TrySpawnText(ArrayPicker<MissDisplay> picker, NoteController noteController, float spawnPosZ)
 	{
 		if (config.RandomizeMissDisplays && picker.TryGetRandomDisplay(random, out var display))
 		{
@@ -71,44 +71,5 @@ internal class MissedNoteEffectSpawnerPatch : IAffinity
 			noteController.inverseWorldRotation,
 			display.Text,
 			display.Color);
-	}
-
-	private class MissDisplayPicker
-	{
-		private readonly MissDisplay[] displays;
-
-		public MissDisplayPicker(MissDisplay[] displays)
-		{
-			this.displays = displays;
-		}
-
-		private int currentDisplayIndex;
-
-		public bool TryGetNextDisplay([NotNullWhen(true)] out MissDisplay? display)
-		{
-			if (displays is [])
-			{
-				display = null;
-				return false;
-			}
-
-			display = displays[currentDisplayIndex];
-			currentDisplayIndex++;
-			currentDisplayIndex %= displays.Length;
-
-			return true;
-		}
-
-		public bool TryGetRandomDisplay(Random random, [NotNullWhen(true)] out MissDisplay? display)
-		{
-			if (displays is [])
-			{
-				display = null;
-				return false;
-			}
-
-			display = displays[random.Next(0, displays.Length)];
-			return true;
-		}
 	}
 }
