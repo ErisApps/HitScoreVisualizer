@@ -34,6 +34,8 @@ public class ConfigLoader : IInitializable
 		this.directories = directories;
 	}
 
+	public event Action<HsvConfigModel?>? ConfigChanged;
+
 	public async void Initialize()
 	{
 		try
@@ -63,6 +65,7 @@ public class ConfigLoader : IInitializable
 		{
 			Plugin.Log.Warn("Tried selecting a config that is not compatible with the current version of the plugin");
 			pluginConfig.ConfigFilePath = null;
+			ConfigChanged?.Invoke(null);
 			return false;
 		}
 
@@ -78,6 +81,7 @@ public class ConfigLoader : IInitializable
 			Plugin.Log.Info($"Selecting config {configInfo.ConfigName}");
 			pluginConfig.SelectedConfig = configInfo;
 			pluginConfig.ConfigFilePath = configInfo.File.FullName.Substring(directories.Configs.FullName.Length + 1);
+			ConfigChanged?.Invoke(configInfo.Config);
 		}
 
 		return pluginConfig.ConfigFilePath != null;
