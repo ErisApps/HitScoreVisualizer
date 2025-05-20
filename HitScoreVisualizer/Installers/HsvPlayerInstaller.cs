@@ -1,6 +1,5 @@
 using HitScoreVisualizer.Components;
 using HitScoreVisualizer.HarmonyPatches;
-using HitScoreVisualizer.Utilities.Services;
 using Zenject;
 
 namespace HitScoreVisualizer.Installers;
@@ -25,8 +24,6 @@ internal class HsvPlayerInstaller : Installer
 		}
 
 		Container.BindInstance(currentConfig).AsSingle();
-
-		Container.Bind<JudgmentService>().AsSingle();
 
 		Container.Bind<HsvFlyingEffectSpawner>().FromNewComponentOnNewGameObject().AsSingle();
 		Container.BindMemoryPool<HsvFlyingEffect, HsvFlyingEffect.Pool>()

@@ -1,5 +1,5 @@
 using HitScoreVisualizer.Models;
-using HitScoreVisualizer.Utilities.Services;
+using HitScoreVisualizer.Utilities.Extensions;
 using SiraUtil.Affinity;
 using UnityEngine;
 
@@ -7,12 +7,10 @@ namespace HitScoreVisualizer.HarmonyPatches;
 
 internal class FlyingScoreEffectPatch : IAffinity
 {
-	private readonly JudgmentService judgmentService;
 	private readonly HsvConfigModel config;
 
-	private FlyingScoreEffectPatch(JudgmentService judgmentService, HsvConfigModel config)
+	private FlyingScoreEffectPatch(HsvConfigModel config)
 	{
-		this.judgmentService = judgmentService;
 		this.config = config;
 	}
 
@@ -24,7 +22,12 @@ internal class FlyingScoreEffectPatch : IAffinity
 	[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.InitAndPresent))]
 	internal bool InitAndPresent(ref FlyingScoreEffect __instance, IReadonlyCutScoreBuffer cutScoreBuffer, float duration, Vector3 targetPos)
 	{
-		var (text, color) = judgmentService.Judge(cutScoreBuffer, config.AssumeMaxPostSwing);
+		var judgmentDetails = new JudgmentDetails(cutScoreBuffer)
+		{
+			AfterCutScore = config.AssumeMaxPostSwing ? cutScoreBuffer.noteScoreDefinition.maxAfterCutScore : cutScoreBuffer.afterCutScore,
+		};
+
+		var (text, color) = config.Judge(in judgmentDetails);
 		__instance._text.text = text;
 		__instance._color = color;
 		__instance._cutScoreBuffer = cutScoreBuffer;
@@ -63,7 +66,8 @@ internal class FlyingScoreEffectPatch : IAffinity
 			return false;
 		}
 
-		var (text, color) = judgmentService.Judge(cutScoreBuffer, false);
+		var judgmentDetails = new JudgmentDetails(cutScoreBuffer);
+		var (text, color) = config.Judge(in judgmentDetails);
 		__instance._text.text = text;
 		__instance._color = color;
 
@@ -74,7 +78,8 @@ internal class FlyingScoreEffectPatch : IAffinity
 	[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.HandleCutScoreBufferDidFinish))]
 	internal void HandleCutScoreBufferDidFinish(FlyingScoreEffect __instance, CutScoreBuffer cutScoreBuffer)
 	{
-		var (text, color) = judgmentService.Judge(cutScoreBuffer, false);
+		var judgmentDetails = new JudgmentDetails(cutScoreBuffer);
+		var (text, color) = config.Judge(in judgmentDetails);
 		__instance._text.text = text;
 		__instance._color = color;
 	}

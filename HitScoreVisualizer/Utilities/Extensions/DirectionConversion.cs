@@ -17,7 +17,7 @@ internal static class DirectionConversion
 		{ Direction.UpLeft, new(-Angle, Angle, 0)}
 	};
 
-	public static Direction CalculateOffDirection(this NoteCutInfo noteCutInfo)
+	public static Direction CalculateOffDirection(in this NoteCutInfo noteCutInfo)
 	{
 		var direction = GetClosestOffDirection(noteCutInfo.cutNormal);
 		var directionAsInt = (int)direction;
