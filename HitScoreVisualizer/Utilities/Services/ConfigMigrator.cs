@@ -16,7 +16,8 @@ internal class ConfigMigrator
 		new ConfigMigration210(),
 		new ConfigMigration223(),
 		new ConfigMigration320(),
-		new ConfigMigration340()
+		new ConfigMigration340(),
+		new ConfigMigration360()
 	];
 
 	private readonly Version minimumMigratableVersion;
