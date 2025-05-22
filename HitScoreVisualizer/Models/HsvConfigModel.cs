@@ -180,4 +180,30 @@ public class HsvConfigModel
 		TimeDependenceDecimalOffset = 2,
 		TimeDependenceJudgments = []
 	};
+
+	[JsonIgnore]
+	internal static HsvConfigModel Vanilla { get; } = new()
+	{
+		MajorVersion = Plugin.Metadata.HVersion.Major,
+		MinorVersion = Plugin.Metadata.HVersion.Minor,
+		PatchVersion = Plugin.Metadata.HVersion.Patch,
+		DisplayMode = "format",
+		DoIntermediateUpdates = true,
+		AssumeMaxPostSwing = false,
+		Judgments =
+		[
+			new() { Threshold = 104, Text = "%C%s", Color = new(1f, 1f, 1f) },
+			new() { Threshold = 0, Text = "%C%s", Color = new(1f, 1f, 1f, 0.3f) }
+		],
+		ChainHeadJudgments =
+		[
+			new() { Threshold = 77, Text = "%C%s", Color = new(1f, 1f, 1f) },
+			new() { Threshold = 0, Text = "%C%s", Color = new(1f, 1f, 1f, 0.3f) }
+		],
+		ChainLinkDisplay = new() { Text = "<u>%s", Color = new(1f, 1f, 1f) },
+		AccuracyJudgments =
+		[
+			new() { Threshold = 15, Text = "<u>" }
+		]
+	};
 }
