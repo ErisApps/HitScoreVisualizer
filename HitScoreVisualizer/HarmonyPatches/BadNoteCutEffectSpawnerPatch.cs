@@ -60,13 +60,13 @@ internal class BadNoteCutEffectSpawnerPatch : IAffinity
 
 	private bool TrySpawnText(ArrayPicker<BadCutDisplay> picker, NoteController noteController, in NoteCutInfo noteCutInfo)
 	{
-		if (config.RandomizeBadCutDisplays && picker.TryGetRandomDisplay(random, out var display))
+		if (config.RandomizeBadCutDisplays && picker.TryGetRandom(random, out var display))
 		{
 			SpawnText(display, noteController, in noteCutInfo);
 			return true;
 		}
 
-		if (picker.TryGetNextDisplay(out display))
+		if (picker.TryGetNext(out display))
 		{
 			SpawnText(display, noteController, in noteCutInfo);
 			return true;
