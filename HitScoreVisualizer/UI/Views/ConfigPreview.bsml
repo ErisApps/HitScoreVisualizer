@@ -1,7 +1,5 @@
 <bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='https://monkeymanboy.github.io/BSML-Docs/BSMLSchema.xsd'>
 
-	<bg bg="round-rect-panel" bg-alpha="0.4"/>
-
 	<!-- View Container -->
 	<vertical spacing="2">
 
@@ -18,11 +16,10 @@
 				<macro.as-host host="GridTab">
 
 					<stack id="GridTextTemplate" pref-width="20" pref-height="15" vertical-fit="PreferredSize" horizontal-fit="PreferredSize" active="false">
-						<bg bg="round-rect-panel" bg-alpha="0.9" />
 						<text text="115" font-size="5" align="Center" />
 					</stack>
 
-					<vertical vertical-fit="PreferredSize" bg="round-rect-panel" bg-alpha="0.5" >
+					<vertical vertical-fit="PreferredSize" >
 
 						<grid id="ScoreGrid" cell-size-x="20" cell-size-y="15" spacing-x="2" spacing-y="2"
 							  horizontal-fit="PreferredSize" vertical-fit="PreferredSize">
@@ -38,10 +35,10 @@
 			<tab tags="preview-tabs" tab-name="Animated">
 				<macro.as-host host="AnimatedTab">
 
-					<text id="PreviewTextTemplate" text="115" font-size="5" align="Center" raycast-target="false"
-						  anchor-min-x="0.5" anchor-max-x="0.5" anchor-min-y="0.5" anchor-max-y="0.5" size-delta-x="20" size-delta-y="15" />
+					<text id="PreviewTextTemplate" text="115" font-size="5" align="Center" raycast-target="false" word-wrapping="true"
+						  anchor-min-x="0.5" anchor-max-x="0.5" anchor-min-y="0.5" anchor-max-y="0.5" size-delta-x="40" size-delta-y="20" />
 
-					<stack id="TextContainer" horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-width="100" pref-height="50">
+					<stack id="TextContainer" horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-width="90" pref-height="50">
 						<!-- Text will be parented here -->
 					</stack>
 
