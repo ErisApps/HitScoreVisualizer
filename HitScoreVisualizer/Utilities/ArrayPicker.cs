@@ -14,7 +14,7 @@ internal class ArrayPicker<T> where T : class
 
 	private int currentItemIndex;
 
-	public bool TryGetNextDisplay([NotNullWhen(true)] out T? item)
+	public bool TryGetNext([NotNullWhen(true)] out T? item)
 	{
 		if (array is [])
 		{
@@ -29,7 +29,7 @@ internal class ArrayPicker<T> where T : class
 		return true;
 	}
 
-	public bool TryGetRandomDisplay(Random random, [NotNullWhen(true)] out T? item)
+	public bool TryGetRandom(Random random, [NotNullWhen(true)] out T? item)
 	{
 		if (array is [])
 		{

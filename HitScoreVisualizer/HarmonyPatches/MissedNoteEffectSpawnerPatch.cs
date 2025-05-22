@@ -45,13 +45,13 @@ internal class MissedNoteEffectSpawnerPatch : IAffinity
 
 	private bool TrySpawnText(ArrayPicker<MissDisplay> picker, NoteController noteController, float spawnPosZ)
 	{
-		if (config.RandomizeMissDisplays && picker.TryGetRandomDisplay(random, out var display))
+		if (config.RandomizeMissDisplays && picker.TryGetRandom(random, out var display))
 		{
 			SpawnText(display, noteController, spawnPosZ);
 			return true;
 		}
 
-		if (picker.TryGetNextDisplay(out display))
+		if (picker.TryGetNext(out display))
 		{
 			SpawnText(display, noteController, spawnPosZ);
 			return true;
