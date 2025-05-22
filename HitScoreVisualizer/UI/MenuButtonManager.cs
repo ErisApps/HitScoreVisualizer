@@ -6,7 +6,7 @@ namespace HitScoreVisualizer.UI;
 
 internal class MenuButtonManager : IInitializable, IDisposable
 {
-	private readonly HitScoreFlowCoordinator hitScoreFlowCoordinator;
+	private readonly HsvMainFlowCoordinator hsvMainFlowCoordinator;
 	private readonly MainFlowCoordinator mainFlowCoordinator;
 	private readonly MenuButtons menuButtons;
 	private readonly MenuButton hsvMenuButton;
@@ -15,11 +15,11 @@ internal class MenuButtonManager : IInitializable, IDisposable
 	private const string HoverHint = "Change your score visualizer config";
 
 	public MenuButtonManager(
-		HitScoreFlowCoordinator hitScoreFlowCoordinator,
+		HsvMainFlowCoordinator hsvMainFlowCoordinator,
 		MainFlowCoordinator mainFlowCoordinator,
 		MenuButtons menuButtons)
 	{
-		this.hitScoreFlowCoordinator = hitScoreFlowCoordinator;
+		this.hsvMainFlowCoordinator = hsvMainFlowCoordinator;
 		this.mainFlowCoordinator = mainFlowCoordinator;
 		this.menuButtons = menuButtons;
 		hsvMenuButton = new(Title, HoverHint, OnClick);
@@ -37,6 +37,6 @@ internal class MenuButtonManager : IInitializable, IDisposable
 
 	private void OnClick()
 	{
-		mainFlowCoordinator.PresentFlowCoordinator(hitScoreFlowCoordinator);
+		mainFlowCoordinator.PresentFlowCoordinator(hsvMainFlowCoordinator);
 	}
 }

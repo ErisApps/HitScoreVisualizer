@@ -75,19 +75,25 @@ internal class ConfigSelectorViewController : BSMLAutomaticViewController
 		}
 	}
 
-	public void UnpickConfig()
+	public async void UnpickConfig()
 	{
-		if (!HasConfigCurrently)
+		try
 		{
-			return;
+			if (!HasConfigCurrently)
+			{
+				return;
+			}
+
+			configsList.TableView.ClearSelection();
+			await configLoader.TrySelectConfig(null);
+
+			NotifyPropertyChanged(nameof(HasConfigCurrently));
+			NotifyPropertyChanged(nameof(LoadedConfigText));
 		}
-
-		configsList.TableView.ClearSelection();
-		pluginConfig.ConfigFilePath = null;
-		pluginConfig.SelectedConfig = null;
-
-		NotifyPropertyChanged(nameof(HasConfigCurrently));
-		NotifyPropertyChanged(nameof(LoadedConfigText));
+		catch (Exception ex)
+		{
+			Plugin.Log.Error($"Encountered a problem while unpicking config: {ex}");
+		}
 	}
 
 	public async void YeetConfig()

@@ -94,7 +94,7 @@
 			<text text="Loading..." italics="true"/>
 		</horizontal>
 
-		<horizontal>
+		<horizontal pad-right="5">
 			<vertical horizontal-fit="Unconstrained" pref-width="110">
 				<text text="~LoadedConfigText"
 					  italics="true"
