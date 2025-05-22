@@ -1,4 +1,5 @@
 using HitScoreVisualizer.HarmonyPatches;
+using HitScoreVisualizer.UI;
 using HitScoreVisualizer.Utilities.Services;
 using JetBrains.Annotations;
 using Zenject;
@@ -24,6 +25,8 @@ internal sealed class HsvAppInstaller : Installer
 		Container.Bind<ConfigMigrator>().AsSingle();
 
 		Container.BindInterfacesAndSelfTo<BloomFontProvider>().AsSingle();
+
+		Container.Bind<RandomScoreGenerator>().AsSingle();
 
 		// Patches
 		Container.BindInterfacesTo<HarmonyPatchManager>().AsSingle();

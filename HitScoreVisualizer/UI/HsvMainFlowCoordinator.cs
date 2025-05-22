@@ -4,10 +4,11 @@ using Zenject;
 
 namespace HitScoreVisualizer.UI;
 
-internal class HitScoreFlowCoordinator : FlowCoordinator
+internal class HsvMainFlowCoordinator : FlowCoordinator
 {
 	[Inject] private readonly ConfigSelectorViewController configSelectorViewController = null!;
 	[Inject] private readonly PluginSettingsViewController pluginSettingsViewController = null!;
+	[Inject] private readonly ConfigPreviewViewController configPreviewViewController = null!;
 
 	protected override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
 	{
@@ -16,7 +17,7 @@ internal class HitScoreFlowCoordinator : FlowCoordinator
 			SetTitle(Plugin.Metadata.Name);
 			showBackButton = true;
 
-			ProvideInitialViewControllers(configSelectorViewController, pluginSettingsViewController);
+			ProvideInitialViewControllers(configSelectorViewController, pluginSettingsViewController, configPreviewViewController);
 		}
 	}
 

@@ -63,7 +63,7 @@ public class ConfigLoader : IInitializable
 	{
 		if (configInfo is not { State: ConfigState.Compatible or ConfigState.NeedsMigration })
 		{
-			Plugin.Log.Warn("Tried selecting a config that is not compatible with the current version of the plugin");
+			pluginConfig.SelectedConfig = null;
 			pluginConfig.ConfigFilePath = null;
 			ConfigChanged?.Invoke(null);
 			return false;
