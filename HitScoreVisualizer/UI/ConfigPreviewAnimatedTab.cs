@@ -26,7 +26,7 @@ internal class ConfigPreviewAnimatedTab : IPreviewTextEffectDidFinishEvent
 	[UIComponent("PreviewTextTemplate")] private readonly TextMeshProUGUI previewTextTemplate = null!;
 	[UIComponent("TextContainer")] private readonly RectTransform textContainer = null!;
 
-	private List<PreviewTextEffect> textEffects = null!; // assigned in initializer
+	private PreviewTextEffect[] textEffects = null!; // assigned in initializer
 	private const int NumberOfEffects = 14;
 	private const float AnimationDuration = 0.7f; // based on FlyingScoreSpawner.SpawnFlyingScore
 
@@ -34,23 +34,18 @@ internal class ConfigPreviewAnimatedTab : IPreviewTextEffectDidFinishEvent
 	public void PostParse()
 	{
 		var prefab = AddressablesExtensions.LoadContent<GameObject>("Assets/Prefabs/Effects/FlyingTextEffect.prefab").FirstOrDefault();
-		if (prefab != null)
+		if (prefab == null)
 		{
-			var flyingTextEffect = prefab.GetComponent<FlyingTextEffect>();
-			var textEffectPrefab = CreatePrefab(flyingTextEffect._fadeAnimationCurve, flyingTextEffect._moveAnimationCurve);
-			textEffects = new(Enumerable.Range(1, NumberOfEffects).Select(_ => Object.Instantiate(textEffectPrefab, textContainer)).ToArray());
+			return;
 		}
-		return;
-
-		PreviewTextEffect CreatePrefab(AnimationCurve fade, AnimationCurve move)
-		{
-			previewTextTemplate.gameObject.SetActive(false);
-			previewTextTemplate.gameObject.name = nameof(PreviewTextEffect);
-			previewTextTemplate.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
-			previewTextTemplate.enableAutoSizing = true;
-			previewTextTemplate.fontSizeMax = 5f;
-			return PreviewTextEffect.Construct(previewTextTemplate.gameObject, previewTextTemplate, fade, move);
-		}
+		previewTextTemplate.gameObject.SetActive(false);
+		previewTextTemplate.gameObject.name = nameof(PreviewTextEffect);
+		previewTextTemplate.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+		previewTextTemplate.enableAutoSizing = true;
+		previewTextTemplate.fontSizeMax = 5f;
+		var flyingTextEffect = prefab.GetComponent<FlyingTextEffect>();
+		var textEffectPrefab = PreviewTextEffect.Construct(previewTextTemplate.gameObject, previewTextTemplate, flyingTextEffect._fadeAnimationCurve, flyingTextEffect._moveAnimationCurve);
+		textEffects = Enumerable.Range(1, NumberOfEffects).Select(_ => Object.Instantiate(textEffectPrefab, textContainer)).ToArray();
 	}
 
 	public void Enable()
@@ -90,7 +85,7 @@ internal class ConfigPreviewAnimatedTab : IPreviewTextEffectDidFinishEvent
 	private IEnumerator AnimateTextEffects(HsvConfigModel config)
 	{
 		yield return initialDelay;
-		animationInterval = new(AnimationDuration / textEffects.Count);
+		animationInterval = new(AnimationDuration / textEffects.Length);
 		while (animating)
 		{
 			foreach (var effect in textEffects)
