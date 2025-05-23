@@ -30,6 +30,13 @@ internal class RandomScoreGenerator
 		true, true, true, false, 0, Vector3.zero, SaberType.SaberA, 0, 0, Vector3.zero, Vector3.zero, 0, 0, Quaternion.identity, Quaternion.identity, Quaternion.identity, Vector3.zero,
 		DummySaberMovementData);
 
+	private static NoteCutInfo? dummyChainLink;
+	private static NoteData DummyChainLinkData { get; } = new(0, 0, 0, 0, 0, 0, NoteData.GameplayType.BurstSliderElement, NoteData.ScoringType.ChainLink, 0, 0, 0, 0, 0, 0, 0, 0);
+	public static NoteCutInfo DummyChainLink => dummyChainLink ??= new(
+		DummyChainLinkData,
+		true, true, true, false, 0, Vector3.zero, SaberType.SaberA, 0, 0, Vector3.zero, Vector3.zero, 0, 0, Quaternion.identity, Quaternion.identity, Quaternion.identity, Vector3.zero,
+		DummySaberMovementData);
+
 	public JudgmentDetails GetRandomScore()
 	{
 		const int beforeMax = 70;
