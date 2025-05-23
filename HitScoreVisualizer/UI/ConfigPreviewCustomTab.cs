@@ -45,12 +45,20 @@ internal class ConfigPreviewCustomTab
 
 	private void ConfigChanged(HsvConfigModel? config)
 	{
-		if (config?.BadCutDisplays is not null or [])
+		if (config is not null)
 		{
-			allBadCuts = config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.All).ToList();
-			wrongDirections = config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.All or BadCutDisplayType.WrongDirection).ToList();
-			wrongColors = config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.All or BadCutDisplayType.WrongColor).ToList();
-			bombs = config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.All or BadCutDisplayType.Bomb).ToList();
+			if (config.BadCutDisplays is not null or [])
+			{
+				allBadCuts = config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.All).ToList();
+				wrongDirections = config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.All or BadCutDisplayType.WrongDirection).ToList();
+				wrongColors = config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.All or BadCutDisplayType.WrongColor).ToList();
+				bombs = config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.All or BadCutDisplayType.Bomb).ToList();
+			}
+
+			if (config.MissDisplays is not null or [])
+			{
+				misses = config.MissDisplays;
+			}
 		}
 		else
 		{
@@ -58,11 +66,13 @@ internal class ConfigPreviewCustomTab
 			wrongDirections = [];
 			wrongColors = [];
 			bombs = [];
+			misses = [];
 		}
 		allIndex = 0;
 		wrongDirectionIndex = 0;
 		wrongColorIndex = 0;
 		bombIndex = 0;
+		missIndex = 0;
 		UpdateAllTexts();
 	}
 
@@ -75,6 +85,7 @@ internal class ConfigPreviewCustomTab
 		UpdateJudgmentsText();
 		UpdateChainLinkText();
 		UpdateBadCutText();
+		UpdateMissText();
 	}
 
 	public object EnumFormatter(Enum v)
@@ -266,6 +277,27 @@ internal class ConfigPreviewCustomTab
 #region MissTab
 	[UIComponent("MissText")] private readonly TextMeshProUGUI missText = null!;
 
+	private List<MissDisplay> misses = [];
+	private int missIndex;
+
+	public void NextMiss()
+	{
+		missIndex = missIndex < misses.Count - 1 ? missIndex + 1 : 0;
+		UpdateMissText();
+	}
+
+	public void PreviousMiss()
+	{
+		missIndex = missIndex > 0 ? missIndex - 1 : misses.Count - 1;
+		UpdateMissText();
+	}
+
+	private void UpdateMissText()
+	{
+		var display = misses.ElementAtOrDefault(missIndex);
+		missText.text = display?.Text ?? "<i>No display.";
+		missText.color = display?.Color ?? new Color32(0xFF, 0xFF, 0xFF, 0xAA);
+	}
 #endregion
 
 	private enum JudgmentType
