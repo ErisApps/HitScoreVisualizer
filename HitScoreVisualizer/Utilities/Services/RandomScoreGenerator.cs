@@ -14,13 +14,14 @@ internal class RandomScoreGenerator
 		this.random = random;
 	}
 
-	private readonly SaberMovementData dummySaberMovementData = new();
-	private readonly NoteData dummyNoteData = NoteData.CreateBasicNoteData(0, 0, 0, 0, 0, 0, 0);
-	private NoteCutInfo? testNoteCutInfo;
-	private NoteCutInfo TestNoteCutInfo => testNoteCutInfo ??= new(
-		dummyNoteData,
+	private static SaberMovementData DummySaberMovementData { get; } = new();
+	private static NoteData DummyNoteData { get; } = NoteData.CreateBasicNoteData(0, 0, 0, 0, 0, 0, 0);
+
+	private static NoteCutInfo? dummyNoteCutInfo;
+	public static NoteCutInfo DummyNoteCutInfo => dummyNoteCutInfo ??= new(
+		DummyNoteData,
 		true, true, true, false, 0, Vector3.zero, SaberType.SaberA, 0, 0, Vector3.zero, Vector3.zero, 0, 0, Quaternion.identity, Quaternion.identity, Quaternion.identity, Vector3.zero,
-		dummySaberMovementData);
+		DummySaberMovementData);
 
 	public JudgmentDetails GetRandomScore()
 	{
@@ -38,7 +39,7 @@ internal class RandomScoreGenerator
 			AfterCutScore = after,
 			MaxPossibleScore = max,
 			TotalCutScore = before + center + after,
-			CutInfo = TestNoteCutInfo
+			CutInfo = DummyNoteCutInfo
 		};
 	}
 
