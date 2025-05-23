@@ -49,45 +49,71 @@
 			<tab tags="preview-tabs" tab-name="Custom">
 				<macro.as-host host="CustomTab">
 
-					<vertical vertical-fit="PreferredSize" pref-height="70" bg="round-rect-panel">
+					<vertical vertical-fit="PreferredSize" pref-height="70" pref-width="110" child-control-height="false">
 
 						<stack vertical-fit="PreferredSize" pref-height="10">
 							<tab-select tab-tag="custom-preview-tabs" select-cell="CustomPreviewTabChanged" />
 						</stack>
 
-						<horizontal vertical-fit="Unconstrained">
+						<tab tags="custom-preview-tabs" tab-name="Judgments">
+							<horizontal pref-height="55">
+								<stack>
+									<text text="SCORE" font-size="5" align="Center" />
+								</stack>
 
-							<stack pad-right="20">
-								<text text="SCORE" font-size="5" align="Center" />
-							</stack>
-
-							<tab tags="custom-preview-tabs" tab-name="Judgments">
-								<vertical vertical-fit="Unconstrained" spacing="2" child-expand-height="false" bg="round-rect-panel">
-									<slider-setting text="1" max="70" increment="1" integer-only="true" pref-width="50" />
-									<slider-setting text="1" max="15" increment="1" integer-only="true" pref-width="50" />
-									<slider-setting text="1" max="30" increment="1" integer-only="true" pref-width="50" />
+								<vertical pref-width="50" child-expand-height="false" child-align="MiddleCenter">
+									<slider-setting text="Before" max="70" increment="1" integer-only="true" word-wrapping="false" />
+									<slider-setting text="Acc" max="15" increment="1" integer-only="true" word-wrapping="false" />
+									<slider-setting text="After" max="30" increment="1" integer-only="true" word-wrapping="false" />
+									<slider-setting text="TD" max="1" increment="0.01" word-wrapping="false" />
 								</vertical>
-							</tab>
+							</horizontal>
+						</tab>
 
-							<tab tags="custom-preview-tabs" tab-name="Chain Link">
-								<horizontal pref-height="10">
+						<tab tags="custom-preview-tabs" tab-name="Chain Link">
+							<horizontal pref-height="55">
+								<stack>
+									<text text="SCORE" font-size="5" align="Center" />
+								</stack>
 
+								<vertical pref-width="50" child-expand-height="false" child-align="MiddleCenter">
+									<text text="No settings." italics="true" align="Center" color="#FFFFFFAA"/>
+								</vertical>
+							</horizontal>
+						</tab>
+
+						<tab tags="custom-preview-tabs" tab-name="Bad Cut">
+							<horizontal pref-height="55">
+								<stack>
+									<text text="SCORE" font-size="5" align="Center" />
+								</stack>
+
+								<vertical pref-width="50" child-expand-height="false" child-control-height="false" child-align="MiddleCenter">
+									<horizontal>
+										<list-setting text="Type" options="BadCutTypeOptions" formatter="BadCutTypeFormatter" value="BadCutType" apply-on-change="true"
+													  pref-width="20" />
+									</horizontal>
+
+									<horizontal child-expand-width="false" child-align="MiddleCenter" spacing="2">
+										<button text="&lt;" font-size="6" pref-width="12" pref-height="10" />
+										<button text="&gt;" font-size="6" pref-width="12" pref-height="10" />
+									</horizontal>
+								</vertical>
+							</horizontal>
+						</tab>
+
+						<tab tags="custom-preview-tabs" tab-name="Miss">
+							<horizontal pref-height="55">
+								<stack>
+									<text text="SCORE" font-size="5" align="Center" />
+								</stack>
+
+								<horizontal horizontal-fit="PreferredSize" pref-width="50" child-expand-width="false" child-align="MiddleCenter" spacing="2">
+									<button text="&lt;" font-size="6" pref-width="12" pref-height="10" />
+									<button text="&gt;" font-size="6" pref-width="12" pref-height="10" />
 								</horizontal>
-							</tab>
-
-							<tab tags="custom-preview-tabs" tab-name="Bad Cut">
-								<horizontal pref-height="10">
-
-								</horizontal>
-							</tab>
-
-							<tab tags="custom-preview-tabs" tab-name="Miss">
-								<horizontal pref-height="10">
-
-								</horizontal>
-							</tab>
-
-						</horizontal>
+							</horizontal>
+						</tab>
 
 					</vertical>
 
