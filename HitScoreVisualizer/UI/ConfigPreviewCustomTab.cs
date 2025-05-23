@@ -2,6 +2,7 @@ using System;
 using System.Text.RegularExpressions;
 using BeatSaberMarkupLanguage.Attributes;
 using HitScoreVisualizer.Models;
+using HitScoreVisualizer.Utilities;
 using HitScoreVisualizer.Utilities.Extensions;
 using HitScoreVisualizer.Utilities.Services;
 using TMPro;
@@ -114,8 +115,8 @@ internal class ConfigPreviewCustomTab
 	{
 		var (afterCut, max, cutInfo) = currentJudgmentType switch
 		{
-			JudgmentType.Normal => (after, 115, RandomScoreGenerator.DummyNormalNote),
-			JudgmentType.ChainHead => (0, 85, RandomScoreGenerator.DummyChainNote),
+			JudgmentType.Normal => (after, 115, DummyScores.Normal),
+			JudgmentType.ChainHead => (0, 85, DummyScores.ChainHead),
 			_ => throw new ArgumentOutOfRangeException()
 		};
 		(judgmentsText.text, judgmentsText.color) = (pluginConfig.SelectedConfig?.Config ?? HsvConfigModel.Vanilla).Judge(new()
@@ -142,7 +143,7 @@ internal class ConfigPreviewCustomTab
 			AfterCutScore = 0,
 			MaxPossibleScore = 20,
 			TotalCutScore = 20,
-			CutInfo = RandomScoreGenerator.DummyChainLink
+			CutInfo = DummyScores.ChainLink
 		});
 	}
 #endregion

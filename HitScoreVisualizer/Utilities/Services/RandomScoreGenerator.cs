@@ -14,29 +14,6 @@ internal class RandomScoreGenerator
 		this.random = random;
 	}
 
-	private static SaberMovementData DummySaberMovementData { get; } = new();
-
-	private static NoteCutInfo? dummyNormalNote;
-	private static NoteData DummyNormalNoteData { get; } = NoteData.CreateBasicNoteData(0, 0, 0, 0, 0, 0, 0);
-	public static NoteCutInfo DummyNormalNote => dummyNormalNote ??= new(
-		DummyNormalNoteData,
-		true, true, true, false, 0, Vector3.zero, SaberType.SaberA, 0, 0, Vector3.zero, Vector3.zero, 0, 0, Quaternion.identity, Quaternion.identity, Quaternion.identity, Vector3.zero,
-		DummySaberMovementData);
-
-	private static NoteCutInfo? dummyChainNote;
-	private static NoteData DummyChainNoteData { get; } = new(0, 0, 0, 0, 0, 0, NoteData.GameplayType.BurstSliderHead, NoteData.ScoringType.ChainHead, 0, 0, 0, 0, 0, 0, 0, 0);
-	public static NoteCutInfo DummyChainNote => dummyChainNote ??= new(
-		DummyChainNoteData,
-		true, true, true, false, 0, Vector3.zero, SaberType.SaberA, 0, 0, Vector3.zero, Vector3.zero, 0, 0, Quaternion.identity, Quaternion.identity, Quaternion.identity, Vector3.zero,
-		DummySaberMovementData);
-
-	private static NoteCutInfo? dummyChainLink;
-	private static NoteData DummyChainLinkData { get; } = new(0, 0, 0, 0, 0, 0, NoteData.GameplayType.BurstSliderElement, NoteData.ScoringType.ChainLink, 0, 0, 0, 0, 0, 0, 0, 0);
-	public static NoteCutInfo DummyChainLink => dummyChainLink ??= new(
-		DummyChainLinkData,
-		true, true, true, false, 0, Vector3.zero, SaberType.SaberA, 0, 0, Vector3.zero, Vector3.zero, 0, 0, Quaternion.identity, Quaternion.identity, Quaternion.identity, Vector3.zero,
-		DummySaberMovementData);
-
 	public JudgmentDetails GetRandomScore()
 	{
 		const int beforeMax = 70;
@@ -53,7 +30,7 @@ internal class RandomScoreGenerator
 			AfterCutScore = after,
 			MaxPossibleScore = max,
 			TotalCutScore = before + center + after,
-			CutInfo = DummyNormalNote
+			CutInfo = DummyScores.Normal
 		};
 	}
 
