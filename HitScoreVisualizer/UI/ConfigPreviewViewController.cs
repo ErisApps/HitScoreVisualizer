@@ -16,6 +16,7 @@ internal class ConfigPreviewViewController : BSMLAutomaticViewController
 
 	[Inject] public ConfigPreviewGridTab GridTab { get; set; } = null!;
 	[Inject] public ConfigPreviewAnimatedTab AnimatedTab { get; set; } = null!;
+	[Inject] public ConfigPreviewCustomTab CustomTab { get; set; } = null!;
 
 	private PreviewTab currentTab;
 
@@ -49,6 +50,7 @@ internal class ConfigPreviewViewController : BSMLAutomaticViewController
 				AnimatedTab.Enable();
 				break;
 			case PreviewTab.Custom:
+				CustomTab.Enable();
 				break;
 			default:
 				throw new ArgumentOutOfRangeException();
@@ -66,6 +68,7 @@ internal class ConfigPreviewViewController : BSMLAutomaticViewController
 				AnimatedTab.Disable();
 				break;
 			case PreviewTab.Custom:
+				CustomTab.Disable();
 				break;
 			default:
 				throw new ArgumentOutOfRangeException();

@@ -15,5 +15,6 @@ internal sealed class HsvMenuInstaller : Installer
 		Container.Bind<ConfigPreviewViewController>().FromNewComponentAsViewController().AsSingle();
 		Container.Bind<ConfigPreviewGridTab>().AsSingle();
 		Container.Bind<ConfigPreviewAnimatedTab>().AsSingle();
+		Container.Bind<ConfigPreviewCustomTab>().AsSingle();
 	}
 }
