@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using BeatSaberMarkupLanguage.Attributes;
@@ -49,30 +48,26 @@ internal class ConfigPreviewCustomTab
 		{
 			if (config.BadCutDisplays is not null or [])
 			{
-				allBadCuts = config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.All).ToList();
-				wrongDirections = config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.All or BadCutDisplayType.WrongDirection).ToList();
-				wrongColors = config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.All or BadCutDisplayType.WrongColor).ToList();
-				bombs = config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.All or BadCutDisplayType.Bomb).ToList();
+				allBadCuts = new(config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.All));
+				wrongDirections = new(config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.All or BadCutDisplayType.WrongDirection));
+				wrongColors = new(config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.All or BadCutDisplayType.WrongColor));
+				bombs = new(config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.All or BadCutDisplayType.Bomb));
 			}
 
 			if (config.MissDisplays is not null or [])
 			{
-				misses = config.MissDisplays;
+				misses = new(config.MissDisplays);
 			}
 		}
 		else
 		{
-			allBadCuts = [];
-			wrongDirections = [];
-			wrongColors = [];
-			bombs = [];
-			misses = [];
+			allBadCuts = new();
+			wrongDirections = new();
+			wrongColors = new();
+			bombs = new();
+			misses = new();
 		}
-		allIndex = 0;
-		wrongDirectionIndex = 0;
-		wrongColorIndex = 0;
-		bombIndex = 0;
-		missIndex = 0;
+
 		UpdateAllTexts();
 	}
 
@@ -206,67 +201,43 @@ internal class ConfigPreviewCustomTab
 		}
 	}
 
-	private List<BadCutDisplay> allBadCuts = [];
-	private int allIndex;
-	private List<BadCutDisplay> wrongDirections = [];
-	private int wrongDirectionIndex;
-	private List<BadCutDisplay> wrongColors = [];
-	private int wrongColorIndex;
-	private List<BadCutDisplay> bombs = [];
-	private int bombIndex;
+	private ItemRevolver<BadCutDisplay> allBadCuts = new();
+	private ItemRevolver<BadCutDisplay> wrongDirections = new();
+	private ItemRevolver<BadCutDisplay> wrongColors = new();
+	private ItemRevolver<BadCutDisplay> bombs = new();
 
 	public void NextBadCut()
 	{
-		switch (BadCutType)
+		UpdateBadCutText(BadCutType switch
 		{
-			case BadCutDisplayType.All:
-				allIndex = allIndex < allBadCuts.Count - 1 ? allIndex + 1 : 0;
-				break;
-			case BadCutDisplayType.WrongDirection:
-				wrongDirectionIndex = wrongDirectionIndex < wrongDirections.Count - 1 ? wrongDirectionIndex + 1 : 0;
-				break;
-			case BadCutDisplayType.WrongColor:
-				wrongColorIndex = wrongColorIndex < wrongColors.Count - 1 ? wrongColorIndex + 1 : 0;
-				break;
-			case BadCutDisplayType.Bomb:
-				bombIndex = bombIndex < bombs.Count - 1 ? bombIndex + 1 : 0;
-				break;
-			default:
-				throw new ArgumentOutOfRangeException();
-		}
-		UpdateBadCutText();
+			BadCutDisplayType.All => allBadCuts.AdvanceNext(),
+			BadCutDisplayType.WrongDirection => wrongDirections.AdvanceNext(),
+			BadCutDisplayType.WrongColor => wrongColors.AdvanceNext(),
+			BadCutDisplayType.Bomb => bombs.AdvanceNext(),
+			_ => throw new ArgumentOutOfRangeException()
+		});
 	}
 
 	public void PreviousBadCut()
 	{
-		switch (BadCutType)
+		UpdateBadCutText(BadCutType switch
 		{
-			case BadCutDisplayType.All:
-				allIndex = allIndex > 0 ? allIndex - 1 : allBadCuts.Count - 1;
-				break;
-			case BadCutDisplayType.WrongDirection:
-				wrongDirectionIndex = wrongDirectionIndex > 0 ? wrongDirectionIndex - 1 : wrongDirections.Count - 1;
-				break;
-			case BadCutDisplayType.WrongColor:
-				wrongColorIndex = wrongColorIndex > 0 ? wrongColorIndex - 1 : wrongColors.Count - 1;
-				break;
-			case BadCutDisplayType.Bomb:
-				bombIndex = bombIndex > 0 ? bombIndex - 1 : bombs.Count - 1;
-				break;
-			default:
-				throw new ArgumentOutOfRangeException();
-		}
-		UpdateBadCutText();
+			BadCutDisplayType.All => allBadCuts.AdvancePrevious(),
+			BadCutDisplayType.WrongDirection => wrongDirections.AdvancePrevious(),
+			BadCutDisplayType.WrongColor => wrongColors.AdvancePrevious(),
+			BadCutDisplayType.Bomb => bombs.AdvancePrevious(),
+			_ => throw new ArgumentOutOfRangeException()
+		});
 	}
 
-	private void UpdateBadCutText()
+	private void UpdateBadCutText(BadCutDisplay? display = null)
 	{
-		var display = badCutType switch
+		display ??= badCutType switch
 		{
-			BadCutDisplayType.All => allBadCuts.ElementAtOrDefault(allIndex),
-			BadCutDisplayType.WrongDirection => wrongDirections.ElementAtOrDefault(wrongDirectionIndex),
-			BadCutDisplayType.WrongColor => wrongColors.ElementAtOrDefault(wrongColorIndex),
-			BadCutDisplayType.Bomb => bombs.ElementAtOrDefault(bombIndex),
+			BadCutDisplayType.All => allBadCuts.Current,
+			BadCutDisplayType.WrongDirection => wrongDirections.Current,
+			BadCutDisplayType.WrongColor => wrongColors.Current,
+			BadCutDisplayType.Bomb => bombs.Current,
 			_ => throw new ArgumentOutOfRangeException()
 		};
 		badCutText.text = display?.Text ?? "<i>No display.";
@@ -277,24 +248,21 @@ internal class ConfigPreviewCustomTab
 #region MissTab
 	[UIComponent("MissText")] private readonly TextMeshProUGUI missText = null!;
 
-	private List<MissDisplay> misses = [];
-	private int missIndex;
+	private ItemRevolver<MissDisplay> misses = new();
 
 	public void NextMiss()
 	{
-		missIndex = missIndex < misses.Count - 1 ? missIndex + 1 : 0;
-		UpdateMissText();
+		UpdateMissText(misses.AdvanceNext());
 	}
 
 	public void PreviousMiss()
 	{
-		missIndex = missIndex > 0 ? missIndex - 1 : misses.Count - 1;
-		UpdateMissText();
+		UpdateMissText(misses.AdvancePrevious());
 	}
 
-	private void UpdateMissText()
+	private void UpdateMissText(MissDisplay? display = null)
 	{
-		var display = misses.ElementAtOrDefault(missIndex);
+		display ??= misses.Current;
 		missText.text = display?.Text ?? "<i>No display.";
 		missText.color = display?.Color ?? new Color32(0xFF, 0xFF, 0xFF, 0xAA);
 	}
