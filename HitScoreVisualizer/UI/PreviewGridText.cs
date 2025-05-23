@@ -38,7 +38,7 @@ internal class PreviewGridText
 			AfterCutScore = score.After,
 			MaxPossibleScore = 115,
 			TotalCutScore = score.Before + score.Center + score.After,
-			CutInfo = RandomScoreGenerator.DummyNoteCutInfo
+			CutInfo = RandomScoreGenerator.DummyNormalNote
 		};
 		(textMesh.text, textMesh.color) = config.Judge(in judgmentDetails);
 	}

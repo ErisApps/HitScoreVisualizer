@@ -57,23 +57,24 @@
 
 						<tab tags="custom-preview-tabs" tab-name="Judgments">
 							<horizontal pref-height="55">
-								<stack>
-									<text text="SCORE" font-size="5" align="Center" />
+								<stack pref-width="50">
+									<text id="JudgmentsText" text=" " font-size="5" align="Center" word-wrapping="true" />
 								</stack>
 
 								<vertical pref-width="50" child-expand-height="false" child-align="MiddleCenter">
-									<slider-setting text="Before" max="70" increment="1" integer-only="true" word-wrapping="false" />
-									<slider-setting text="Acc" max="15" increment="1" integer-only="true" word-wrapping="false" />
-									<slider-setting text="After" max="30" increment="1" integer-only="true" word-wrapping="false" />
-									<slider-setting text="TD" max="1" increment="0.01" word-wrapping="false" />
+									<list-setting text="Type" value="CurrentJudgmentType" options="JudgmentOptions" formatter="EnumFormatter" />
+									<slider-setting text="Before" value="Before" max="70" increment="1" integer-only="true" apply-on-change="true" word-wrapping="false" />
+									<slider-setting text="Acc" value="Center" max="15" increment="1" integer-only="true" apply-on-change="true" word-wrapping="false" />
+									<slider-setting text="After" value="After" max="30" increment="1" integer-only="true" apply-on-change="true" word-wrapping="false" />
+									<slider-setting text="TD" value="TimeDependence" max="1" increment="0.01" apply-on-change="true" word-wrapping="false" />
 								</vertical>
 							</horizontal>
 						</tab>
 
 						<tab tags="custom-preview-tabs" tab-name="Chain Link">
 							<horizontal pref-height="55">
-								<stack>
-									<text text="SCORE" font-size="5" align="Center" />
+								<stack pref-width="50">
+									<text id="ChainLinkText" text=" " font-size="5" align="Center" />
 								</stack>
 
 								<vertical pref-width="50" child-expand-height="false" child-align="MiddleCenter">
@@ -84,14 +85,13 @@
 
 						<tab tags="custom-preview-tabs" tab-name="Bad Cut">
 							<horizontal pref-height="55">
-								<stack>
-									<text text="SCORE" font-size="5" align="Center" />
+								<stack pref-width="50">
+									<text id="BadCutText" text=" " font-size="5" align="Center" />
 								</stack>
 
 								<vertical pref-width="50" child-expand-height="false" child-control-height="false" child-align="MiddleCenter">
 									<horizontal>
-										<list-setting text="Type" options="BadCutTypeOptions" formatter="BadCutTypeFormatter" value="BadCutType" apply-on-change="true"
-													  pref-width="20" />
+										<list-setting text="Type" value="BadCutType" options="BadCutTypeOptions" formatter="EnumFormatter" apply-on-change="true" />
 									</horizontal>
 
 									<horizontal child-expand-width="false" child-align="MiddleCenter" spacing="2">
@@ -104,8 +104,8 @@
 
 						<tab tags="custom-preview-tabs" tab-name="Miss">
 							<horizontal pref-height="55">
-								<stack>
-									<text text="SCORE" font-size="5" align="Center" />
+								<stack pref-width="50">
+									<text id="MissText" text=" " font-size="5" align="Center" />
 								</stack>
 
 								<horizontal horizontal-fit="PreferredSize" pref-width="50" child-expand-width="false" child-align="MiddleCenter" spacing="2">
