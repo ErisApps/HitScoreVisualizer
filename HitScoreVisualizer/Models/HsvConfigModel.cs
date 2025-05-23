@@ -192,15 +192,15 @@ public class HsvConfigModel
 		AssumeMaxPostSwing = false,
 		Judgments =
 		[
-			new() { Threshold = 104, Text = "%C%s", Color = new(1f, 1f, 1f) },
-			new() { Threshold = 0, Text = "%C%s", Color = new(1f, 1f, 1f, 0.3f) }
+			new() { Threshold = 104, Text = "%C%s", Color = Color.white },
+			new() { Threshold = 0, Text = "<alpha=#4C>%C%s", Color = Color.white }
 		],
 		ChainHeadJudgments =
 		[
-			new() { Threshold = 77, Text = "%C%s", Color = new(1f, 1f, 1f) },
-			new() { Threshold = 0, Text = "%C%s", Color = new(1f, 1f, 1f, 0.3f) }
+			new() { Threshold = 77, Text = "%C%s", Color = Color.white },
+			new() { Threshold = 0, Text = "<alpha=#4C>%C%s", Color = Color.white }
 		],
-		ChainLinkDisplay = new() { Text = "<u>%s", Color = new(1f, 1f, 1f) },
+		ChainLinkDisplay = new() { Text = "<u>%s", Color = Color.white },
 		AccuracyJudgments =
 		[
 			new() { Threshold = 15, Text = "<u>" }
