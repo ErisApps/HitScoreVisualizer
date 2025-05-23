@@ -1,4 +1,5 @@
 using HitScoreVisualizer.Models;
+using HitScoreVisualizer.Utilities;
 using HitScoreVisualizer.Utilities.Extensions;
 using HitScoreVisualizer.Utilities.Services;
 using TMPro;
@@ -38,7 +39,7 @@ internal class PreviewGridText
 			AfterCutScore = score.After,
 			MaxPossibleScore = 115,
 			TotalCutScore = score.Before + score.Center + score.After,
-			CutInfo = RandomScoreGenerator.DummyNormalNote
+			CutInfo = DummyScores.Normal
 		};
 		(textMesh.text, textMesh.color) = config.Judge(in judgmentDetails);
 	}
