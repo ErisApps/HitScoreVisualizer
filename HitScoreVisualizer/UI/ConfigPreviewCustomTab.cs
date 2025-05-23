@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using BeatSaberMarkupLanguage.Attributes;
 using HitScoreVisualizer.Models;
@@ -6,6 +8,7 @@ using HitScoreVisualizer.Utilities;
 using HitScoreVisualizer.Utilities.Extensions;
 using HitScoreVisualizer.Utilities.Services;
 using TMPro;
+using UnityEngine;
 using Zenject;
 #pragma warning disable CS0414 // Field is assigned but its value is never used
 
@@ -31,16 +34,39 @@ internal class ConfigPreviewCustomTab
 
 	public void Enable()
 	{
-		configLoader.ConfigChanged += UpdateAllTexts;
-		UpdateAllTexts(pluginConfig.SelectedConfig?.Config);
+		configLoader.ConfigChanged += ConfigChanged;
+		ConfigChanged(pluginConfig.SelectedConfig?.Config);
 	}
 
 	public void Disable()
 	{
-		configLoader.ConfigChanged -= UpdateAllTexts;
+		configLoader.ConfigChanged -= ConfigChanged;
 	}
 
-	private void UpdateAllTexts(HsvConfigModel? config)
+	private void ConfigChanged(HsvConfigModel? config)
+	{
+		if (config?.BadCutDisplays is not null or [])
+		{
+			allBadCuts = config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.All).ToList();
+			wrongDirections = config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.All or BadCutDisplayType.WrongDirection).ToList();
+			wrongColors = config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.All or BadCutDisplayType.WrongColor).ToList();
+			bombs = config.BadCutDisplays.Where(x => x.Type is BadCutDisplayType.All or BadCutDisplayType.Bomb).ToList();
+		}
+		else
+		{
+			allBadCuts = [];
+			wrongDirections = [];
+			wrongColors = [];
+			bombs = [];
+		}
+		allIndex = 0;
+		wrongDirectionIndex = 0;
+		wrongColorIndex = 0;
+		bombIndex = 0;
+		UpdateAllTexts();
+	}
+
+	private void UpdateAllTexts()
 	{
 		foreach (var text in texts)
 		{
@@ -48,6 +74,7 @@ internal class ConfigPreviewCustomTab
 		}
 		UpdateJudgmentsText();
 		UpdateChainLinkText();
+		UpdateBadCutText();
 	}
 
 	public object EnumFormatter(Enum v)
@@ -164,7 +191,75 @@ internal class ConfigPreviewCustomTab
 		set
 		{
 			badCutType = value;
+			UpdateBadCutText();
 		}
+	}
+
+	private List<BadCutDisplay> allBadCuts = [];
+	private int allIndex;
+	private List<BadCutDisplay> wrongDirections = [];
+	private int wrongDirectionIndex;
+	private List<BadCutDisplay> wrongColors = [];
+	private int wrongColorIndex;
+	private List<BadCutDisplay> bombs = [];
+	private int bombIndex;
+
+	public void NextBadCut()
+	{
+		switch (BadCutType)
+		{
+			case BadCutDisplayType.All:
+				allIndex = allIndex < allBadCuts.Count - 1 ? allIndex + 1 : 0;
+				break;
+			case BadCutDisplayType.WrongDirection:
+				wrongDirectionIndex = wrongDirectionIndex < wrongDirections.Count - 1 ? wrongDirectionIndex + 1 : 0;
+				break;
+			case BadCutDisplayType.WrongColor:
+				wrongColorIndex = wrongColorIndex < wrongColors.Count - 1 ? wrongColorIndex + 1 : 0;
+				break;
+			case BadCutDisplayType.Bomb:
+				bombIndex = bombIndex < bombs.Count - 1 ? bombIndex + 1 : 0;
+				break;
+			default:
+				throw new ArgumentOutOfRangeException();
+		}
+		UpdateBadCutText();
+	}
+
+	public void PreviousBadCut()
+	{
+		switch (BadCutType)
+		{
+			case BadCutDisplayType.All:
+				allIndex = allIndex > 0 ? allIndex - 1 : allBadCuts.Count - 1;
+				break;
+			case BadCutDisplayType.WrongDirection:
+				wrongDirectionIndex = wrongDirectionIndex > 0 ? wrongDirectionIndex - 1 : wrongDirections.Count - 1;
+				break;
+			case BadCutDisplayType.WrongColor:
+				wrongColorIndex = wrongColorIndex > 0 ? wrongColorIndex - 1 : wrongColors.Count - 1;
+				break;
+			case BadCutDisplayType.Bomb:
+				bombIndex = bombIndex > 0 ? bombIndex - 1 : bombs.Count - 1;
+				break;
+			default:
+				throw new ArgumentOutOfRangeException();
+		}
+		UpdateBadCutText();
+	}
+
+	private void UpdateBadCutText()
+	{
+		var display = badCutType switch
+		{
+			BadCutDisplayType.All => allBadCuts.ElementAtOrDefault(allIndex),
+			BadCutDisplayType.WrongDirection => wrongDirections.ElementAtOrDefault(wrongDirectionIndex),
+			BadCutDisplayType.WrongColor => wrongColors.ElementAtOrDefault(wrongColorIndex),
+			BadCutDisplayType.Bomb => bombs.ElementAtOrDefault(bombIndex),
+			_ => throw new ArgumentOutOfRangeException()
+		};
+		badCutText.text = display?.Text ?? "<i>No display.";
+		badCutText.color = display?.Color ?? new Color32(0xFF, 0xFF, 0xFF, 0xAA);
 	}
 #endregion
 
