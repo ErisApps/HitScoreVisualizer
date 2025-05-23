@@ -7,8 +7,6 @@ namespace HitScoreVisualizer.UI;
 
 internal class PreviewTextEffect : MonoBehaviour
 {
-	internal class Pool : MonoMemoryPool<PreviewTextEffect>;
-
 	[SerializeField]
 	private TextMeshProUGUI textMesh = null!;
 
