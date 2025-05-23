@@ -16,32 +16,36 @@ internal class ConfigPreviewCustomTab
 	[Inject] private readonly PluginConfig pluginConfig = null!;
 	[Inject] private readonly ConfigLoader configLoader = null!;
 
+	private TextMeshProUGUI[] texts = null!; // set in initializer
+
 	[UIAction("#post-parse")]
 	public void PostParse()
 	{
-		judgmentsText.enableAutoSizing = true;
-		judgmentsText.fontSizeMax = 5;
-		chainLinkText.enableAutoSizing = true;
-		chainLinkText.fontSizeMax = 5;
-		badCutText.enableAutoSizing = true;
-		badCutText.fontSizeMax = 5;
-		missText.enableAutoSizing = true;
-		missText.fontSizeMax = 5;
+		texts = [judgmentsText, chainLinkText, badCutText, missText];
+		foreach (var text in texts)
+		{
+			text.enableAutoSizing = true;
+			text.fontSizeMax = 5;
+		}
 	}
 
 	public void Enable()
 	{
-		configLoader.ConfigChanged += ConfigChanged;
-		ConfigChanged(pluginConfig.SelectedConfig?.Config);
+		configLoader.ConfigChanged += UpdateAllTexts;
+		UpdateAllTexts(pluginConfig.SelectedConfig?.Config);
 	}
 
 	public void Disable()
 	{
-		configLoader.ConfigChanged -= ConfigChanged;
+		configLoader.ConfigChanged -= UpdateAllTexts;
 	}
 
-	private void ConfigChanged(HsvConfigModel? config)
+	private void UpdateAllTexts(HsvConfigModel? config)
 	{
+		foreach (var text in texts)
+		{
+			text.fontStyle = pluginConfig.DisableItalics ? FontStyles.Normal : FontStyles.Italic;
+		}
 		UpdateJudgmentsText();
 		UpdateChainLinkText();
 	}
@@ -169,7 +173,7 @@ internal class ConfigPreviewCustomTab
 
 #endregion
 
-private enum JudgmentType
+	private enum JudgmentType
 	{
 		Normal,
 		ChainHead
