@@ -95,8 +95,8 @@
 									</horizontal>
 
 									<horizontal child-expand-width="false" child-align="MiddleCenter" spacing="2">
-										<button text="&lt;" on-click="NextBadCut" font-size="6" pref-width="12" pref-height="10" />
-										<button text="&gt;" on-click="PreviousBadCut" font-size="6" pref-width="12" pref-height="10" />
+										<button text="&lt;" on-click="PreviousBadCut" font-size="6" pref-width="12" pref-height="10" />
+										<button text="&gt;" on-click="NextBadCut" font-size="6" pref-width="12" pref-height="10" />
 									</horizontal>
 								</vertical>
 							</horizontal>
@@ -109,8 +109,8 @@
 								</stack>
 
 								<horizontal horizontal-fit="PreferredSize" pref-width="50" child-expand-width="false" child-align="MiddleCenter" spacing="2">
-									<button text="&lt;" font-size="6" pref-width="12" pref-height="10" />
-									<button text="&gt;" font-size="6" pref-width="12" pref-height="10" />
+									<button text="&lt;" on-click="PreviousMiss" font-size="6" pref-width="12" pref-height="10" />
+									<button text="&gt;" on-click="NextMiss" font-size="6" pref-width="12" pref-height="10" />
 								</horizontal>
 							</horizontal>
 						</tab>
