@@ -47,7 +47,51 @@
 
 			<!-- Custom Tab -->
 			<tab tags="preview-tabs" tab-name="Custom">
+				<macro.as-host host="CustomTab">
 
+					<vertical vertical-fit="PreferredSize" pref-height="70" bg="round-rect-panel">
+
+						<stack vertical-fit="PreferredSize" pref-height="10">
+							<tab-select tab-tag="custom-preview-tabs" select-cell="CustomPreviewTabChanged" />
+						</stack>
+
+						<horizontal vertical-fit="Unconstrained">
+
+							<stack pad-right="20">
+								<text text="SCORE" font-size="5" align="Center" />
+							</stack>
+
+							<tab tags="custom-preview-tabs" tab-name="Judgments">
+								<vertical vertical-fit="Unconstrained" spacing="2" child-expand-height="false" bg="round-rect-panel">
+									<slider-setting text="1" max="70" increment="1" integer-only="true" pref-width="50" />
+									<slider-setting text="1" max="15" increment="1" integer-only="true" pref-width="50" />
+									<slider-setting text="1" max="30" increment="1" integer-only="true" pref-width="50" />
+								</vertical>
+							</tab>
+
+							<tab tags="custom-preview-tabs" tab-name="Chain Link">
+								<horizontal pref-height="10">
+
+								</horizontal>
+							</tab>
+
+							<tab tags="custom-preview-tabs" tab-name="Bad Cut">
+								<horizontal pref-height="10">
+
+								</horizontal>
+							</tab>
+
+							<tab tags="custom-preview-tabs" tab-name="Miss">
+								<horizontal pref-height="10">
+
+								</horizontal>
+							</tab>
+
+						</horizontal>
+
+					</vertical>
+
+				</macro.as-host>
 			</tab>
 
 		</horizontal>
