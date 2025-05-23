@@ -31,7 +31,7 @@ internal class ConfigPreviewCustomTab
 	public void Enable()
 	{
 		configLoader.ConfigChanged += ConfigChanged;
-		UpdateJudgmentsText();
+		ConfigChanged(pluginConfig.SelectedConfig?.Config);
 	}
 
 	public void Disable()
@@ -42,6 +42,7 @@ internal class ConfigPreviewCustomTab
 	private void ConfigChanged(HsvConfigModel? config)
 	{
 		UpdateJudgmentsText();
+		UpdateChainLinkText();
 	}
 
 	public object EnumFormatter(Enum v)
@@ -131,6 +132,19 @@ internal class ConfigPreviewCustomTab
 
 #region ChainLinkTab
 	[UIComponent("ChainLinkText")] private readonly TextMeshProUGUI chainLinkText = null!;
+
+	private void UpdateChainLinkText()
+	{
+		(chainLinkText.text, chainLinkText.color) = (pluginConfig.SelectedConfig?.Config ?? HsvConfigModel.Vanilla).Judge(new()
+		{
+			BeforeCutScore = 0,
+			CenterCutScore = 0,
+			AfterCutScore = 0,
+			MaxPossibleScore = 20,
+			TotalCutScore = 20,
+			CutInfo = RandomScoreGenerator.DummyChainLink
+		});
+	}
 #endregion
 
 #region BadCutTab

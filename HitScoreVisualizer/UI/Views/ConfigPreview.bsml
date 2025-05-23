@@ -52,7 +52,7 @@
 					<vertical vertical-fit="PreferredSize" pref-height="70" pref-width="110" child-control-height="false">
 
 						<stack vertical-fit="PreferredSize" pref-height="10">
-							<tab-select tab-tag="custom-preview-tabs" select-cell="CustomPreviewTabChanged" />
+							<tab-select tab-tag="custom-preview-tabs" />
 						</stack>
 
 						<tab tags="custom-preview-tabs" tab-name="Judgments">
