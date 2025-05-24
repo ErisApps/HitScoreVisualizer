@@ -9,7 +9,6 @@ using HitScoreVisualizer.Utilities.Services;
 using TMPro;
 using UnityEngine;
 using Zenject;
-#pragma warning disable CS0414 // Field is assigned but its value is never used
 
 namespace HitScoreVisualizer.UI;
 
@@ -18,17 +17,29 @@ internal class ConfigPreviewCustomTab
 	[Inject] private readonly PluginConfig pluginConfig = null!;
 	[Inject] private readonly ConfigLoader configLoader = null!;
 
-	private TextMeshProUGUI[] texts = null!; // set in initializer
+	[UIComponent("CustomPreviewText")] private readonly TextMeshProUGUI previewText = null!;
+	// private TextMeshProUGUI[] texts = null!; // set in initializer
+
+	private CustomPreviewTab currentTab = CustomPreviewTab.Judgments;
+	private JudgmentType currentJudgmentType = JudgmentType.Normal;
+	private BadCutDisplayType currentBadCutType = BadCutDisplayType.All;
+
+	private float timeDependence;
+	private int before = 70;
+	private int center = 15;
+	private int after = 30;
+
+	private ItemRevolver<BadCutDisplay> allBadCuts = new();
+	private ItemRevolver<BadCutDisplay> wrongDirections = new();
+	private ItemRevolver<BadCutDisplay> wrongColors = new();
+	private ItemRevolver<BadCutDisplay> bombs = new();
+	private ItemRevolver<MissDisplay> misses = new();
 
 	[UIAction("#post-parse")]
 	public void PostParse()
 	{
-		texts = [judgmentsText, chainLinkText, badCutText, missText];
-		foreach (var text in texts)
-		{
-			text.enableAutoSizing = true;
-			text.fontSizeMax = 5;
-		}
+		previewText.enableAutoSizing = true;
+		previewText.fontSizeMax = 5;
 	}
 
 	public void Enable()
@@ -40,6 +51,104 @@ internal class ConfigPreviewCustomTab
 	public void Disable()
 	{
 		configLoader.ConfigChanged -= ConfigChanged;
+	}
+
+	public object EnumFormatter(Enum v)
+	{
+		return Regex.Replace(v.ToString(), "(\\B[A-Z])", " $1");
+	}
+
+	public Array JudgmentOptions { get; } = Enum.GetValues(typeof(JudgmentType));
+	public Array BadCutTypeOptions { get; } = Enum.GetValues(typeof(BadCutDisplayType));
+
+	public int Before
+	{
+		get => before;
+		set
+		{
+			before = value;
+			UpdateText();
+		}
+	}
+
+	public int Center
+	{
+		get => center;
+		set
+		{
+			center = value;
+			UpdateText();
+		}
+	}
+
+	public int After
+	{
+		get => after;
+		set
+		{
+			after = value;
+			UpdateText();
+		}
+	}
+
+	public float TimeDependence
+	{
+		get => timeDependence;
+		set
+		{
+			timeDependence = value;
+			UpdateText();
+		}
+	}
+
+	public JudgmentType JudgmentType
+	{
+		get => currentJudgmentType;
+		set
+		{
+			currentJudgmentType = value;
+			UpdateText();
+		}
+	}
+
+	public BadCutDisplayType BadCutType
+	{
+		get => currentBadCutType;
+		set
+		{
+			currentBadCutType = value;
+			UpdateText();
+		}
+	}
+
+	public void TabChanged(object segmentedControl, int idx)
+	{
+		currentTab = (CustomPreviewTab)idx;
+		UpdateText();
+	}
+
+	public void NextBadCut()
+	{
+		CurrentBadCuts.AdvanceNext();
+		UpdateText();
+	}
+
+	public void PreviousBadCut()
+	{
+		CurrentBadCuts.AdvancePrevious();
+		UpdateText();
+	}
+
+	public void NextMiss()
+	{
+		misses.AdvanceNext();
+		UpdateText();
+	}
+
+	public void PreviousMiss()
+	{
+		misses.AdvancePrevious();
+		UpdateText();
 	}
 
 	private void ConfigChanged(HsvConfigModel? config)
@@ -68,87 +177,32 @@ internal class ConfigPreviewCustomTab
 			misses = new();
 		}
 
-		UpdateAllTexts();
+		UpdateText();
 	}
 
-	private void UpdateAllTexts()
+	private void UpdateText()
 	{
-		foreach (var text in texts)
+		previewText.fontStyle = pluginConfig.DisableItalics ? FontStyles.Normal : FontStyles.Italic;
+		(previewText.text, previewText.color) = currentTab switch
 		{
-			text.fontStyle = pluginConfig.DisableItalics ? FontStyles.Normal : FontStyles.Italic;
-		}
-		UpdateJudgmentsText();
-		UpdateChainLinkText();
-		UpdateBadCutText();
-		UpdateMissText();
+			CustomPreviewTab.Judgments => GetJudgmentsText(),
+			CustomPreviewTab.ChainLink => GetChainLinkText(),
+			CustomPreviewTab.BadCut => GetBadCutText(),
+			CustomPreviewTab.Miss => GetMissText(),
+			_ => throw new ArgumentOutOfRangeException()
+		};
 	}
 
-	public object EnumFormatter(Enum v)
+	private ItemRevolver<BadCutDisplay> CurrentBadCuts => currentBadCutType switch
 	{
-		return Regex.Replace(v.ToString(), "(\\B[A-Z])", " $1");
-	}
+		BadCutDisplayType.All => allBadCuts,
+		BadCutDisplayType.WrongDirection => wrongDirections,
+		BadCutDisplayType.WrongColor => wrongColors,
+		BadCutDisplayType.Bomb => bombs,
+		_ => throw new ArgumentOutOfRangeException()
+	};
 
-#region JudgmentsTab
-	[UIComponent("JudgmentsText")] private readonly TextMeshProUGUI judgmentsText = null!;
-
-	private JudgmentType currentJudgmentType = JudgmentType.Normal;
-	private JudgmentType CurrentJudgmentType
-	{
-		get => currentJudgmentType;
-		set
-		{
-			currentJudgmentType = value;
-			UpdateJudgmentsText();
-		}
-	}
-
-	public Array JudgmentOptions { get; set; } = Enum.GetValues(typeof(JudgmentType));
-
-	private int before = 70;
-	public int Before
-	{
-		get => before;
-		set
-		{
-			before = value;
-			UpdateJudgmentsText();
-		}
-	}
-
-	private int center = 15;
-	public int Center
-	{
-		get => center;
-		set
-		{
-			center = value;
-			UpdateJudgmentsText();
-		}
-	}
-
-	private int after = 30;
-	public int After
-	{
-		get => after;
-		set
-		{
-			after = value;
-			UpdateJudgmentsText();
-		}
-	}
-
-	private float timeDependence;
-	public float TimeDependence
-	{
-		get => timeDependence;
-		set
-		{
-			timeDependence = value;
-			UpdateJudgmentsText();
-		}
-	}
-
-	private void UpdateJudgmentsText()
+	private (string, Color) GetJudgmentsText()
 	{
 		var (afterCut, max, cutInfo) = currentJudgmentType switch
 		{
@@ -156,7 +210,7 @@ internal class ConfigPreviewCustomTab
 			JudgmentType.ChainHead => (0, 85, DummyScores.ChainHead),
 			_ => throw new ArgumentOutOfRangeException()
 		};
-		(judgmentsText.text, judgmentsText.color) = (pluginConfig.SelectedConfig?.Config ?? HsvConfigModel.Vanilla).Judge(new()
+		return (pluginConfig.SelectedConfig?.Config ?? HsvConfigModel.Vanilla).Judge(new()
 		{
 			BeforeCutScore = before,
 			CenterCutScore = center,
@@ -166,14 +220,10 @@ internal class ConfigPreviewCustomTab
 			CutInfo = cutInfo
 		});
 	}
-#endregion
 
-#region ChainLinkTab
-	[UIComponent("ChainLinkText")] private readonly TextMeshProUGUI chainLinkText = null!;
-
-	private void UpdateChainLinkText()
+	private (string, Color) GetChainLinkText()
 	{
-		(chainLinkText.text, chainLinkText.color) = (pluginConfig.SelectedConfig?.Config ?? HsvConfigModel.Vanilla).Judge(new()
+		return (pluginConfig.SelectedConfig?.Config ?? HsvConfigModel.Vanilla).Judge(new()
 		{
 			BeforeCutScore = 0,
 			CenterCutScore = 0,
@@ -183,56 +233,10 @@ internal class ConfigPreviewCustomTab
 			CutInfo = DummyScores.ChainLink
 		});
 	}
-#endregion
 
-#region BadCutTab
-	[UIComponent("BadCutText")] private readonly TextMeshProUGUI badCutText = null!;
-
-	public Array BadCutTypeOptions { get; set; } = Enum.GetValues(typeof(BadCutDisplayType));
-
-	private BadCutDisplayType badCutType = BadCutDisplayType.All;
-	public BadCutDisplayType BadCutType
+	private (string, Color) GetBadCutText(BadCutDisplay? display = null)
 	{
-		get => badCutType;
-		set
-		{
-			badCutType = value;
-			UpdateBadCutText();
-		}
-	}
-
-	private ItemRevolver<BadCutDisplay> allBadCuts = new();
-	private ItemRevolver<BadCutDisplay> wrongDirections = new();
-	private ItemRevolver<BadCutDisplay> wrongColors = new();
-	private ItemRevolver<BadCutDisplay> bombs = new();
-
-	public void NextBadCut()
-	{
-		UpdateBadCutText(BadCutType switch
-		{
-			BadCutDisplayType.All => allBadCuts.AdvanceNext(),
-			BadCutDisplayType.WrongDirection => wrongDirections.AdvanceNext(),
-			BadCutDisplayType.WrongColor => wrongColors.AdvanceNext(),
-			BadCutDisplayType.Bomb => bombs.AdvanceNext(),
-			_ => throw new ArgumentOutOfRangeException()
-		});
-	}
-
-	public void PreviousBadCut()
-	{
-		UpdateBadCutText(BadCutType switch
-		{
-			BadCutDisplayType.All => allBadCuts.AdvancePrevious(),
-			BadCutDisplayType.WrongDirection => wrongDirections.AdvancePrevious(),
-			BadCutDisplayType.WrongColor => wrongColors.AdvancePrevious(),
-			BadCutDisplayType.Bomb => bombs.AdvancePrevious(),
-			_ => throw new ArgumentOutOfRangeException()
-		});
-	}
-
-	private void UpdateBadCutText(BadCutDisplay? display = null)
-	{
-		display ??= badCutType switch
+		display ??= currentBadCutType switch
 		{
 			BadCutDisplayType.All => allBadCuts.Current,
 			BadCutDisplayType.WrongDirection => wrongDirections.Current,
@@ -240,37 +244,30 @@ internal class ConfigPreviewCustomTab
 			BadCutDisplayType.Bomb => bombs.Current,
 			_ => throw new ArgumentOutOfRangeException()
 		};
-		badCutText.text = display?.Text ?? "<i>No display.";
-		badCutText.color = display?.Color ?? new Color32(0xFF, 0xFF, 0xFF, 0xAA);
-	}
-#endregion
-
-#region MissTab
-	[UIComponent("MissText")] private readonly TextMeshProUGUI missText = null!;
-
-	private ItemRevolver<MissDisplay> misses = new();
-
-	public void NextMiss()
-	{
-		UpdateMissText(misses.AdvanceNext());
+		var text = display?.Text ?? "<i>No display.";
+		var color = display?.Color ?? new Color32(0xFF, 0xFF, 0xFF, 0xAA);
+		return (text, color);
 	}
 
-	public void PreviousMiss()
-	{
-		UpdateMissText(misses.AdvancePrevious());
-	}
-
-	private void UpdateMissText(MissDisplay? display = null)
+	private (string, Color) GetMissText(MissDisplay? display = null)
 	{
 		display ??= misses.Current;
-		missText.text = display?.Text ?? "<i>No display.";
-		missText.color = display?.Color ?? new Color32(0xFF, 0xFF, 0xFF, 0xAA);
+		var text = display?.Text ?? "<i>No display.";
+		var color = display?.Color ?? new Color32(0xFF, 0xFF, 0xFF, 0xAA);
+		return (text, color);
 	}
-#endregion
+}
 
-	private enum JudgmentType
-	{
-		Normal,
-		ChainHead
-	}
+internal enum JudgmentType
+{
+	Normal,
+	ChainHead
+}
+
+internal enum CustomPreviewTab
+{
+	Judgments = 0,
+	ChainLink = 1,
+	BadCut = 2,
+	Miss = 3
 }
