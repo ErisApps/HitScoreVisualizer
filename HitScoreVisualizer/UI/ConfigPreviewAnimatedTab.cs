@@ -80,7 +80,7 @@ internal class ConfigPreviewAnimatedTab : IPreviewTextEffectDidFinishEvent
 
 	private bool animating;
 	private WaitForSeconds? animationInterval;
-	private readonly WaitForSeconds initialDelay = new(0.6f);
+	private readonly WaitForSeconds initialDelay = new(0.25f);
 
 	private IEnumerator AnimateTextEffects(HsvConfigModel config)
 	{
