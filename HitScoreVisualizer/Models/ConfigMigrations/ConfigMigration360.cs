@@ -11,5 +11,6 @@ internal class ConfigMigration360 : IHsvConfigMigration
 	{
 		config.Judgments = config.Judgments.OrderByDescending(x => x.Threshold).ToList();
 		config.ChainHeadJudgments = config.ChainHeadJudgments.OrderByDescending(x => x.Threshold).ToList();
+		config.TimeDependenceJudgments = config.TimeDependenceJudgments?.OrderByDescending(x => x.Threshold).ToList();
 	}
 }
