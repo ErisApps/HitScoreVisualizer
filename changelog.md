@@ -1,5 +1,13 @@
 ## Changelog
 
+### 3.7.0
+
+- Added a config previewer menu to the right of the config selector menu
+- Added two new automatic config migrations:
+  - configs that are older than v3.4.0 will automatically have "chainHeadJudgments" added to account for the rule stating configs must have at least one judgment
+  - configs that are older than v3.6.0 will automatically have their "judgments", "chainHeadJudgments", and "timeDependenceJudgments" thresholds automatically sorted in descending order to account for the rule stating thresholds must be ordered
+- Potentially slightly reduced the performance cost of using HitScoreVisualizer during gameplay
+
 ### 3.6.1
 
 - Added a button to open the config folder in the file explorer
