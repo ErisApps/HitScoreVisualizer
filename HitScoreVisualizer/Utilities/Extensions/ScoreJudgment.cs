@@ -88,11 +88,11 @@ internal static class ScoreJudgment
 	{
 		return config.DisplayMode switch
 		{
-			"format" => FormatJudgmentText(config, unformattedText, in details),
-			"textOnly" => unformattedText,
-			"numeric" => details.TotalCutScore.ToString(),
-			"scoreOnTop" => $"{details.TotalCutScore}\n{unformattedText}\n",
-			"directions" => $"{unformattedText}\n{details.CutInfo.CalculateOffDirection().ToFormattedDirection()}\n",
+			DisplayMode.Format => FormatJudgmentText(config, unformattedText, in details),
+			DisplayMode.TextOnly => unformattedText,
+			DisplayMode.Numeric => details.TotalCutScore.ToString(),
+			DisplayMode.ScoreOnTop => $"{details.TotalCutScore}\n{unformattedText}\n",
+			DisplayMode.Directions => $"{unformattedText}\n{details.CutInfo.CalculateOffDirection().ToFormattedDirection()}\n",
 			_ => $"{unformattedText}\n{details.TotalCutScore}\n"
 		};
 	}
