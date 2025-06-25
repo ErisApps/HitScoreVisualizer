@@ -33,9 +33,16 @@ internal static class ConfigStateExtensions
 			ConfigState.Compatible => $"<color=\"green\">OK - {configVersion}",
 			ConfigState.NeedsMigration => $"<color=\"orange\">Config made for HSV {configVersion}. Migration possible.",
 			ConfigState.ValidationFailed => "<color=\"red\">Validation failed, please check the file again.",
-			ConfigState.Incompatible => $"<color=\"red\">Config is too old. Targets version {configVersion}",
+			ConfigState.Incompatible => GetIncompatibleVersionMessage(configVersion),
 			ConfigState.Broken => "<color=\"red\">Invalid config. Not selectable...",
 			_ => throw new ArgumentOutOfRangeException(nameof(state))
 		};
+	}
+
+	private static string GetIncompatibleVersionMessage(Version configVersion)
+	{
+		return configVersion is { Major: 0, Minor: 0, Patch: 0 }
+			? "<color=\"red\">Config version is missing or set as 0.0.0"
+			: $"<color=\"red\">Config is too old. Targets version {configVersion}";
 	}
 }

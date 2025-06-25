@@ -11,9 +11,9 @@ public class HsvConfigModel
 	// Properties that are optional are marked as nullable. They can be ignored during serialization.
 	// When a config object is made, all required fields will have to be provided with a value.
 
-	public required ulong MajorVersion { get; set; } = Plugin.Metadata.HVersion.Major;
-	public required ulong MinorVersion { get; set; } = Plugin.Metadata.HVersion.Minor;
-	public required ulong PatchVersion { get; set; } = Plugin.Metadata.HVersion.Patch;
+	public required ulong MajorVersion { get; set; }
+	public required ulong MinorVersion { get; set; }
+	public required ulong PatchVersion { get; set; }
 
 	public required DisplayMode DisplayMode { get; set; }
 
