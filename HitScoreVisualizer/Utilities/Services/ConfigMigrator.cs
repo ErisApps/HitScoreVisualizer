@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using HitScoreVisualizer.Models;
@@ -32,18 +33,27 @@ internal class ConfigMigrator
 		maximumMigrationNeededVersion = versions.Max();
 	}
 
-	public ConfigState GetConfigState(HsvConfigModel? configuration)
+	public ConfigState GetConfigState(HsvConfigModel? configuration, string fileName)
 	{
-		if (configuration is null)
+		try
 		{
+			if (configuration is null)
+			{
+				return ConfigState.Broken;
+			}
+
+			var configVersion = configuration.GetVersion();
+
+			return configVersion.NewerThan(Plugin.Metadata.HVersion) ? ConfigState.NewerVersion
+				: configVersion < minimumMigratableVersion ? ConfigState.Incompatible
+				: configVersion < maximumMigrationNeededVersion ? ConfigState.NeedsMigration
+				: configuration.Validate() ? ConfigState.Compatible : ConfigState.ValidationFailed;
+		}
+		catch (Exception ex)
+		{
+			Plugin.Log.Error($"Encountered a problem when getting the state of {fileName}: \n{ex}");
 			return ConfigState.Broken;
 		}
-		var configVersion = configuration.GetVersion();
-
-		return configVersion.NewerThan(Plugin.Metadata.HVersion) ? ConfigState.NewerVersion
-			: configVersion < minimumMigratableVersion ? ConfigState.Incompatible
-			: configVersion < maximumMigrationNeededVersion ? ConfigState.NeedsMigration
-			: configuration.Validate() ? ConfigState.Compatible : ConfigState.ValidationFailed;
 	}
 
 	public ConfigInfo MigrateConfig(ConfigInfo configInfo)
