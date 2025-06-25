@@ -8,6 +8,7 @@ namespace HitScoreVisualizer.HarmonyPatches;
 public class GameCoreInstallerHook : IAffinity
 {
 	[AffinityPrefix]
+	[AffinityPriority(1000)]
 	[AffinityPatch(typeof(GameplayCoreInstaller), nameof(GameplayCoreInstaller.InstallBindings))]
 	private void InstallBindingsPostfix(GameplayCoreInstaller __instance)
 	{

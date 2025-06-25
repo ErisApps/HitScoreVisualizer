@@ -18,6 +18,7 @@ internal class EffectPoolsManualInstallerPatch : IAffinity
 	}
 
 	[AffinityPrefix]
+	[AffinityPriority(1000)]
 	[AffinityPatch(typeof(EffectPoolsManualInstaller), nameof(EffectPoolsManualInstaller.ManualInstallBindings))]
 	internal void ManualInstallBindingsPrefix(FlyingScoreEffect ____flyingScoreEffectPrefab)
 	{

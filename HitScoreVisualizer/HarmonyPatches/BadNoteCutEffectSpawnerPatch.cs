@@ -35,6 +35,7 @@ internal class BadNoteCutEffectSpawnerPatch : IAffinity
 	}
 
 	[AffinityPrefix]
+	[AffinityPriority(1000)]
 	[AffinityPatch(typeof(BadNoteCutEffectSpawner), nameof(BadNoteCutEffectSpawner.HandleNoteWasCut))]
 	private bool HandleNoteWasCutPrefix(MissedNoteEffectSpawner __instance, NoteController noteController, in NoteCutInfo noteCutInfo)
 	{

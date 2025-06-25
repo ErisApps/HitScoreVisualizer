@@ -19,6 +19,7 @@ internal class FlyingScoreEffectPatch : IAffinity
 	// When the post swing score stops changing - HandleCutScoreBufferDidFinish is called
 
 	[AffinityPrefix]
+	[AffinityPriority(1000)]
 	[AffinityPatch(typeof(FlyingScoreEffect), nameof(FlyingScoreEffect.InitAndPresent))]
 	internal bool InitAndPresent(ref FlyingScoreEffect __instance, IReadonlyCutScoreBuffer cutScoreBuffer, float duration, Vector3 targetPos)
 	{

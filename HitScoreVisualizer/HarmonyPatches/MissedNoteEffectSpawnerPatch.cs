@@ -29,6 +29,7 @@ internal class MissedNoteEffectSpawnerPatch : IAffinity
 	}
 
 	[AffinityPrefix]
+	[AffinityPriority(1000)]
 	[AffinityPatch(typeof(MissedNoteEffectSpawner), nameof(MissedNoteEffectSpawner.HandleNoteWasMissed))]
 	private bool HandleNoteWasMissedPrefix(MissedNoteEffectSpawner __instance, NoteController noteController)
 	{
