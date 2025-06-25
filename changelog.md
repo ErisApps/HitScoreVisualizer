@@ -1,5 +1,10 @@
 ## Changelog
 
+### 3.7.1
+
+- Fixed an issue where configs that didn't specify a version would break the plugin as it would assume the config was up-to-date even when it needed migration
+- Added an error message explaining that configs should specify a version
+
 ### 3.7.0
 
 - Added a config previewer menu to the right of the config selector menu

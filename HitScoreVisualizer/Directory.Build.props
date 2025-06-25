@@ -7,7 +7,7 @@
 		<PluginId>HitScoreVisualizer</PluginId>
 		<PluginName>HitScoreVisualizer</PluginName>
 		<Authors>Eris</Authors>
-		<Version>3.7.0</Version>
+		<Version>3.7.1</Version>
 		<GameVersion>1.40.4</GameVersion>
 		<Description>
 			Visualizes the scores of your hits! Overly complex config options! Numbers?
