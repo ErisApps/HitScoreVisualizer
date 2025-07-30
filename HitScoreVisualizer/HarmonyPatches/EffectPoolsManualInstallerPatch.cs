@@ -24,7 +24,7 @@ internal class EffectPoolsManualInstallerPatch : IAffinity
 	{
 		var text = ____flyingScoreEffectPrefab._text;
 		text.richText = true;
-		text.enableWordWrapping = false;
+		text.textWrappingMode = TextWrappingModes.NoWrap;
 		text.overflowMode = TextOverflowModes.Overflow;
 
 		// Configure font shader and italics
