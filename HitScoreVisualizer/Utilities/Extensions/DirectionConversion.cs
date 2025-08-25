@@ -57,7 +57,7 @@ internal static class DirectionConversion
 			{
 				continue;
 			}
-			closestDot = dot;
+			closestDot = dotValue;
 			result = direction;
 		}
 
