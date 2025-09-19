@@ -51,11 +51,14 @@ public class ConfigLoader : IInitializable
 
 	internal async Task<ConfigInfo[]> LoadAllHsvConfigs()
 	{
-		var createFileTasks = directories.Configs
-			.EnumerateFiles("*.json", SearchOption.AllDirectories)
-			.Where(file => !file.FullName.StartsWith(directories.Backups.FullName))
-			.Select(GetConfigInfo);
+		var validExtensions = new[] { ".json", ".hsv", ".hsvconfig" };
 
+        var createFileTasks = directories.Configs
+            .EnumerateFiles("*", SearchOption.AllDirectories)
+            .Where(file => validExtensions.Contains(file.Extension.ToLowerInvariant()))
+            .Where(file => !file.FullName.StartsWith(directories.Backups.FullName))
+            .Select(GetConfigInfo);
+	
 		return await Task.WhenAll(createFileTasks);
 	}
 
