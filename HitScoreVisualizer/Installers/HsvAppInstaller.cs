@@ -26,6 +26,7 @@ internal sealed class HsvAppInstaller : Installer
 
 		Container.BindInterfacesAndSelfTo<BloomFontProvider>().AsSingle();
 
+		Container.Bind<System.Random>().AsSingle();
 		Container.Bind<RandomScoreGenerator>().AsSingle();
 
 		// Patches
