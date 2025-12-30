@@ -18,6 +18,7 @@ public class ConfigLoader : IInitializable
 	private readonly ConfigMigrator configMigrator;
 	private readonly PluginDirectories directories;
 
+	private readonly string[] configFileTypes = ["json", "hsv", "hsvconfig"];
 	private readonly JsonSerializerSettings configSerializerSettings = new()
 	{
 		DefaultValueHandling = DefaultValueHandling.Include,
@@ -51,8 +52,8 @@ public class ConfigLoader : IInitializable
 
 	internal async Task<ConfigInfo[]> LoadAllHsvConfigs()
 	{
-		var createFileTasks = directories.Configs
-			.EnumerateFiles("*.json", SearchOption.AllDirectories)
+		var createFileTasks = configFileTypes
+			.SelectMany(ft => directories.Configs.EnumerateFiles($"*.{ft}", SearchOption.AllDirectories))
 			.Where(file => !file.FullName.StartsWith(directories.Backups.FullName))
 			.Select(GetConfigInfo);
 
