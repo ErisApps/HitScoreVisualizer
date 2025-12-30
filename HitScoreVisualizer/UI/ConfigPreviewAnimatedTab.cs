@@ -18,10 +18,10 @@ namespace HitScoreVisualizer.UI;
 internal class ConfigPreviewAnimatedTab : IPreviewTextEffectDidFinishEvent
 {
 	[Inject] private readonly ICoroutineStarter coroutineStarter = null!;
-	[Inject] private readonly Random random = null!;
 	[Inject] private readonly PluginConfig pluginConfig = null!;
 	[Inject] private readonly ConfigLoader configLoader = null!;
 	[Inject] private readonly RandomScoreGenerator randomScoreGenerator = null!;
+	private readonly Random random = new();
 
 	[UIComponent("PreviewTextTemplate")] private readonly TextMeshProUGUI previewTextTemplate = null!;
 	[UIComponent("TextContainer")] private readonly RectTransform textContainer = null!;

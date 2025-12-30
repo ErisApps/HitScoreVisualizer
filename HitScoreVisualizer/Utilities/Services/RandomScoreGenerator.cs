@@ -7,12 +7,7 @@ namespace HitScoreVisualizer.Utilities.Services;
 
 internal class RandomScoreGenerator
 {
-	private readonly Random random;
-
-	public RandomScoreGenerator(Random random)
-	{
-		this.random = random;
-	}
+	private readonly Random random = new();
 
 	public JudgmentDetails GetRandomScore()
 	{
