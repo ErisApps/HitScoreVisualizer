@@ -12,17 +12,16 @@ internal class BadNoteCutEffectSpawnerPatch : IAffinity
 {
 	private readonly HsvFlyingEffectSpawner flyingEffectSpawner;
 	private readonly HsvConfigModel config;
-	private readonly Random random;
+	private readonly Random random = new();
 
 	private readonly ArrayPicker<BadCutDisplay> wrongDirectionPicker = new([]);
 	private readonly ArrayPicker<BadCutDisplay> wrongColorPicker = new([]);
 	private readonly ArrayPicker<BadCutDisplay> bombPicker = new([]);
 
-	public BadNoteCutEffectSpawnerPatch(HsvFlyingEffectSpawner flyingEffectSpawner, HsvConfigModel config, Random random)
+	public BadNoteCutEffectSpawnerPatch(HsvFlyingEffectSpawner flyingEffectSpawner, HsvConfigModel config)
 	{
 		this.flyingEffectSpawner = flyingEffectSpawner;
 		this.config = config;
-		this.random = random;
 
 		if (config.BadCutDisplays is null or [])
 		{

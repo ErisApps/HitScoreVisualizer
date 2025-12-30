@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.Remoting.Messaging;
 using HitScoreVisualizer.Components;
 using HitScoreVisualizer.Models;
 using HitScoreVisualizer.Utilities;
@@ -10,15 +11,14 @@ internal class MissedNoteEffectSpawnerPatch : IAffinity
 {
 	private readonly HsvFlyingEffectSpawner flyingEffectSpawner;
 	private readonly HsvConfigModel config;
-	private readonly Random random;
+	private readonly Random random = new();
 
 	private readonly ArrayPicker<MissDisplay> missPicker = new([]);
 
-	public MissedNoteEffectSpawnerPatch(HsvFlyingEffectSpawner flyingEffectSpawner, HsvConfigModel config, Random random)
+	public MissedNoteEffectSpawnerPatch(HsvFlyingEffectSpawner flyingEffectSpawner, HsvConfigModel config)
 	{
 		this.flyingEffectSpawner = flyingEffectSpawner;
 		this.config = config;
-		this.random = random;
 
 		if (config.MissDisplays is null)
 		{
