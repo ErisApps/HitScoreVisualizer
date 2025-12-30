@@ -1,5 +1,10 @@
 ## Changelog
 
+### 3.7.2
+
+- Updated for Beat Saber 1.42.0
+- Added support for config files ending in '.hsv' and '.hsvconfig'; it's now possible to use files that are compatible with both this mod, and MBF for quest-standalone.
+
 ### 3.7.1
 
 - Fixed an issue where configs that didn't specify a version would break the plugin as it would assume the config was up-to-date even when it needed migration
