@@ -1,5 +1,9 @@
 ## Changelog
 
+### 3.7.3
+
+-  Fixed a bug in calculation of the closest normal direction [#40](https://github.com/ErisApps/HitScoreVisualizer/pull/40)
+
 ### 3.7.2
 
 - Updated for Beat Saber 1.42.0
