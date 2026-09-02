@@ -33,6 +33,7 @@ internal class HsvPlayerInstaller : Installer
 		// Patches
 		Container.BindInterfacesTo<MissedNoteEffectSpawnerPatch>().AsSingle();
 		Container.BindInterfacesTo<BadNoteCutEffectSpawnerPatch>().AsSingle();
+		Container.BindInterfacesTo<FlyingScoreSpawnerPatch>().AsSingle();
 		Container.BindInterfacesTo<FlyingScoreEffectPatch>().AsSingle();
 	}
 }
